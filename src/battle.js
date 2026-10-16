@@ -12,7 +12,7 @@ export class Battle {
   constructor(run,{duration=RULES.roundSeconds}={}) {
     this.run=run;this.rng={seed:run.seed};this.tick=0;this.durationTicks=Math.round(duration/STEP);
     this.phase='combat';this.serial=0;this.shotSerial=0;this.shots=[];this.feed=[];this.kills=0;this.gold=0;this.bossKilled=false;
-    this.effects=[];this.effectSerial=0;this.events=new TriggerQueue();
+    this.effects=[];this.effectSerial=0;this.regenTotals=new Map();this.events=new TriggerQueue();
     this.party=run.party.map((member,slot)=>this.makeUnit({side:'hero',slot,name:heroById(member.hero).name,def:heroById(member.hero),
       baseStats:baseStatsFor(member,run.level),modifiers:loadoutModifiers(member,run.augments),
       skills:skillsFor(member.hero),triggers:triggersFor(member,run.augments),auto:member.auto}));
@@ -33,8 +33,8 @@ export class Battle {
     unit.nextAttack=this.tick+ticks(.8);return unit;
   }
   addFeed(text){this.feed.unshift({time:this.time,text});this.feed.length=Math.min(this.feed.length,6);}
-  emitEffect(type,unit,amount=0,crit=false) {
-    this.effects.push({id:++this.effectSerial,tick:this.tick,type,target:unit.id,side:unit.side,slot:unit.slot,amount,crit});
+  emitEffect(type,unit,amount=0,crit=false,details={}) {
+    this.effects.push({id:++this.effectSerial,tick:this.tick,type,target:unit.id,side:unit.side,slot:unit.slot,amount,crit,...details});
     if(this.effects.length>256)this.effects.splice(0,this.effects.length-256);
   }
   emit(type,source,target,amount=0,extra={}) {this.events.enqueue({type,tick:this.tick,source:source?.id,target:target?.id,amount,...extra});}
@@ -50,7 +50,7 @@ export class Battle {
           owner.triggerReady.set(trigger.id,this.tick+Math.max(0,Math.ceil((trigger.cooldown||0)/STEP)));
           for(const effect of trigger.effects) {
             const target=effect.target==='attacker'?this.find(event.source):effect.target==='victim'?this.find(event.target):owner;
-            if(target)this.applyEffect(owner,target,effect);
+            if(target)this.applyEffect(owner,target,effect,{origin:'trigger',originId:trigger.id});
           }
         });
       }
@@ -89,11 +89,11 @@ export class Battle {
     const resistance=Math.max(0,(magic?t.resist:t.armor)-(magic?s.magicPen:s.armorPen));
     const raw=((options.amount||0)+s.attack*(options.attack??multiplier)+s.power*(options.power??(skill ? .8 : 0)))
       *(crit?s.critDamage:1)*(1+s.damageAmp)*100/(100+resistance)*(1-t.reduction);
-    return {hit,crit,damage:Math.max(0,raw),vamp:(skill?0:s.lifeSteal)+s.omni,healing:s.healing};
+    return {hit,crit,damage:Math.max(0,raw),vamp:(skill?0:s.lifeSteal)+s.omni,lifeSteal:skill?0:s.lifeSteal,omni:s.omni,healing:s.healing};
   }
   fire(source,target,{skill=false,multiplier=1,duration,...options}={}) {
     const shot={id:++this.shotSerial,source:source.id,target:target.id,side:source.side,sourceSlot:source.slot,targetSlot:target.slot,
-      start:this.tick,end:this.tick+ticks(duration??1/source.stats.attackSpeed),skill,onHit:structuredClone(options.onHit||[]),
+      start:this.tick,end:this.tick+ticks(duration??1/source.stats.attackSpeed),skill,origin:skill?'skill':'attack',originId:options.originId||(skill?'skill':'attack'),skillKey:options.skillKey||'',onHit:structuredClone(options.onHit||[]),
       ...this.snapshot(source,target,multiplier,skill,options)};
     this.shots.push(shot);
     if(!skill){source.attack={start:shot.start,end:shot.end};this.emit('attack',source,target);this.flushTriggers();}
@@ -104,22 +104,23 @@ export class Battle {
     const target=this.find(shot.target),source=this.find(shot.source);
     if(!target||target.hp<=0)return;
     this.events.root(()=>{
-      if(!shot.hit){target.lastEvent={text:'闪避',tick:this.tick,type:'dodge'};this.emitEffect('dodge',target);this.emit('dodge',source,target);return;}
+      if(!shot.hit){target.lastEvent={text:'闪避',tick:this.tick,type:'dodge'};this.emitEffect('dodge',target,0,false,this.visualSource(source,shot));this.emit('dodge',source,target);return;}
       this.dealDamage(source,target,shot);
-      if(target.hp>0&&source)for(const effect of shot.onHit||[])this.applyEffect(source,target,effect);
+      if(target.hp>0&&source)for(const effect of shot.onHit||[])this.applyEffect(source,target,effect,this.visualSource(source,shot));
     });
     this.flushTriggers();
   }
+  visualSource(source,context={}) {return {source:source?.id||context.source,origin:context.origin||(context.skill?'skill':'attack'),originId:context.originId||'attack',skillKey:context.skillKey||''};}
   dealDamage(source,target,snapshot) {
     if(target.hp<=0)return;
     const absorbed=Math.min(target.shield,snapshot.damage);target.shield-=absorbed;
     const lost=Math.min(target.hp,snapshot.damage-absorbed);target.hp=Math.max(0,target.hp-lost);
     target.lastEvent={text:lost>0?`${snapshot.crit?'暴击 ':''}−${Math.round(lost)}`:`护盾 −${Math.round(absorbed)}`,tick:this.tick,type:'damage'};
-    this.emitEffect('damage',target,lost||absorbed,snapshot.crit);
+    if(lost>0||absorbed>0)this.emitEffect('damage',target,lost,!!snapshot.crit,{...this.visualSource(source,snapshot),hpLoss:lost,shieldLoss:absorbed});
     this.emit('hit',source,target,lost,{absorbed});
     if(snapshot.crit)this.emit('critical',source,target,lost);
     this.emit('damaged',source,target,lost,{absorbed});
-    if(source?.hp>0&&lost>0&&snapshot.vamp>0)this.heal(source,source,lost*snapshot.vamp*(1+snapshot.healing));
+    if(source?.hp>0&&lost>0&&snapshot.vamp>0)this.heal(source,source,lost*snapshot.vamp*(1+snapshot.healing),{...this.visualSource(source,snapshot),healingKind:snapshot.lifeSteal>0?(snapshot.omni>0?'vamp':'lifesteal'):'omni'});
     if(target.hp===0) {
       this.emitEffect('death',target);this.emit('kill',source,target);this.emit('death',source,target);
       target.shield=0;target.attack=null;target.casting=null;
@@ -131,10 +132,10 @@ export class Battle {
       }else this.addFeed(`${target.name}暂时倒下了。`);
     }
   }
-  heal(source,target,amount) {
+  heal(source,target,amount,context={}) {
     if(target.hp<=0)return;
     const actual=Math.max(0,Math.min(target.stats.hp-target.hp,amount));target.hp+=actual;
-    if(actual>0){this.emitEffect('heal',target,actual);this.emit('heal',source,target,actual);}
+    if(actual>0){this.emitEffect('heal',target,actual,false,{...this.visualSource(source,context),healingKind:context.healingKind||'heal'});this.emit('heal',source,target,actual);}
   }
   addStatus(source,target,statusId) {
     const definition=typeof statusId==='string'?STATUSES[statusId]:statusId;
@@ -144,17 +145,17 @@ export class Battle {
     if(status){this.emit('status',source,target,status.stacks,{status:definition.id});if(interrupted&&!target.casting)this.emit('interrupt',source,target);}
     return status;
   }
-  applyEffect(source,target,effect) {
+  applyEffect(source,target,effect,context={origin:'trigger',originId:'effect'}) {
     if(target.hp<=0)return;
-    if(effect.type==='heal')this.heal(source,target,((effect.amount||0)+source.stats.power*(effect.power||0))*(1+source.stats.healing));
+    if(effect.type==='heal')this.heal(source,target,((effect.amount||0)+source.stats.power*(effect.power||0))*(1+source.stats.healing),context);
     else if(effect.type==='shield') {
       const amount=Math.max(0,((effect.amount||0)+source.stats.power*(effect.power||0))*(1+source.stats.shielding));
-      if(amount>0){target.shield+=amount;this.emitEffect('shield',target,amount);this.emit('shield',source,target,amount);}
+      if(amount>0){target.shield+=amount;this.emitEffect('shield',target,amount,false,this.visualSource(source,context));this.emit('shield',source,target,amount);}
     }else if(effect.type==='status')this.addStatus(source,target,effect.status);
     else if(effect.type==='damage') {
-      const snapshot=this.snapshot(source,target,0,true,{attack:0,power:0,...effect});
+      const snapshot={...this.snapshot(source,target,0,true,{attack:0,power:0,...effect}),...context};
       if(snapshot.hit)this.dealDamage(source,target,snapshot);
-      else {this.emitEffect('dodge',target);this.emit('dodge',source,target);}
+      else {this.emitEffect('dodge',target,0,false,this.visualSource(source,context));this.emit('dodge',source,target);}
     }else throw new Error(`Unknown effect ${effect.type}`);
   }
   skillReason(unit,index) {
@@ -184,8 +185,8 @@ export class Battle {
     if(!targets.length){this.emit('fizzle',unit,unit,0,{skill:skill.id});this.flushTriggers();return;}
     this.events.root(()=>{
       for(const target of targets)for(const effect of skill.effects) {
-        if(effect.type==='damage')this.fire(unit,target,{skill:true,duration:effect.travel??.3,...effect});
-        else this.applyEffect(unit,target,effect);
+        if(effect.type==='damage')this.fire(unit,target,{skill:true,duration:effect.travel??.3,...effect,originId:skill.id,skillKey:skill.key});
+        else this.applyEffect(unit,target,effect,{origin:'skill',originId:skill.id,skillKey:skill.key});
       }
       this.emit('cast',unit,unit,0,{skill:skill.id});
     });
@@ -201,11 +202,15 @@ export class Battle {
     if(!this.living('hero').length){this.phase='lost';this.shots=[];return;}
     if(this.phase==='cleanup'&&!this.living('enemy').length){this.phase='won';this.shots=[];return;}
     if(this.phase==='combat')for(let slot=0;slot<5;slot++) {
-      const old=this.enemies[slot];if(old.hp<=0&&old.respawnAt<=this.tick){this.enemies[slot]=this.spawn(slot);this.emitEffect('spawn',this.enemies[slot]);}
+      const old=this.enemies[slot];if(old.hp<=0&&old.respawnAt<=this.tick){this.regenTotals.delete(old.id);this.enemies[slot]=this.spawn(slot);this.emitEffect('spawn',this.enemies[slot]);}
     }
     for(const unit of this.units()) {
       if(unit.hp<=0)continue;
+      const hpBefore=unit.hp;
       unit.hp=Math.min(unit.stats.hp,unit.hp+unit.stats.hpRegen*(1+unit.stats.healing)*STEP);
+      // Natural regeneration remains outside heal triggers. Only its display is batched.
+      this.regenTotals.set(unit.id,(this.regenTotals.get(unit.id)||0)+unit.hp-hpBefore);
+      if(this.tick%50===0){const actual=this.regenTotals.get(unit.id);if(actual>0)this.emitEffect('heal',unit,actual,false,{source:unit.id,origin:'regen',originId:'regen',healingKind:'regen'});this.regenTotals.delete(unit.id);}
       unit.mana=Math.min(unit.stats.mana,unit.mana+unit.stats.manaRegen*STEP);
       if(isControlled(unit))continue;
       if(unit.casting) {

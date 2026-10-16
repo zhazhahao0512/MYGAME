@@ -29,6 +29,7 @@ export interface ShotView {
   readonly start: number;
   readonly end: number;
   readonly skill: boolean;
+  readonly skillKey?: string;
 }
 
 export interface EffectEvent {
@@ -40,6 +41,13 @@ export interface EffectEvent {
   readonly slot: number;
   readonly amount: number;
   readonly crit: boolean;
+  readonly source?: string;
+  readonly origin?: string;
+  readonly originId?: string;
+  readonly skillKey?: string;
+  readonly hpLoss?: number;
+  readonly shieldLoss?: number;
+  readonly healingKind?: string;
 }
 
 export interface BattleView {
@@ -59,4 +67,5 @@ export interface RendererOptions {
   select: (slot: number) => void;
   motion: () => boolean;
   paused: () => boolean;
+  compact?: () => boolean;
 }

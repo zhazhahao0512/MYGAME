@@ -14,7 +14,8 @@
     "build": "npm run check && vite build",
     "preview": "node scripts/server.mjs --preview",
     "test:engine": "node scripts/engine-check.mjs",
-    "package:deploy": "npm run build && node scripts/package-deploy.mjs"
+    "package:deploy": "npm run build && node scripts/package-deploy.mjs",
+    "test:battle": "node scripts/battle-interaction-check.mjs"
   },
   "engines": {
     "node": ">=22.12.0"

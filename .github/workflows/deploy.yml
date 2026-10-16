@@ -40,6 +40,8 @@ jobs:
           node --input-type=module -e 'import { chromium } from "playwright-core"; console.log("CHROMIUM_PATH=" + chromium.executablePath())' >> "$GITHUB_ENV"
       - name: Verify mouse and touch shop interactions
         run: npm run test:shop
+      - name: Verify battle inspection and touch landscape interactions
+        run: npm run test:battle
       - name: Verify the actual deployment archive in Chromium
         shell: bash
         run: |

@@ -1,9 +1,10 @@
 import Phaser from 'phaser';
+import { PopupBudget, feedbackStyle } from './feedback.js';
 import type { BattleView, RendererOptions, UnitView, EffectEvent, Side } from './types';
 
 const FONT = '"Noto Sans CJK SC", "Microsoft YaHei", sans-serif';
 const COLORS = { gold: 0xe9b44c, green: 0x9fba80, blue: 0x7eb6ce, red: 0xd69381, text: '#ecebdd', muted: '#929d86' };
-const LIMITS = { projectiles: 96, popups: 36, particlesPerEmitter: 180, burstsPerFrame: 12 };
+const LIMITS = { projectiles: 96, popups: 24, particlesPerEmitter: 180, burstsPerFrame: 12 };
 
 type Actor = {
   root: Phaser.GameObjects.Container;
@@ -37,6 +38,10 @@ class BattleScene extends Phaser.Scene {
   private bursts!: Record<'damage' | 'heal' | 'shield' | 'spawn', Phaser.GameObjects.Particles.ParticleEmitter>;
   private labels!: Phaser.GameObjects.Text[];
   private hoverLabel!: Phaser.GameObjects.Text;
+  private feedback = new PopupBudget();
+  private flashes = new Map<string, { tick: number; color: number }>();
+  private launched = 0;
+  private get compact() { return this.owner.options.compact?.() ?? false; }
   private lastEvent = 0;
   private lastTick = -1;
   private lastMotion = true;
@@ -119,31 +124,31 @@ class BattleScene extends Phaser.Scene {
 
   private layout() {
     const { width, height } = this.scale;
-    const teamWidth = width * .435;
+    const teamWidth = width * (this.compact ? .47 : .435);
     const cell = teamWidth / 5;
-    const cardWidth = Math.max(50, cell - Math.max(10, width * .009));
-    const cardHeight = Phaser.Math.Clamp(height * .57, 140, 310);
+    const cardWidth = this.compact ? cell - 5 : Math.max(50, cell - Math.max(10, width * .009));
+    const cardHeight = this.compact ? Math.max(55,height - 91) : Phaser.Math.Clamp(height * .57, 140, 310);
     // Keep resource bars close to the squad panel instead of reserving a large floor gap.
-    const y = Math.max(cardHeight / 2 + 60, height - cardHeight / 2 - 100);
+    const y = this.compact ? cardHeight / 2 + 23 : Math.max(cardHeight / 2 + 60, height - cardHeight / 2 - 100);
     for (const actor of this.actors) {
       const position = actor.side === 'hero' ? 4 - actor.index : actor.index;
-      const x = actor.side === 'hero' ? cell * (position + .5) + 10 : width - teamWidth - 10 + cell * (position + .5);
+      const x = actor.side === 'hero' ? cell * (position + .5) + (this.compact?2:10) : width - teamWidth - (this.compact?2:10) + cell * (position + .5);
       actor.width = cardWidth;
       actor.height = cardHeight;
       actor.root.setPosition(x, y);
       actor.box.setSize(cardWidth, cardHeight);
       if (actor.box.input) actor.box.input.hitArea.setTo(0, 0, cardWidth, cardHeight);
       actor.border.setSize(cardWidth - 12, cardHeight - 12);
-      actor.slot.setPosition(0, -cardHeight / 2 - 18);
-      actor.role.setPosition(0, -cardHeight / 2 + 20);
-      actor.mark.setPosition(0, -14).setFontSize(Math.max(26, cardWidth * .35));
-      actor.name.setPosition(0, cardHeight * .22).setFontSize(cardWidth < 90 ? 13 : 17);
-      actor.subtitle.setPosition(0, cardHeight / 2 - 17);
-      actor.hp.setPosition(0, cardHeight / 2 + 16).setFontSize(cardWidth < 110 ? 8 : 10);
-      actor.mana.setPosition(0, cardHeight / 2 + 36).setFontSize(cardWidth < 110 ? 8 : 10);
-      actor.shield.setPosition(0, cardHeight / 2 + 64);
+      actor.slot.setPosition(0, -cardHeight / 2 - (this.compact?9:18)).setFontSize(this.compact?10:12);
+      actor.role.setPosition(0, -cardHeight / 2 + 20).setVisible(!this.compact);
+      actor.mark.setPosition(0, this.compact?-9:-14).setFontSize(this.compact?22:Math.max(26, cardWidth * .35));
+      actor.name.setPosition(0, cardHeight * .22).setFontSize(this.compact?11:cardWidth < 90 ? 13 : 17);
+      actor.subtitle.setPosition(0, cardHeight / 2 - 17).setVisible(!this.compact);
+      actor.hp.setPosition(0, cardHeight / 2 + 16).setFontSize(this.compact ? 10 : cardWidth < 110 ? 8 : 10);
+      actor.mana.setPosition(0, cardHeight / 2 + 36).setFontSize(this.compact ? 10 : cardWidth < 110 ? 8 : 10);
+      actor.shield.setPosition(0, cardHeight / 2 + (this.compact?58:64)).setFontSize(this.compact?10:9);
     }
-    const ground = y + cardHeight / 2 + 79;
+    const ground = this.compact?height-3:y + cardHeight / 2 + 79;
     const g = this.background.clear();
     g.fillStyle(0x1b211b, .7).fillRect(0, ground, width, height - ground);
     // Geometric scenery is deliberately neutral; hero art remains text placeholders.
@@ -156,11 +161,11 @@ class BattleScene extends Phaser.Scene {
       g.lineStyle(1, 0x596744, .1).lineBetween(width / 2 + n * 65, ground, width / 2 + n * 150, height);
     }
     for (const actor of this.actors) g.fillStyle(0x0d140c, .35).fillEllipse(actor.root.x, ground - 4, cardWidth + 12, 12);
-    this.labels[0].setPosition(teamWidth / 2, 25);
-    this.labels[1].setPosition(width - teamWidth / 2, 25);
+    this.labels[0].setPosition(teamWidth / 2, 25).setVisible(!this.compact);
+    this.labels[1].setPosition(width - teamWidth / 2, 25).setVisible(!this.compact);
     this.labels[2].setPosition(width / 2, y - 12);
-    this.labels[3].setPosition(width / 2, y + 24);
-    this.hoverLabel.setPosition(width / 2, height - 14);
+    this.labels[3].setPosition(width / 2, y + 24).setVisible(!this.compact);
+    this.hoverLabel.setPosition(width / 2, height - 14).setVisible(!this.compact);
     this.refreshActors();
   }
 
@@ -170,12 +175,15 @@ class BattleScene extends Phaser.Scene {
 
   private refreshActors() {
     let hover = '';
+    for(const [id,flash] of this.flashes)if(this.owner.battle.tick-flash.tick>8)this.flashes.delete(id);
     for (const actor of this.actors) {
       const unit = this.unit(actor), dead = !unit || unit.hp <= 0;
       const color = unit?.def?.color ? Phaser.Display.Color.HexStringToColor(unit.def.color).color : 0xbc8777;
       const selected = actor.side === 'hero' && !!unit && actor.index === this.owner.options.selected();
       actor.box.setFillStyle(dead ? 0x1b211a : selected ? 0x393925 : 0x252c22, dead ? .55 : 1);
       actor.box.setStrokeStyle(selected || actor.hovered ? 2 : 1, selected ? COLORS.gold : actor.hovered ? 0xc8d4b5 : color, dead ? .3 : .65);
+      const flash=unit&&this.flashes.get(unit.id);
+      if(flash&&!dead)actor.box.setStrokeStyle(3,flash.color,1);
       actor.border.setStrokeStyle(1, selected ? COLORS.gold : color, .15);
       actor.mark.setText(!unit ? '+' : dead ? '·' : unit.def?.mark || (unit.boss ? '王' : '怪')).setColor(Phaser.Display.Color.IntegerToColor(color).rgba).setAlpha(dead ? .35 : 1);
       actor.role.setText(unit ? unit.def?.role || (unit.boss ? '首领' : '敌方单位') : '队伍空位');
@@ -200,13 +208,15 @@ class BattleScene extends Phaser.Scene {
         g.fillStyle(0x39432a).fillRect(left, top + 49, actor.width, 3);
         g.fillStyle(COLORS.blue).fillRect(left, top + 49, actor.width * castProgress, 3);
       }
-      this.setText(actor.hp, `${Math.ceil(unit.hp)}/${Math.round(unit.stats.hp)}  +${Number(unit.stats.hpRegen.toFixed(1))}/s`);
-      this.setText(actor.mana, `${Math.floor(unit.mana)}/${Math.round(unit.stats.mana)}  +${Number(unit.stats.manaRegen.toFixed(1))}/s`);
-      this.setText(actor.shield, unit.shield > 0 ? `护盾 ${Math.ceil(unit.shield)}` : '');
+      this.setText(actor.hp, this.compact?`${this.shortNumber(unit.hp)}/${this.shortNumber(unit.stats.hp)}`:`${Math.ceil(unit.hp)}/${Math.round(unit.stats.hp)}  +${Number(unit.stats.hpRegen.toFixed(1))}/s`);
+      this.setText(actor.mana, this.compact?`${this.shortNumber(unit.mana)}/${this.shortNumber(unit.stats.mana)}`:`${Math.floor(unit.mana)}/${Math.round(unit.stats.mana)}  +${Number(unit.stats.manaRegen.toFixed(1))}/s`);
+      this.setText(actor.shield, unit.shield > 0 ? `盾 ${this.shortNumber(unit.shield)}` : '');
       if (actor.hovered) hover = `${unit.name}  ·  生命 ${Math.ceil(unit.hp)}/${Math.round(unit.stats.hp)}  ·  ${actor.side === 'hero' ? '点击选中角色' : unit.boss ? '首领' : '敌方单位'}`;
     }
     if (this.hoverLabel) this.setText(this.hoverLabel, hover);
   }
+
+  private shortNumber(value: number) {return value>=10000?`${Number((value/10000).toFixed(1))}万`:value>=1000?`${Number((value/1000).toFixed(1))}k`:String(Math.ceil(value));}
 
   private setText(label: Phaser.GameObjects.Text, text: string) {
     if (label.text !== text) label.setText(text);
@@ -215,7 +225,9 @@ class BattleScene extends Phaser.Scene {
   private refreshProjectiles(motion: boolean) {
     this.trails.clear();
     const battle = this.owner.battle;
-    const shots = motion ? battle.shots.slice(-LIMITS.projectiles) : [];
+    const selected=battle.party[this.owner.options.selected()]?.id;
+    for(const shot of battle.shots){if(shot.id>this.launched&&shot.start>=battle.tick-5)this.flashes.set(shot.source,{tick:shot.start,color:shot.skill?COLORS.blue:0xe6dfca});this.launched=Math.max(this.launched,shot.id);}
+    const shots = motion ? [...battle.shots].sort((a,b)=>Number(b.source===selected)-Number(a.source===selected)||b.id-a.id).slice(0,LIMITS.projectiles) : [];
     for (let n = 0; n < this.projectiles.length; n++) {
       const sprite = this.projectiles[n], shot = shots[n];
       if (!shot) { sprite.dot.setVisible(false); sprite.glow.setVisible(false); continue; }
@@ -225,15 +237,17 @@ class BattleScene extends Phaser.Scene {
       if (!target || target.id !== shot.target || target.hp <= 0) { sprite.dot.setVisible(false); sprite.glow.setVisible(false); continue; }
       const t = Phaser.Math.Clamp((battle.tick - shot.start) / (shot.end - shot.start), 0, 1);
       const x = Phaser.Math.Linear(from.root.x, to.root.x, t);
-      const y = Phaser.Math.Linear(from.root.y, to.root.y, t) - Math.sin(t * Math.PI) * (shot.skill ? 70 : 25);
-      const tint = shot.side === 'enemy' ? COLORS.red : shot.skill ? COLORS.blue : COLORS.gold;
-      sprite.dot.setVisible(true).setPosition(x, y).setTint(tint).setDisplaySize(shot.skill ? 9 : 5, shot.skill ? 9 : 5);
+      const y = Phaser.Math.Linear(from.root.y, to.root.y, t) - Math.sin(t * Math.PI) * (this.compact ? (shot.skill?28:12) : shot.skill ? 70 : 25);
+      const tint = shot.skill ? 0x77d6ea : 0xe6dfca;
+      if(shot.source===selected&&t>.8)this.flashes.set(shot.target,{tick:battle.tick,color:tint});
+      sprite.dot.setVisible(true).setAlpha(shot.source===selected?1:.55).setPosition(x, y).setTint(tint).setDisplaySize(shot.skill ? 9 : 5, shot.skill ? 9 : 5);
       sprite.glow.setVisible(true).setPosition(x, y).setTint(tint).setDisplaySize(shot.skill ? 28 : 16, shot.skill ? 28 : 16);
-      this.trails.lineStyle(shot.skill ? 2 : 1, tint, .5).lineBetween(x - (to.root.x - from.root.x) * .025, y + 2, x, y);
+      this.trails.lineStyle(shot.skill ? 2 : 1, tint, shot.source===selected?.9:.3).lineBetween(x - (to.root.x - from.root.x) * .025, y + 2, x, y);
     }
   }
 
   private showEvent(event: EffectEvent, emitParticles: boolean) {
+    if(this.owner.battle.tick-event.tick>35)return;
     const actor = this.actors[(event.side === 'hero' ? 0 : 5) + event.slot];
     if (!actor || this.unit(actor)?.id !== event.target) return;
     const x = actor.root.x, y = actor.root.y;
@@ -242,32 +256,35 @@ class BattleScene extends Phaser.Scene {
       return;
     }
     if (event.type === 'death') return;
-    let color = COLORS.gold, text = `−${Math.round(event.amount)}`;
-    if (event.type === 'damage' && event.crit) text = `暴击 ${text}`;
-    if (event.type === 'heal') { color = COLORS.green; text = `+${Math.round(event.amount)}`; }
-    if (event.type === 'shield') { color = COLORS.blue; text = `护盾 +${Math.round(event.amount)}`; }
-    if (event.type === 'dodge') { color = 0xc6d2bc; text = '闪避'; }
-    const popup = this.popups.find(p => !p.active) || this.popups.reduce((a, b) => a.born < b.born ? a : b);
-    // One bounded pool; visual saturation never drops combat events or affects the combat RNG.
-    const offset = this.popups.filter(p => p.active && Math.abs(p.x - x) < 1).length % 3;
-    popup.active = true; popup.born = this.owner.battle.tick; popup.x = x; popup.y = y - actor.height / 2 + 30 + offset * 19;
-    popup.text.setText(text).setColor(Phaser.Display.Color.IntegerToColor(color).rgba).setFontSize(event.crit ? 20 : 15).setVisible(true).setAlpha(1).setPosition(popup.x, popup.y);
-    if (emitParticles && event.type !== 'dodge') this.bursts[event.type].explode(event.crit ? 14 : 7, x, y - 8);
+    const selected=this.owner.battle.party[this.owner.options.selected()]?.id;
+    this.feedback.add(event,selected,this.compact?12:24);
+    const color=event.type==='heal'?COLORS.green:event.type==='shield'||(event.shieldLoss||0)>0?COLORS.blue:event.crit?COLORS.gold:event.origin==='skill'?0x77d6ea:0xe6dfca;
+    this.flashes.set(event.target,{tick:event.tick,color});
+    if(event.source&&event.source!==event.target&&event.origin!=='attack')this.flashes.set(event.source,{tick:event.tick,color});
+    if (emitParticles && event.type !== 'dodge') {
+      const kind=event.type==='damage'&&(event.shieldLoss||0)>0?'shield':event.type;
+      this.bursts[kind].explode(event.crit ? 14 : 7, x, y - 8);
+    }
   }
 
   private refreshEffects(motion: boolean) {
     let bursts = 0;
+    const tick=this.owner.battle.tick,valid=new Set([...this.owner.battle.party,...this.owner.battle.enemies].map(u=>u.id));
+    this.feedback.expire(tick,valid);
     for (const event of this.owner.battle.effects) {
       if (event.id <= this.lastEvent) continue;
       this.lastEvent = event.id;
       this.showEvent(event, motion && bursts++ < LIMITS.burstsPerFrame);
     }
-    for (const popup of this.popups) {
-      if (!popup.active) continue;
-      const age = (this.owner.battle.tick - popup.born) * 20;
-      if (age > 700) { popup.active = false; popup.text.setVisible(false); continue; }
-      popup.text.setY(popup.y - (motion ? age / 25 : 0)).setAlpha(1 - age / 800);
-    }
+    this.feedback.trim(this.compact?12:24);
+    this.feedback.groups.forEach((group,index)=>{
+      const popup=this.popups[index],actor=this.actors[(group.side==='hero'?0:5)+group.slot];
+      const style=feedbackStyle(group),age=(tick-group.born)*20;
+      popup.active=true;popup.born=group.born;popup.x=actor.root.x;popup.y=actor.root.y-actor.height/2+(this.compact?20:40)+group.lane*(this.compact?16:22);
+      popup.text.setText(style.text).setColor(style.color).setFontSize(this.compact?11:group.crit?19:14).setStroke('#172015',3).setVisible(true).setPosition(popup.x,popup.y-(motion?age/35:0)).setAlpha(1-age/900);
+    });
+    for(let index=this.feedback.groups.length;index<this.popups.length;index++){this.popups[index].active=false;this.popups[index].text.setVisible(false);}
+    this.owner.host.dataset.feedback=JSON.stringify(this.feedback.groups.map(g=>({target:g.target,source:g.source,kind:g.kind,healingKind:g.healingKind,...feedbackStyle(g)})));
     if (!motion && this.lastMotion) Object.values(this.bursts).forEach(e => e.killAll());
     this.lastMotion = motion;
   }
@@ -277,9 +294,9 @@ class BattleScene extends Phaser.Scene {
     this.owner.options.advance(Math.min(delta, 100));
     if (this.owner.disposed) return;
     const motion = this.owner.options.motion();
-    this.refreshActors();
     this.refreshProjectiles(motion);
     this.refreshEffects(motion);
+    this.refreshActors();
     // Read-only diagnostics for reproducible browser checks, not gameplay controls.
     if (this.lastTick !== this.owner.battle.tick) {
       this.lastTick = this.owner.battle.tick;

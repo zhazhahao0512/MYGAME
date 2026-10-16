@@ -16,7 +16,7 @@ try{
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
   const shot=async name=>{await page.screenshot({path:new URL(`../test-results/${name}.png`,import.meta.url).pathname,fullPage:true});};
   const click=async(act,selector='')=>{
-    const locator=page.locator(`[data-act="${act}"]${selector}`);
+    const locator=page.locator(`[data-act="${act}"]${selector}`).filter({visible:true});
     await (['close','home','close-popover'].includes(act)?locator.first():locator).click();
   };
   const save=async()=>page.evaluate(()=>JSON.parse(localStorage.getItem('squad-expedition.save.v1')));

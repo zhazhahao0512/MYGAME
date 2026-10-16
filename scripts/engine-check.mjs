@@ -23,7 +23,7 @@ try {
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
   page.on('pageerror', e => errors.push(e.message));
   await page.goto(url);
-  const click = (action, suffix = '') => page.locator(`[data-act="${action}"]${suffix}`).first().click();
+  const click = (action, suffix = '') => page.locator(`[data-act="${action}"]${suffix}`).filter({visible:true}).first().click();
   const ready = () => page.locator('#battle-canvas[data-engine="phaser"]').waitFor();
   for (let n = 0; n < 3; n++) {
     await click('preview-menu'); await click('preview', '[data-page="battle"]'); await ready();
@@ -100,7 +100,7 @@ try {
       actualFps: h.renderer.game.loop.actualFps };
   });
   assert.ok(metrics.maxParticles > 0 && metrics.maxParticles <= 720, 'real bounded particle emitters ran');
-  assert.ok(metrics.maxPopups > 0 && metrics.maxPopups <= 36);
+  assert.ok(metrics.maxPopups > 0 && metrics.maxPopups <= 24);
   assert.ok(metrics.maxProjectiles > 0 && metrics.maxProjectiles <= 96);
   assert.equal(metrics.minObjects, metrics.maxObjects, 'scene objects are reused under load');
   assert.ok(metrics.visualEvents <= 256);

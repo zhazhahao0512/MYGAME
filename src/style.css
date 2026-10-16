@@ -51,3 +51,51 @@
 .unit-statuses{height:16px;line-height:16px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:9px;color:#b8c99d}
 @media(min-width:1800px){.journey-strip{padding:20px 0}.journey-strip li,.journey-strip p{font-size:13px}.journey-strip ol{gap:32px}}
 @media(max-width:1100px){.journey-strip{align-items:flex-start;flex-direction:column;gap:10px}.journey-strip ol{gap:16px;flex-wrap:wrap}.journey-strip p{text-align:left}}
+
+/* Shared chest/shop surface: selection never hides the five heroes. */
+.offer-select{display:block;flex:1;width:100%;padding:0;border:0;background:none;text-align:left;border-radius:3px}
+.offer.chosen{outline:2px solid var(--accent);outline-offset:2px;background:#343925}
+.shop-stock .chest-choices{margin:0;grid-template-columns:repeat(3,minmax(0,1fr))}
+.selection-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:58px;padding:10px 2px}
+.selection-toolbar p{font-size:12px;color:#c7d2b7}.selection-toolbar>div{display:flex;gap:8px;flex-shrink:0}
+.shop-party{margin-top:0}.shop-party .gear-slot{min-height:44px}
+.shop-party .hero-name{min-height:44px;cursor:grab;flex-wrap:wrap;white-space:normal;text-align:left}
+.shop-party .hero-name:before{content:'⠿';color:#a8b795;font-size:21px}
+.shop-party .orange-count{white-space:nowrap;font-size:10px}
+.shop-party .hero-panel-heading{flex-wrap:wrap}
+[data-drag]{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:grab}
+.gear-slot.can-receive{border:1px solid #a4bf7a;box-shadow:inset 0 0 0 1px #a4bf7a30;background:#344329}
+.gear-slot.cannot-receive{border:1px dashed #c77f6d;background:#482c25;color:#d69e8e}
+.hero-panel.formation-target{border-style:dashed;border-color:#b4c98c}
+.drop-hover,.gear-slot.drop-hover{outline:3px solid var(--accent);outline-offset:3px;background:#63532b}
+.gear-slot.cannot-receive.drop-hover{outline-color:#e3957a;background:#66372b}
+.drag-ghost{position:fixed;z-index:400;pointer-events:none;max-width:145px;background:#e9b44c;color:#202318;padding:12px 16px;border:1px solid #f3d898;border-radius:5px;box-shadow:0 8px 24px #0007;font-size:13px;font-weight:650}
+.dragging,.dragging *{cursor:grabbing!important;user-select:none!important}
+.shop-popover{position:fixed;z-index:90;width:320px;max-width:calc(100vw - 16px);max-height:calc(100dvh - 16px);overflow:auto;overscroll-behavior:contain;border:1px solid #7e8c66;border-radius:7px;background:#283024;box-shadow:0 8px 28px #0009}
+.shop-popover>header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.shop-popover .popover-content{padding:14px}.shop-popover>footer{display:flex;justify-content:flex-end;gap:8px;padding:12px 14px;border-top:1px solid var(--line)}
+.shop-popover .btn{min-height:44px}.shop-popover .item-box{width:46px;height:54px}.shop-popover .item-box b{font-size:24px}.shop-popover .item-details h3{font-size:14px}.shop-popover .item-stats{font-size:12px}.shop-popover .item-details .muted{font-size:11px}
+.shop-popover.compare-popover{width:490px}.shop-popover .comparison{padding-top:0;border-top:0;grid-template-columns:1fr 16px 1fr;gap:10px;margin-bottom:16px}.shop-popover .comparison .item-details{flex-wrap:wrap;gap:8px}
+.shop-popover .stat-changes{grid-template-columns:1fr;gap:5px}.shop-popover .stat-changes>div{font-size:12px;padding:6px 8px}.shop-popover .popover-content>p{font-size:12px;margin:10px 0}
+.shop-popover .transaction-total{font-size:12px}.shop-popover .transaction-total b{font-size:16px}
+.phaser-arena{min-height:340px}.battle-shell{min-height:820px}
+@media(min-width:1800px){.shop-party .hero-name>b{font-size:22px}.selection-toolbar p{font-size:14px}.shop-party .gear-slot{height:48px}.shop-stock .chest-choices .offer{min-height:200px}}
+/* Touch users scroll on card text/background and drag only the explicit icon/name handles. */
+@media(max-width:900px){
+  .shop-shell{min-width:0;padding:0 16px 20px}.shop-shell .topbar{gap:10px}.shop-shell .topbar-title{justify-content:flex-start;flex-wrap:wrap}
+  .shop-summary{flex-wrap:wrap;gap:10px 16px;padding:14px 0}.shop-summary>span:first-child{padding-right:12px}
+  .shop-stock,.shop-party{padding:12px}.shop-shell .section-heading{align-items:flex-start;flex-wrap:wrap;gap:10px}
+  .shop-shell .section-heading>div{flex-wrap:wrap;gap:8px}.shop-shell .section-heading>div>span{font-size:11px;border:0;padding:0}
+  .shop-shell .offer-grid,.shop-stock .chest-choices{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .shop-shell .offer{padding:12px;min-height:170px;gap:12px}.shop-shell .item-details{flex-wrap:wrap;gap:9px}.shop-shell .item-details h3{font-size:14px}.shop-shell .item-stats{font-size:12px}.shop-shell .item-details .muted{font-size:11px}
+  .shop-shell .offer-bottom{align-items:flex-start;flex-wrap:wrap}.shop-shell .offer-bottom>.muted{font-size:10px}.shop-shell .item-box{width:48px;height:52px}
+  .shop-shell .hero-panels{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.shop-shell .hero-panel{padding:10px;gap:10px}
+  .shop-shell .hero-name>b{font-size:17px}.shop-shell .hero-name>small{font-size:10px}.shop-shell .hero-panel-heading{align-items:flex-start;gap:0}
+  .shop-shell .gear-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.shop-shell .gear-row>span{grid-column:1/-1;font-size:11px}.shop-shell .gear-slot{height:44px}
+  .shop-shell .skills{gap:3px}.shop-shell .skill small{font-size:7px}.shop-shell .stat-grid>div{font-size:10px}.shop-shell .stat-grid b{font-size:11px}.shop-shell .stat-grid{gap:5px;height:110px;min-height:110px}
+  .shop-shell .stat-grid.secondary>div{font-size:9px}.shop-shell .stat-grid.secondary b{font-size:10px}.shop-shell .gear-hint{font-size:10px;line-height:1.5}
+  .selection-toolbar{flex-wrap:wrap;gap:8px;padding:12px 0}.selection-toolbar>div{flex-wrap:wrap}.shop-shell .btn.small{min-height:44px}
+  .shop-shell .shop-footer{flex-wrap:wrap;gap:16px;margin-top:18px;min-height:0}.shop-shell .shop-footer>.btn{margin-left:auto}.chest-entry{min-width:230px}
+  .shop-shell .journey-strip ol{gap:8px;flex-wrap:wrap}.shop-shell .journey-strip li{font-size:10px}.shop-shell .journey-strip p{font-size:11px}
+  .shop-shell .augment-strip>div{flex-wrap:wrap}.shop-shell .augment-strip{padding:10px}
+}

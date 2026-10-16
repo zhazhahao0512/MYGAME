@@ -85,3 +85,18 @@ test('save validation rejects corrupted state and restores battle at a clean che
 test('same seed produces the same recruitment and shop results',()=>{
   assert.deepEqual(M.createRun(81).candidates,M.createRun(81).candidates);assert.deepEqual(shop().shop,shop().shop);assert.equal(HEROES.length>=7,true);
 });
+
+test('transfer preview is read-only, includes both heroes, and matches confirmed swap',()=>{
+  const r=shop();r.party[0].gear[0]={...M.makeItem(r,1),stats:{attack:10}};r.party[1].gear[2]={...M.makeItem(r,1),stats:{power:20}};
+  const before=structuredClone(r),quote=M.previewTransfer(r,0,0,1,2);
+  assert.deepEqual(r,before);assert.equal(quote.reason,'');assert.equal(quote.changes.length,2);
+  M.transferGear(r,0,0,1,2);
+  for(const group of quote.changes){const member=r.party.find(h=>h.hero===group.hero),stats=M.statsFor(member,r.level,r.augments);for(const change of group.stats)assert.equal(stats[change.key],change.after);}
+  assert.equal(r.gold,before.gold);assert.equal(r.party[0].gear[0].uid,before.party[1].gear[2].uid);
+});
+test('hero swap retains complete loadouts and rejects invalid positions or combat',()=>{
+  const r=shop();r.party[0].gear[0]=M.makeItem(r,5);r.party[0].auto=false;
+  const before=structuredClone(r.party);M.swapHeroes(r,0,1);assert.deepEqual(r.party,[before[1],before[0]]);
+  const current=structuredClone(r);for(const index of [-1,8,NaN,0.5])assert.throws(()=>M.swapHeroes(r,0,index));assert.deepEqual(r,current);
+  r.phase='battle';assert.throws(()=>M.swapHeroes(r,0,1),/商店/);
+});

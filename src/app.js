@@ -1,6 +1,7 @@
 import { HEROES, heroById, BASE, RULES, RARITIES, PRIMARY, SECONDARY, STAT_LABELS, statText } from './data.js';
 import * as M from './model.js';
 import { Battle, STEP } from './battle.js';
+import { installPointerDrag } from './pointer-drag.js';
 import { skillsFor, STONE_PASSIVE, AUGMENTS, EQUIPMENT_EFFECTS } from './combat/content.js';
 
 const app=document.querySelector('#app'),modalRoot=document.querySelector('#modal-root');
@@ -12,6 +13,8 @@ const gold=n=>`<span class="gold">${icon('coin')}${n}</span>`;
 const roleName={front:'最前方',slot3:'优先三号位',random:'随机目标',weakest:'最低生命'};
 let saved=null,run=null,screen='home',preview=false,battle=null,paused=false,modal=null,selectedHero=null,attributePage='primary',selectedUnit=0,lastFrame=0,accumulator=0,drawAt=0,toastTimer,previousFocus;
 let renderer=null,loadingBattle=null,renderedBattle=null;
+let shopSelection=null,shopPopover=null;
+const popoverRoot=document.createElement('div');popoverRoot.id='shop-popover-root';document.body.append(popoverRoot);
 let settings={motion:!matchMedia('(prefers-reduced-motion: reduce)').matches};
 try{saved=M.parseSave(localStorage.getItem(M.SAVE_KEY));const stored=JSON.parse(localStorage.getItem('squad.settings')||'null');if(stored&&typeof stored.motion==='boolean')settings.motion=stored.motion;}catch{}
 function toast(message){const el=document.querySelector('#toast');el.textContent=message;el.classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('visible'),3400);}
@@ -38,6 +41,8 @@ function augmentStrip(){
   return `<div class="augment-strip"><div><span class="badge">旅途强化</span><b>坚韧共鸣</b><small>${run.chest.claimed?'可选示例 · 全队生命与施法防护':'处理宝箱后可领取'}</small></div>${btn('查看并选择','augment-info','small',run.chest.claimed?'':'disabled')}</div>`;
 }
 function render(){
+  closeShopPopover();
+  if(screen!=='shop')shopSelection=null;
   const previousHost=screen==='battle'&&renderedBattle===battle?document.querySelector('#battle-canvas'):null;
   if(renderer&&(screen!=='battle'||renderer.battle!==battle)){renderer.destroy();renderer=null;}
   persistSettings();app.className=`app screen-${screen}`;
@@ -50,6 +55,7 @@ function render(){
     if(previousHost)document.querySelector('#battle-canvas').replaceWith(previousHost);
     renderedBattle=battle;ensureRenderer();renderer?.resize();updateBattle();
   }else renderedBattle=null;
+  if(screen==='shop')markShopTargets();
   if(modal)renderModal();
 }
 function renderHome(){
@@ -67,10 +73,10 @@ function recruitCards(){return run.candidates.map((id,i)=>{const h=heroById(id),
 function renderRecruit(){const initial=run.phase==='initial';return `<div class="page-shell">${topbar(initial?'选择初始英雄':'新的同伴',initial?'远征准备 / 01':`第 ${run.floor} 层准备 · 招募 ${run.floor} / 4`)}<section class="recruit-intro"><span class="eyebrow">${initial?'FIRST COMPANION':'BUILD YOUR PARTY'}</span><h2>${initial?'远征，从一位同伴开始。':'下一段路，一起走。'}</h2><p>${initial?'选择你的初始英雄。进入前四层时，还能各招募一名同伴。':'从三个随机候选中选择一位加入。英雄一旦加入，本次远征不可替换。'}</p></section><div class="recruit-grid">${recruitCards()}</div><footer class="page-bottom"><div class="party-mini"><span>当前队伍 <b>${run.party.length}/5</b></span>${run.party.map(m=>`<span class="mini-name" style="--hero:${heroById(m.hero).color}">${heroById(m.hero).name}</span>`).join('')}${!run.party.length?'<small class="muted">等待第一位同伴</small>':''}</div>${btn(`确认选择 · ${heroById(selectedHero||run.candidates[0]).name} ${icon('arrow')}`,'confirm-hero','primary')}</footer></div>`;}
 function renderReady(){return `<div class="page-shell">${topbar('准备出发',`第 ${run.floor} / 20 层` ,gold(run.gold))}<section class="ready-intro"><span class="eyebrow">EXPEDITION ${String(run.floor).padStart(2,'0')}</span><h2>${run.floor%5===0?'前方，有守门人在等待。':'队伍就位，准备迎战。'}</h2><p>坚守 ${RULES.roundSeconds} 秒，随后清理场上剩余敌人。击败怪物获得金币。</p></section><div class="ready-party">${[...run.party].reverse().map((m,i)=>{const h=heroById(m.hero);return `<div class="ready-hero" style="--hero:${h.color}"><span class="slot-label">${run.party.length-i} 号位</span>${portrait(h,'large')}<h3>${h.name}</h3><span>${h.role} · Lv.${run.level}</span></div>`;}).join('')}</div><div class="ready-direction">后排 <span>──────────────────────</span> 前排 →</div><div class="ready-actions"><span class="muted">装备和站位只能在战后商店调整</span>${btn(`进入第 ${run.floor} 层 ${icon('arrow')}`,'start-battle','primary large-button')}</div><p class="prototype-note">磐石已接入示例技能，其余英雄暂用通用技能，数值后续调整。</p></div>`;}
 function skillButtons(member,index,combat=false){return `<div class="skills"><button class="skill passive" data-act="passive" data-hero="${index}" title="被动技能占位"><b>被</b><small>被动</small></button>${skillsFor(member.hero).map((s,n)=>`<button class="skill ${n===3?'ultimate':''}" data-act="skill" data-hero="${index}" data-skill="${n}" ${combat?`data-cooldown="${index}-${n}"`:''} aria-label="${heroById(member.hero).name} ${s.key} ${s.name}"><b>${s.key}</b><small>${combat?'就绪':s.name}</small><i class="cool-mask"></i></button>`).join('')}</div>`;}
-function gearButtons(member,index){return `<div class="gear-row"><span>装备</span>${member.gear.map((item,slot)=>`<button class="gear-slot ${item?'filled':''}" data-act="gear" data-hero="${index}" data-slot="${slot}" ${item?`style="--rarity:${RARITIES.find(r=>r.id===item.rarity).color}"`:''} title="${item?escape(item.name):'空装备槽'}" aria-label="${heroById(member.hero).name} 装备槽 ${slot+1}${item?' '+escape(item.name):' 空'}">${item?escape(item.mark):'＋'}</button>`).join('')}</div>`;}
+function gearButtons(member,index){return `<div class="gear-row"><span>装备</span>${member.gear.map((item,slot)=>`<button class="gear-slot ${item?'filled':''}" ${screen==='shop'&&item?'data-drag="gear"':''} data-act="gear" data-hero="${index}" data-slot="${slot}" ${item?`style="--rarity:${RARITIES.find(r=>r.id===item.rarity).color}"`:''} title="${item?escape(item.name):'空装备槽'}" aria-label="${heroById(member.hero).name} 装备槽 ${slot+1}${item?' '+escape(item.name):' 空'}">${item?escape(item.mark):'＋'}</button>`).join('')}</div>`;}
 function heroPanels(shop=false){return Array.from({length:5},(_,i)=>4-i).map(index=>{
   const m=run.party[index];if(!m)return `<div class="hero-panel vacant"><span>0${index+1}</span><b>等待同伴</b><small>前四层开始前招募</small></div>`;
-  const h=heroById(m.hero);return `<article data-unit="${index}" class="hero-panel ${selectedUnit===index?'selected':''}" style="--hero:${h.color}"><div class="hero-panel-heading"><button data-act="select-unit" data-hero="${index}" class="hero-name"><b>${h.name}</b><small>Lv.${run.level}</small></button>${shop?`<span class="orange-count">橙装 ${m.gear.filter(i=>i?.rarity==='orange').length}/1</span>`:`<button class="auto-toggle ${m.auto?'on':''}" data-act="auto" data-hero="${index}" aria-pressed="${m.auto}">R <i></i><span>${m.auto?'自动':'手动'}</span></button>`}</div>${skillButtons(m,index,!shop&&screen==='battle')}${gearButtons(m,index)}${statGrid(screen==='battle'?battle.party[index].stats:M.statsFor(m,run.level,run.augments))}${screen==='battle'?`<div class="unit-statuses" data-statuses="${index}" aria-label="${h.name}当前状态"></div>`:''}${shop?`<small class="gear-hint">点击装备查看 · 转移 · 出售</small>`:''}</article>`;
+  const h=heroById(m.hero);return `<article data-unit="${index}" class="hero-panel ${selectedUnit===index?'selected':''}" style="--hero:${h.color}"><div class="hero-panel-heading"><button ${shop?'data-drag="hero"':''} data-act="select-unit" data-hero="${index}" class="hero-name"><b>${h.name}</b><small>Lv.${run.level}</small></button>${shop?`<span class="orange-count">${index+1} 号位 · 橙装 ${m.gear.filter(i=>i?.rarity==='orange').length}/1</span>`:`<button class="auto-toggle ${m.auto?'on':''}" data-act="auto" data-hero="${index}" aria-pressed="${m.auto}">R <i></i><span>${m.auto?'自动':'手动'}</span></button>`}</div>${skillButtons(m,index,!shop&&screen==='battle')}${gearButtons(m,index)}${statGrid(screen==='battle'?battle.party[index].stats:M.statsFor(m,run.level,run.augments))}${screen==='battle'?`<div class="unit-statuses" data-statuses="${index}" aria-label="${h.name}当前状态"></div>`:''}${shop?`<small class="gear-hint">拖动名字换位 · 点击装备查看</small>`:''}</article>`;
   }).join('');}
 function renderBattle(){return `<div class="battle-shell">${topbar(`第 ${run.floor} <span class="muted">/ 20 层</span>`,'演示战斗',`${gold(run.gold+battle.gold)}${(run.augments||[]).length?btn('强化','augment-info','quiet small'):''}${btn(icon('pause'),'pause','icon-btn','aria-label="暂停战斗"')}`)}<div class="battle-info"><div><span class="eyebrow">HOLD YOUR GROUND</span><b id="battle-phase">限时战斗</b></div><div class="battle-clock" id="battle-clock">00:25</div><div class="battle-kills">本关击败 <b id="battle-kills">0</b><small>击杀获得金币</small></div></div><div id="battle-canvas" class="phaser-arena" role="group" aria-label="自动战斗场景"></div><div class="battle-footnote"><span id="battle-event">战斗开始</span><span>时间结束后停止补位，清理剩余敌人</span></div><section class="squad-section"><div class="section-heading"><div><h2>小队面板</h2><span>${attributePage==='primary'?'主要属性':'次要属性'}</span></div>${btn(`切换：${attributePage==='primary'?'次要':'主要'}属性 ${icon('swap')}`,'attributes','small quiet')}</div><div class="hero-panels">${heroPanels()}</div></section></div>`;}
 async function ensureRenderer(){
@@ -116,25 +122,93 @@ function updateBattle(){
   }
 
 }
-function offerCard(item,index){if(!item)return `<div class="offer sold"><span>${icon('check')}</span><h3>已购入</h3><p>刷新可补充商品</p></div>`;return `<article class="offer" style="--rarity:${RARITIES.find(r=>r.id===item.rarity).color}">${itemInfo(item)}<div class="offer-bottom">${gold(item.price)}${btn(`选择装备 ${icon('arrow')}`,'buy','small',`data-index="${index}"`)}</div></article>`;}
-function renderShop(){return `<div class="shop-shell">${topbar('战后商店',`第 ${run.floor} 层已完成 · ${run.floor===20?'远征终点':`下一层 ${run.floor+1} / 20`}`,gold(run.gold))}<div class="shop-summary"><span>${icon('check')} 第 ${run.floor} 层通关</span><span>击败 <b>${run.lastRound?.kills||0}</b> 个敌人</span><span>获得 ${gold(run.lastRound?.gold||0)}</span><span>队伍等级 <b>Lv.${run.level}</b></span></div><section class="shop-stock"><div class="section-heading"><div><h2>旅途补给</h2><span>每一件装备，都是新的可能。</span></div>${btn(`${icon('refresh')} 刷新 ${gold(M.refreshCost(run))}`,'refresh-shop','small',run.gold<M.refreshCost(run)?'disabled title="金币不足"':'')}</div><div class="offer-grid">${run.shop.map(offerCard).join('')}</div></section><section class="shop-party"><div class="section-heading"><div><h2>我的队伍</h2><span>每名英雄 4 个装备槽 · 最多 1 件橙装</span></div><div>${btn(`${icon('swap')} 调整站位`,'formation','small quiet')}${btn(`切换：${attributePage==='primary'?'次要':'主要'}属性`,'attributes','small quiet')}</div></div><div class="hero-panels">${heroPanels(true)}</div></section><footer class="shop-footer"><div class="chest-entry ${run.chest.claimed?'claimed':''}"><span class="chest-symbol">${icon(run.chest.claimed?'check':'chest')}</span><div><b>${run.chest.claimed?'本层奖励已领取':'本层宝箱 · 等待开启'}</b><small>${run.chest.claimed?'准备好就继续出发吧。':'装备三选一 · 可刷新一个选项一次'}</small></div>${!run.chest.claimed?btn('开启宝箱','chest','primary small'):''}</div><span class="shop-rule">没有背包<br><small>获得装备后直接穿戴或出售</small></span>${btn(`${run.floor===20?'完成远征':`进入第 ${run.floor+1} 层`} ${icon('arrow')}`,'next','primary',run.chest.claimed?'':'disabled title="请先处理宝箱奖励"')}</footer></div>`;}
+function offerCard(item,index,source='shop'){
+  if(!item)return `<div class="offer sold"><span>${icon('check')}</span><h3>已购入</h3><p>刷新可补充商品</p></div>`;
+  const selected=shopSelection?.type==='offer'&&shopSelection.source===source&&shopSelection.uid===item.uid;
+  return `<article class="offer ${selected?'chosen':''}" data-offer="${item.uid}" style="--rarity:${RARITIES.find(r=>r.id===item.rarity).color}"><button class="offer-select" data-act="select-offer" data-source="${source}" data-index="${index}" aria-pressed="${selected}">${itemInfo(item).replace('class="item-box ',`data-drag="offer" data-source="${source}" data-index="${index}" class="item-box `)}</button><div class="offer-bottom">${source==='shop'?gold(item.price):'<span class="badge">免费 · 三选一</span>'}${source==='chest'?btn(`${icon('refresh')} 刷新此项`,'refresh-chest','quiet small',`data-index="${index}" ${run.chest.refreshUsed?'disabled':''}`):'<small class="muted">点击选择 · 拖动图标穿戴</small>'}</div></article>`;
+}
+function selectionHint(){
+  if(!shopSelection)return '点击装备后选择槽位，或拖动装备图标；拖动英雄名字交换站位。';
+  if(shopSelection.type==='hero')return `已选择 ${heroById(run.party[shopSelection.hero].hero).name} · 点击另一位英雄的名字交换站位`;
+  const item=shopSelection.type==='offer'?M.getOffer(run,shopSelection.source,shopSelection.index):run.party[shopSelection.hero].gear[shopSelection.slot];
+  return `已选择 ${item.name} · 点击或拖到装备槽${shopSelection.type==='gear'?'，占用槽可交换':'，占用槽先预览替换'}`;
+}
+function renderShop(){
+  const chest=!run.chest.claimed;
+  return `<div class="shop-shell">${topbar(chest?'领取宝箱':'战后商店',`第 ${run.floor} 层已完成 · ${run.floor===20?'远征终点':`下一层 ${run.floor+1} / 20`}`,gold(run.gold))}<div class="shop-summary"><span>${icon('check')} 第 ${run.floor} 层通关</span><span>击败 <b>${run.lastRound?.kills||0}</b> 个敌人</span><span>获得 ${gold(run.lastRound?.gold||0)}</span><span>队伍等级 <b>Lv.${run.level}</b></span></div><section class="shop-stock"><div class="section-heading"><div><h2>${chest?'宝箱 · 三选一':'旅途补给'}</h2><span>${chest?'选一件，直接交给下方英雄':'点击选择，也可以拖动装备图标'}</span></div>${chest?`<span class="badge">单项刷新 ${run.chest.refreshUsed?0:1} / 1</span>`:btn(`${icon('refresh')} 刷新 ${gold(M.refreshCost(run))}`,'refresh-shop','small',run.gold<M.refreshCost(run)?'disabled title="金币不足"':'')}</div><div class="offer-grid ${chest?'chest-choices':''}">${(chest?run.chest.options:run.shop).map((item,i)=>offerCard(item,i,chest?'chest':'shop')).join('')}</div></section><div class="selection-toolbar"><p id="shop-guidance" role="status" aria-live="polite">${escape(selectionHint())}</p><div>${shopSelection?btn('取消选择','cancel-selection','quiet small'):''}${shopSelection?.type==='offer'&&shopSelection.source==='chest'?btn(`出售所选 +${M.salePrice(M.getOffer(run,'chest',shopSelection.index))} 金币`,'sell-reward','small'):''}</div></div><section class="shop-party"><div class="section-heading"><div><h2>我的队伍</h2><span>后排 → 前排 · 每人四槽，最多一件橙装</span></div><div>${btn('交换站位','formation','small quiet')}${btn(`切换：${attributePage==='primary'?'次要':'主要'}属性`,'attributes','small quiet')}</div></div><div class="hero-panels">${heroPanels(true)}</div></section><footer class="shop-footer"><div class="chest-entry ${chest?'':'claimed'}"><span class="chest-symbol">${icon(chest?'chest':'check')}</span><div><b>${chest?'选择本层宝箱奖励':'本层奖励已领取'}</b><small>${chest?'穿戴或出售后进入商店':'整备完成后，继续出发'}</small></div></div>${btn(`${run.floor===20?'完成远征':`进入第 ${run.floor+1} 层`} ${icon('arrow')}`,'next','primary',chest?'disabled title="请先处理宝箱奖励"':'')}</footer></div>`;
+}
+function closeShopPopover(restore=false){
+  const anchor=shopPopover?.anchor;shopPopover=null;popoverRoot.innerHTML='';
+  if(restore)document.querySelector(anchor)?.focus();
+}
+function clearShopSelection(){shopSelection=null;closeShopPopover();}
+function selectOffer(source,index){
+  const item=M.getOffer(run,source,index);shopSelection={type:'offer',source,index,uid:item.uid};render();
+}
+function validSelection(){
+  if(screen!=='shop'||run.phase!=='shop'||!shopSelection)return false;
+  if(shopSelection.type==='offer')return M.getOffer(run,shopSelection.source,shopSelection.index).uid===shopSelection.uid;
+  if(shopSelection.type==='gear')return run.party[shopSelection.hero]?.gear[shopSelection.slot]?.uid===shopSelection.uid;
+  return run.party[shopSelection.hero]?.hero===shopSelection.id;
+}
+function slotReason(hero,slot){
+  if(!shopSelection||shopSelection.type==='hero')return '';
+  try{return shopSelection.type==='offer'?M.previewAcquisition(run,shopSelection.source,shopSelection.index,hero,slot).reason:M.previewTransfer(run,shopSelection.hero,shopSelection.slot,hero,slot).reason;}catch{return '装备已变化，请重新选择';}
+}
+function markShopTargets(){
+  if(screen!=='shop')return;
+  for(const button of app.querySelectorAll('.gear-slot')){
+    const active=shopSelection&&shopSelection.type!=='hero',reason=active?slotReason(Number(button.dataset.hero),Number(button.dataset.slot)):'';
+    button.classList.toggle('can-receive',!!active&&!reason);button.classList.toggle('cannot-receive',!!active&&!!reason);
+    button.dataset.blocked=reason;button.setAttribute('aria-disabled',String(!!reason));
+    if(active)button.title=reason||'空槽直接穿戴；占用槽显示对比';
+  }
+  for(const panel of app.querySelectorAll('.hero-panel[data-unit]'))panel.classList.toggle('formation-target',shopSelection?.type==='hero');
+  for(const offer of app.querySelectorAll('[data-offer]'))offer.classList.toggle('chosen',shopSelection?.type==='offer'&&offer.dataset.offer===shopSelection.uid);
+  const hint=document.querySelector('#shop-guidance');if(hint)hint.textContent=selectionHint();
+}
+function completeShopAction(message){clearShopSelection();save();render();toast(message);}
+function statChanges(changes){return `<div class="stat-changes">${changes.length?changes.map(c=>`<div class="${c.after>c.before?'increase':'decrease'}"><span>${STAT_LABELS[c.key]}</span><span>${statText(c.key,c.before)} → <b>${statText(c.key,c.after)}</b></span></div>`).join(''):'<small class="muted">属性不变</small>'}</div>`;}
+function showShopPopover(value,title,body,footer){
+  closeShopPopover();shopPopover={...value,anchor:`[data-act="gear"][data-hero="${value.hero}"][data-slot="${value.slot}"]`};
+  popoverRoot.innerHTML=`<section class="shop-popover ${value.type==='compare'?'compare-popover':''}" role="dialog" aria-modal="false" aria-label="${title}"><header><b>${title}</b>${btn(icon('cross'),'close-popover','icon-btn','aria-label="关闭装备窗口"')}</header><div class="popover-content">${body}</div><footer>${footer}</footer></section>`;
+  const el=popoverRoot.firstElementChild,anchor=document.querySelector(shopPopover.anchor).getBoundingClientRect(),rect=el.getBoundingClientRect();
+  el.style.left=`${Math.max(8,Math.min(innerWidth-rect.width-8,anchor.left))}px`;
+  el.style.top=`${Math.max(8,Math.min(innerHeight-rect.height-8,anchor.top-rect.height-10>=8?anchor.top-rect.height-10:anchor.bottom+10))}px`;
+  el.querySelector('button').focus({preventScroll:true});
+}
+function showGear(hero,slot){
+  const item=run.party[hero].gear[slot];if(!item){toast('选择上方装备，或将装备图标拖到这里');return;}
+  showShopPopover({type:'gear',hero,slot,uid:item.uid},'装备详情',itemInfo(item)+`<small class="muted">${heroById(run.party[hero].hero).name} · 第 ${slot+1} 槽</small>`,btn('转移 / 交换','transfer','quiet small')+btn(`出售 +${M.salePrice(item)} 金币`,'sell-gear','small'));
+}
+function placeSelection(hero,slot){
+  if(!validSelection())throw new Error('请选择有效装备');
+  const selection={...shopSelection};if(selection.type==='hero')return;
+  if(selection.type==='gear'&&selection.hero===hero&&selection.slot===slot){clearShopSelection();render();return;}
+  const quote=selection.type==='offer'?M.previewAcquisition(run,selection.source,selection.index,hero,slot):M.previewTransfer(run,selection.hero,selection.slot,hero,slot);
+  if(quote.reason){toast(quote.reason);return;}
+  if(quote.old){
+    const changes=selection.type==='offer'?statChanges(quote.changes):quote.changes.map(c=>`<p>${heroById(c.hero).name}</p>${statChanges(c.stats)}`).join('');
+    const totals=selection.type==='offer'?`<p class="transaction-total">旧装备 +${quote.refund} · 购买 −${quote.cost}<br>交易后金币 <b>${quote.goldAfter}</b></p>`:'<p class="muted">双方装备交换，不消耗金币。</p>';
+    showShopPopover({type:'compare',hero,slot,selection,oldUid:quote.old.uid},selection.type==='offer'?'确认替换装备':'确认交换装备',`<div class="comparison"><div><small>原装备</small>${itemInfo(quote.old)}</div><span>→</span><div><small>${selection.type==='offer'?'新装备':'移入装备'}</small>${itemInfo(quote.item)}</div></div>${changes}${totals}`,btn('取消','close-popover','quiet small')+btn('确认','confirm-acquire','primary small'));
+  }else commitPlacement(selection,hero,slot);
+}
+function commitPlacement(selection,hero,slot){
+  shopSelection=selection;if(!validSelection())throw new Error('装备已变化，请重新选择');
+  if(selection.type==='offer')M.acquire(run,selection.source,selection.index,hero,slot);
+  else M.transferGear(run,selection.hero,selection.slot,hero,slot);
+  completeShopAction(selection.type==='offer'?'装备已穿戴':'装备位置已更新');
+}
+function chooseHeroPosition(hero){
+  if(shopSelection?.type==='hero'&&validSelection()){
+    const from=shopSelection.hero;M.swapHeroes(run,from,hero);selectedUnit=hero;completeShopAction(from===hero?'已取消换位':'英雄站位已交换');
+  }else {shopSelection={type:'hero',hero,id:run.party[hero].hero};render();}
+}
 function renderResult(){const won=run.phase==='victory';return `<div class="page-shell result-shell">${topbar('远征记录','每一段旅途，都有自己的答案。')}<section class="result-content"><div class="result-emblem ${won?'won':''}">${icon(won?'flag':'chest')}</div><span class="eyebrow">${won?'EXPEDITION COMPLETE':'UNTIL NEXT TIME'}</span><h2>${won?'远征，圆满落幕。':'这次，就走到这里。'}</h2><p>${won?'二十层挑战已完成。带着这次的经验，再试一种不同的组合吧。':'同伴们暂时倒下了。下一次选择，也许会带来新的可能。'}</p><div class="result-stats"><div><small>到达层数</small><b>${run.floor}<span> / 20</span></b></div><div><small>击败敌人</small><b>${run.kills}</b></div><div><small>击杀金币</small><b>${run.earned}</b></div><div><small>队伍等级</small><b>${run.level}</b></div></div><div class="result-party">${run.party.map(m=>portrait(heroById(m.hero))).join('')}</div><div class="result-actions">${btn('返回首页','home','quiet')}${btn(`再次远征 ${icon('arrow')}`,'new','primary')}</div></section></div>`;}
 
-function openModal(value){previousFocus=document.activeElement;modal=value;renderModal();app.inert=true;}
+function openModal(value){closeShopPopover();previousFocus=document.activeElement;modal=value;renderModal();app.inert=true;}
 function closeModal(){modal=null;modalRoot.innerHTML='';app.inert=false;previousFocus?.isConnected&&previousFocus.focus();lastFrame=performance.now();accumulator=0;renderer?.syncPause();}
 function modalFrame(title,body,footer='',cls=''){return `<div class="modal-backdrop"><section class="modal ${cls}" role="dialog" aria-modal="true" aria-labelledby="modal-title"><header class="modal-header"><div><span class="eyebrow">SQUAD EXPEDITION</span><h2 id="modal-title">${title}</h2></div>${btn(icon('cross'),'close','icon-btn','aria-label="关闭弹窗"')}</header><div class="modal-body">${body}</div>${footer?`<footer class="modal-footer">${footer}</footer>`:''}</section></div>`;}
-function acquisitionModal(){
-  const {source,index,hero,slot}=modal,item=M.getOffer(run,source,index);
-  const chosen=!!run.party[hero]&&Number.isInteger(slot);
-  const quote=chosen?M.previewAcquisition(run,source,index,hero,slot):null;
-  const slots=run.party.map((member,h)=>`<div><b>${heroById(member.hero).name}<small>橙装 ${member.gear.filter(i=>i?.rarity==='orange').length}/1</small></b><div>${member.gear.map((old,s)=>{
-    const option=M.previewAcquisition(run,source,index,h,s);
-    return `<button data-act="pick-slot" data-hero="${h}" data-slot="${s}" class="destination-slot ${hero===h&&slot===s?'selected':''} ${option.reason?'unavailable':''}" aria-pressed="${hero===h&&slot===s}" title="${escape(option.reason||'选择此槽位')}" ${old?`style="--rarity:${RARITIES.find(r=>r.id===old.rarity).color}"`:''}>${old?escape(old.mark):'＋'}<small>${old?escape(old.name):'空槽'}</small>${option.reason?'<span class="slot-warning">需调整</span>':''}</button>`;
-  }).join('')}</div></div>`).join('');
-  const comparison=quote?`<section class="loadout-preview" aria-label="穿戴效果预览"><div class="comparison"><div><small>原装备 · ${quote.old?`出售获得 ${quote.refund} 金币`:'空槽'}</small>${quote.old?itemInfo(quote.old):'<b>无需替换</b>'}</div><span>${icon('arrow')}</span><div><small>新装备 · ${source==='shop'?`购买花费 ${quote.cost} 金币`:'宝箱奖励'}</small>${itemInfo(item)}</div></div><h4>${heroById(run.party[hero].hero).name} · 穿戴后属性</h4><div class="stat-changes">${quote.changes.length?quote.changes.map(change=>`<div class="${change.after>change.before?'increase':'decrease'}"><span>${STAT_LABELS[change.key]}</span><span>${statText(change.key,change.before)} <i>→</i> <b>${statText(change.key,change.after)}</b></span></div>`).join(''):'<p class="muted">基础属性不变</p>'}</div><p class="transaction-total">当前 ${run.gold} · 旧装备 +${quote.refund} · 购买 −${quote.cost}<br>交易后金币 <b>${quote.goldAfter}</b></p>${quote.reason?`<p class="transaction-warning" role="status">${quote.reason}${quote.goldAfter<0?`，还差 ${-quote.goldAfter} 金币`:''}</p>`:''}</section>`:'<p class="destination-prompt">选择下方槽位后，可预览属性和金币变化。</p>';
-  const actions=(source==='chest'?btn('返回三选一','back-to-chest','quiet')+btn(`直接出售 +${M.salePrice(item)} 金币`,'sell-reward','quiet'):btn('取消','close','quiet'))+btn(source==='shop'?'确认购买并穿戴':'确认穿戴','confirm-acquire','primary',quote&&!quote.reason?'':'disabled');
-  return modalFrame('选择装备去向',`${itemInfo(item)}<p class="muted">点选英雄的装备槽。替换时，旧装备会自动出售；确认前不会扣款。</p>${!chosen?comparison:''}<div class="destination-grid">${slots}</div>${chosen?comparison:''}`,actions,'wide');
-}
 function renderModal(){
   let html='';
   if(modal.type==='augment'){
@@ -146,14 +220,7 @@ function renderModal(){
   if(modal.type==='preview-menu')html=modalFrame('浏览界面',`<p class="muted">载入独立演示数据，不会覆盖你的远征存档。</p><div class="preview-grid">${[['recruit','英雄招募','随机候选 · 三选一'],['battle','战斗界面','五对五 · 演示自动战斗'],['shop','战后商店','购买 · 装备 · 站位'],['chest','宝箱奖励','三选一 · 单项刷新'],['result','远征结算','结束记录 · 再次出发']].map(([id,name,desc])=>`<button data-act="preview" data-page="${id}"><b>${name} ${icon('arrow')}</b><small>${desc}</small></button>`).join('')}</div>`);
   if(modal.type==='confirm-new')html=modalFrame('开始新的远征？','<p>当前进行中的远征存档会被替换。</p>',btn('取消','close','quiet')+btn('开始新远征','force-new','primary'));
   if(modal.type==='pause')html=modalFrame('稍作休整',`<div class="pause-message"><b>第 ${run.floor} 层 · ${Math.ceil(battle.remaining)} 秒</b><p>战斗已暂停。可以继续战斗，或返回首页。</p><small class="muted">返回首页后，本关将从开战前重新开始。</small></div>`,btn('返回首页','leave-battle','quiet')+btn(`${icon('play')} 继续战斗`,'close','primary'));
-  if(modal.type==='chest')html=modalFrame('打开，下一种可能。',`<div class="chest-modal-intro"><span class="chest-symbol">${icon('chest')}</span><div><b>第 ${run.floor} 层通关 · 宝箱三选一</b><p>击败 ${run.lastRound?.kills||0} 个敌人 · 击杀金币 +${run.lastRound?.gold||0}</p><p>选一件装备穿戴，或者直接出售。没有背包。</p></div><span class="badge">单项刷新 ${run.chest.refreshUsed?'0':'1'} / 1</span></div><div class="chest-choices">${run.chest.options.map((item,i)=>`<article class="reward-card" style="--rarity:${RARITIES.find(r=>r.id===item.rarity).color}">${itemInfo(item)}${btn('选择这件','take-reward','primary small',`data-index="${i}"`)}${btn(`${icon('refresh')} 刷新此项`,'refresh-chest','quiet small',`data-index="${i}" ${run.chest.refreshUsed?'disabled':''}`)}</article>`).join('')}</div><p class="muted small-text">仅替换所选装备及其随机品级，另外两件保持不变。结果即时保存。</p>`,'','wide');
-  if(modal.type==='acquire')html=acquisitionModal();
-  if(modal.type==='gear'){
-    const item=run.party[modal.hero].gear[modal.slot];
-    html=modalFrame('装备详情',itemInfo(item)+`<p class="muted">穿戴者：${heroById(run.party[modal.hero].hero).name} · 第 ${modal.slot+1} 槽</p>`,screen==='shop'?btn('转移 / 交换','transfer','quiet')+btn(`出售 +${M.salePrice(item)} 金币`,'sell-gear','primary'):btn('关闭','close','quiet'));
-  }
-  if(modal.type==='transfer')html=modalFrame('转移或交换装备',`<p class="muted">点击目标槽位。若已有装备，则交换双方装备；不会产生背包物品。</p><div class="destination-grid">${run.party.map((m,h)=>`<div><b>${heroById(m.hero).name}</b><div>${m.gear.map((it,s)=>`<button data-act="transfer-to" data-hero="${h}" data-slot="${s}" class="destination-slot">${it?escape(it.mark):'＋'}<small>${it?escape(it.name):'空槽'}</small></button>`).join('')}</div></div>`).join('')}</div>`,'','wide');
-  if(modal.type==='formation')html=modalFrame('调整站位',`<p class="muted">1 号位最靠近敌人。仅交换站位，不会替换或移除英雄。</p><div class="formation-editor">${run.party.map((m,i)=>`<div><span class="badge">${i+1} 号位</span>${portrait(heroById(m.hero))}<b>${heroById(m.hero).name}</b><span>${i===0?'前排':i===run.party.length-1?'后排':''}</span>${btn('前移','move','small quiet',`data-hero="${i}" data-direction="-1" ${i===0?'disabled':''}`)}${btn('后移','move','small quiet',`data-hero="${i}" data-direction="1" ${i===run.party.length-1?'disabled':''}`)}</div>`).join('')}</div>`,btn('完成调整','close','primary'));
+  if(modal.type==='gear')html=modalFrame('装备详情',itemInfo(run.party[modal.hero].gear[modal.slot]),btn('关闭','close','quiet'));
   if(modal.type==='info')html=modalFrame(modal.title,`<p class="info-copy">${escape(modal.text)}</p>`,btn('明白了','close','primary'));
   modalRoot.innerHTML=html;app.inert=true;renderer?.syncPause();queueMicrotask(()=>modalRoot.querySelector('button:not(:disabled)')?.focus());
 }
@@ -161,14 +228,15 @@ function beginNew(){closeModal();preview=false;run=M.createRun();selectedHero=nu
 function goHome(){closeModal();battle=null;paused=false;run=null;preview=false;screen='home';render();}
 function startBattle(){run.phase='battle';save();battle=new Battle(run);screen='battle';paused=false;accumulator=0;lastFrame=performance.now();render();}
 function previewPage(page){
-  closeModal();preview=true;run=M.createRun(70891);M.recruit(run,run.candidates[0]);M.recruit(run,run.candidates[0]);
+  clearShopSelection();closeModal();preview=true;run=M.createRun(70891);M.recruit(run,run.candidates[0]);M.recruit(run,run.candidates[0]);
   if(page==='recruit'){run.floor=2;run.phase='recruit';run.candidates=M.sample(run,HEROES.map(h=>h.id).filter(id=>!run.party.some(h=>h.hero===id)),3);selectedHero=null;route();render();return;}
   for(const h of HEROES)if(run.party.length<5&&!run.party.some(m=>m.hero===h.id))run.party.push({hero:h.id,gear:[null,null,null,null],auto:true});
   run.floor=4;run.level=3;run.party.forEach((h,i)=>{h.gear[0]=M.makeItem(run,i%4);h.gear[1]=M.makeItem(run,1);});
   if(page==='battle'){run.augments=[AUGMENTS[0].id];for(const [hero,base] of [['stone','rune'],['wind','clock'],['shade','armor']]){const member=run.party.find(m=>m.hero===hero);if(member)member.gear[0]=M.makeItem(run,5,base);}startBattle();return;}
   M.finishRound(run,{won:true,gold:128,kills:42,seconds:25});
   if(page==='result'){run.floor=20;run.phase='victory';}
-  route();render();if(page==='chest')openModal({type:'chest'});
+  if(page==='shop')run.chest.claimed=true;
+  route();render();
 }
 function act(event){const target=event.target.closest('[data-act]');if(!target||target.disabled)return;const a=target.dataset.act,h=Number(target.dataset.hero),s=Number(target.dataset.slot),i=Number(target.dataset.index);
   try{
@@ -180,7 +248,7 @@ function act(event){const target=event.target.closest('[data-act]');if(!target||
       case 'preview':previewPage(target.dataset.page);break;
       case 'new':if(saved&&!['victory','defeat'].includes(saved.phase))openModal({type:'confirm-new'});else beginNew();break;
       case 'force-new':beginNew();break;
-      case 'continue':run=structuredClone(saved);preview=false;selectedHero=null;route();render();if(run.phase==='shop'&&!run.chest.claimed)openModal({type:'chest'});break;
+      case 'continue':run=structuredClone(saved);preview=false;selectedHero=null;route();render();break;
       case 'home':if(screen==='battle')openModal({type:'pause'});else goHome();break;
       case 'leave-battle':goHome();break;
       case 'close':closeModal();break;
@@ -190,34 +258,58 @@ function act(event){const target=event.target.closest('[data-act]');if(!target||
       case 'retry-engine':renderer?.destroy();renderer=null;render();break;
       case 'pause':openModal({type:'pause'});break;
       case 'attributes':attributePage=attributePage==='primary'?'secondary':'primary';render();break;
-      case 'select-unit':selectedUnit=h;render();break;
+      case 'select-unit':if(screen==='shop')chooseHeroPosition(h);else{selectedUnit=h;render();}break;
       case 'auto':run.party[h].auto=!run.party[h].auto;if(battle)battle.party[h].auto=run.party[h].auto;save();render();break;
       case 'skill':{const n=Number(target.dataset.skill),skill=skillsFor(run.party[h].hero)[n];if(screen==='battle'&&n===3&&!battle.party[h].auto){if(!battle.cast(battle.party[h],n))toast(battle.skillReason(battle.party[h],n));updateBattle();}else openModal({type:'info',title:skill.name,text:`${skill.description} 基础冷却 ${skill.cooldown} 秒，消耗 ${skill.cost} 点法力。${run.party[h].hero==='stone'?'示例技能已生效，数值待调整。':'当前为通用演示技能。'}`});break;}
       case 'passive':openModal({type:'info',title:run.party[h].hero==='stone'?STONE_PASSIVE.name:'被动技能',text:run.party[h].hero==='stone'?STONE_PASSIVE.description:'当前角色的专属被动尚未设计，磐石已接入示例被动。'});break;
       case 'augment-info':openModal({type:'augment'});break;
       case 'choose-augment':M.chooseAugment(run,target.dataset.id);save();closeModal();render();toast('坚韧共鸣已启用，本次远征持续生效');break;
-      case 'refresh-shop':M.refreshShop(run);save();render();toast('商店已刷新');break;
-      case 'buy':openModal({type:'acquire',source:'shop',index:i});break;
-      case 'chest':if(!run.chest.claimed)openModal({type:'chest'});break;
-      case 'refresh-chest':M.refreshChest(run,i);save();renderModal();break;
-      case 'take-reward':modal={type:'acquire',source:'chest',index:i};renderModal();break;
-      case 'back-to-chest':modal={type:'chest'};renderModal();break;
-      case 'pick-slot':modal.hero=h;modal.slot=s;renderModal();break;
-      case 'confirm-acquire':M.acquire(run,modal.source,modal.index,modal.hero,modal.slot);save();closeModal();render();toast('装备已穿戴');break;
-      case 'sell-reward':M.sellReward(run,modal.index);save();closeModal();render();toast('宝箱奖励已出售');break;
-      case 'gear':if(run.party[h].gear[s])openModal({type:'gear',hero:h,slot:s});else toast(screen==='shop'?'先选择一件商品或宝箱装备，再选择这个空槽。':'空装备槽，可在商店购买或领取装备。');break;
-      case 'sell-gear':M.sellGear(run,modal.hero,modal.slot);save();closeModal();render();toast('装备已出售');break;
-      case 'transfer':modal.type='transfer';renderModal();break;
-      case 'transfer-to':M.transferGear(run,modal.hero,modal.slot,h,s);save();closeModal();render();toast('装备位置已更新');break;
-      case 'formation':openModal({type:'formation'});break;
-      case 'move':M.moveHero(run,h,Number(target.dataset.direction));save();render();break;
+      case 'refresh-shop':M.refreshShop(run);clearShopSelection();save();render();toast('商店已刷新');break;
+      case 'select-offer':selectOffer(target.dataset.source,i);break;
+      case 'cancel-selection':clearShopSelection();render();break;
+      case 'close-popover':closeShopPopover(true);break;
+      case 'refresh-chest':M.refreshChest(run,i);clearShopSelection();save();render();break;
+      case 'confirm-acquire':{const pending=shopPopover;if(!pending||pending.type!=='compare')break;if(run.party[pending.hero]?.gear[pending.slot]?.uid!==pending.oldUid)throw new Error('目标装备已变化，请重新选择');commitPlacement(pending.selection,pending.hero,pending.slot);break;}
+      case 'sell-reward':if(shopSelection?.type==='offer'&&shopSelection.source==='chest'&&validSelection()){M.sellReward(run,shopSelection.index);completeShopAction('宝箱奖励已出售');}break;
+      case 'gear':if(screen==='shop'){if(shopSelection&&shopSelection.type!=='hero')placeSelection(h,s);else showGear(h,s);}else if(run.party[h].gear[s])openModal({type:'gear',hero:h,slot:s});break;
+      case 'sell-gear':{const p=shopPopover;if(p?.type==='gear'&&run.party[p.hero]?.gear[p.slot]?.uid===p.uid){M.sellGear(run,p.hero,p.slot);completeShopAction('装备已出售');}break;}
+      case 'transfer':{const p=shopPopover;if(p?.type==='gear'){shopSelection={type:'gear',hero:p.hero,slot:p.slot,uid:p.uid};render();}break;}
+      case 'formation':clearShopSelection();render();toast('拖动英雄名字，或依次点击两位英雄的名字交换站位');break;
       case 'next':M.nextFloor(run);selectedHero=null;save();route();render();break;
     }
   }catch(error){toast(error.message);}
 }
 document.addEventListener('click',act);
+document.addEventListener('click',event=>{
+  if(shopPopover&&!popoverRoot.contains(event.target))closeShopPopover();
+},true);
+window.addEventListener('resize',()=>closeShopPopover());
+document.addEventListener('scroll',event=>{if(event.target===document)closeShopPopover();},true);
+installPointerDrag({
+  sourceFor(handle){
+    if(screen!=='shop'||modal||run.phase!=='shop')return null;
+    const hero=Number(handle.dataset.hero),slot=Number(handle.dataset.slot);
+    if(handle.dataset.drag==='hero')return {type:'hero',hero,id:run.party[hero].hero,label:`交换站位 · ${heroById(run.party[hero].hero).name}`};
+    if(handle.dataset.drag==='gear'){
+      const item=run.party[hero]?.gear[slot];return item?{type:'gear',hero,slot,uid:item.uid,label:item.name}:null;
+    }
+    const source=handle.dataset.source,index=Number(handle.dataset.index),item=M.getOffer(run,source,index);
+    return {type:'offer',source,index,uid:item.uid,label:item.name};
+  },
+  start(source){closeShopPopover();shopSelection=source;markShopTargets();},
+  targetFor(element,source){return source.type==='hero'?element?.closest('.shop-party .hero-panel[data-unit]'):element?.closest('.shop-party .gear-slot');},
+  drop(source,target){
+    try{
+      shopSelection=source;
+      if(!validSelection())throw new Error('拖动对象已变化，请重新选择');
+      if(source.type==='hero'){M.swapHeroes(run,source.hero,Number(target.dataset.unit));selectedUnit=Number(target.dataset.unit);completeShopAction('英雄站位已交换');}
+      else {const hero=Number(target.dataset.hero),slot=Number(target.dataset.slot);render();placeSelection(hero,slot);}
+    }catch(error){clearShopSelection();render();toast(error.message);}
+  },
+  cancel(){if(screen==='shop'){clearShopSelection();render();}},
+});
 document.addEventListener('keydown',event=>{
-  if(event.key==='Escape'){if(modal)closeModal();else if(screen==='battle')openModal({type:'pause'});}
+  if(event.key==='Escape'){if(modal)closeModal();else if(shopPopover)closeShopPopover(true);else if(shopSelection){clearShopSelection();render();}else if(screen==='battle')openModal({type:'pause'});}
   if(event.key==='Tab'&&modal){const items=[...modalRoot.querySelectorAll('button:not(:disabled),[tabindex="0"]')];const first=items[0],last=items.at(-1);if(event.shiftKey&&document.activeElement===first){last.focus();event.preventDefault();}else if(!event.shiftKey&&document.activeElement===last){first.focus();event.preventDefault();}}
 });
 document.addEventListener('visibilitychange',()=>{accumulator=0;if(document.hidden&&screen==='battle'&&!modal)openModal({type:'pause'});renderer?.syncPause();});
@@ -226,7 +318,7 @@ function advanceBattle(deltaMs){
   accumulator+=Math.min(deltaMs/1000,.1);
   while(accumulator>=STEP){
     battle.step();accumulator-=STEP;
-    if(['won','lost'].includes(battle.phase)){M.finishRound(run,battle.result());save();battle=null;route();render();if(run.phase==='shop')openModal({type:'chest'});return;}
+    if(['won','lost'].includes(battle.phase)){M.finishRound(run,battle.result());save();battle=null;route();render();return;}
   }
   drawAt+=deltaMs;
   if(drawAt>=40){updateBattle();drawAt=0;}

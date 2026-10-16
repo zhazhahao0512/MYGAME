@@ -90,17 +90,31 @@ export function sellReward(run,index) {const item=getOffer(run,'chest',index);ru
 export function sellGear(run,heroIndex,slot) {
   if(run.phase!=='shop')fail('只能在商店出售装备');const member=run.party[heroIndex];const item=member?.gear[slot];if(!item)fail('这里没有装备');run.gold+=salePrice(item);member.gear[slot]=null;
 }
-export function transferGear(run,fromHero,fromSlot,toHero,toSlot) {
+export function previewTransfer(run,fromHero,fromSlot,toHero,toSlot) {
   if(run.phase!=='shop')fail('只能在商店转移装备');
   if(![fromSlot,toSlot].every(n=>Number.isInteger(n)&&n>=0&&n<4))fail('装备槽无效');
   const from=run.party[fromHero],to=run.party[toHero];if(!from||!to||!from.gear[fromSlot])fail('请选择装备');
-  if(from===to){const next=[...from.gear];[next[fromSlot],next[toSlot]]=[next[toSlot],next[fromSlot]];from.gear=next;return;}
-  const a=[...from.gear],b=[...to.gear];[a[fromSlot],b[toSlot]]=[b[toSlot],a[fromSlot]];
-  if(!validateLoadout(a)||!validateLoadout(b))fail('交换后每名英雄仍只能穿戴一件橙装');from.gear=a;to.gear=b;
+  const a=[...from.gear],b=from===to?a:[...to.gear];[a[fromSlot],b[toSlot]]=[b[toSlot],a[fromSlot]];
+  const reason=!validateLoadout(a)||!validateLoadout(b)?'交换后每名英雄仍只能穿戴一件橙装':'';
+  const changes=(from===to?[[from,a]]:[[from,a],[to,b]]).map(([member,gear])=>{
+    const before=statsFor(member,run.level,run.augments),after=statsFor({...member,gear},run.level,run.augments);
+    return {hero:member.hero,stats:Object.keys(BASE).filter(key=>Math.abs(after[key]-before[key])>1e-8).map(key=>({key,before:before[key],after:after[key]}))};
+  });
+  return {item:from.gear[fromSlot],old:to.gear[toSlot],a,b,reason,changes};
+}
+export function transferGear(run,fromHero,fromSlot,toHero,toSlot) {
+  const quote=previewTransfer(run,fromHero,fromSlot,toHero,toSlot);
+  if(quote.reason)fail(quote.reason);
+  run.party[fromHero].gear=quote.a;run.party[toHero].gear=quote.b;
+}
+export function swapHeroes(run,from,to) {
+  if(run.phase!=='shop')fail('只能在商店调整站位');
+  if(![from,to].every(n=>Number.isInteger(n)&&n>=0&&n<run.party.length))fail('请选择有效英雄');
+  [run.party[from],run.party[to]]=[run.party[to],run.party[from]];
 }
 export function moveHero(run,index,direction) {
   if(run.phase!=='shop')fail('只能在商店调整站位');const dest=index+direction;
-  if(dest<0||dest>=run.party.length)return;[run.party[index],run.party[dest]]=[run.party[dest],run.party[index]];
+  if(dest<0||dest>=run.party.length)return;swapHeroes(run,index,dest);
 }
 export function nextFloor(run) {
   if(run.phase!=='shop'||!run.chest?.claimed)fail('请先领取或出售宝箱奖励');

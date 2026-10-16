@@ -122,8 +122,9 @@ class BattleScene extends Phaser.Scene {
     const teamWidth = width * .435;
     const cell = teamWidth / 5;
     const cardWidth = Math.max(50, cell - Math.max(10, width * .009));
-    const cardHeight = Phaser.Math.Clamp(height * .43, 120, 250);
-    const y = Math.max(cardHeight / 2 + 64, height * .5);
+    const cardHeight = Phaser.Math.Clamp(height * .57, 140, 310);
+    // Keep resource bars close to the squad panel instead of reserving a large floor gap.
+    const y = Math.max(cardHeight / 2 + 60, height - cardHeight / 2 - 100);
     for (const actor of this.actors) {
       const position = actor.side === 'hero' ? 4 - actor.index : actor.index;
       const x = actor.side === 'hero' ? cell * (position + .5) + 10 : width - teamWidth - 10 + cell * (position + .5);

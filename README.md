@@ -28,6 +28,8 @@ npm run dev
 
 已提供 GitHub Actions 工作流：推送到 `main` 后运行逻辑测试、部署回退测试、构建和真实浏览器部署包检查，再上传构建产物。配置好服务器和仓库 Secrets，并将 Repository variable `MYGAME_DEPLOY_ENABLED` 设为 `true` 后才会自动部署。仅修改本地代码不会触发更新。
 
+同时设置 Repository variable `MYGAME_PUBLIC_URL` 为玩家使用的完整网址（包含协议与端口）。部署后，GitHub runner 会从公网检查健康、commit/releaseId、JS/CSS，以及真实浏览器开局、战斗、暂停和刷新后的存档恢复。检查使用独立浏览器，不接触玩家存档。服务器切换或健康检查失败会自动回退；公网验收失败会令工作流失败，但不会仅因外部网络异常回退本机健康的版本。
+
 将 [SSH AI 执行说明](deploy/automation/SSH_AI_TASK.md) 交给已经连接服务器的 AI，可完成现有安装迁移、专用 SSH 密钥、GitHub Secrets、部署开关与端到端验收。流程使用版本目录切换和失败回退；重启有短暂中断，玩家刷新后获取新版。服务器无需 GitHub 或 GPT 登录。
 
 `python3 -m unittest discover -s tests -p 'test_deploy.py' -v` 验证发布校验及失败恢复，不会连接或修改真实服务器。上线后的 `/_version` 返回构建版本和提交号，便于判断更新是否实际生效。

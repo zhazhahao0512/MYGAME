@@ -62,3 +62,8 @@ jobs:
           MYGAME_KNOWN_HOSTS: ${{ secrets.MYGAME_KNOWN_HOSTS }}
           MYGAME_DEPLOY_ROOT: ${{ vars.MYGAME_DEPLOY_ROOT }}
         run: bash scripts/push-deploy.sh
+      - name: Verify live public deployment
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.MYGAME_DEPLOY_ENABLED == 'true'
+        env:
+          MYGAME_PUBLIC_URL: ${{ vars.MYGAME_PUBLIC_URL }}
+        run: node scripts/verify-live.mjs

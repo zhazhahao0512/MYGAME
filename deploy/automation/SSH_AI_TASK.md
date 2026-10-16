@@ -106,7 +106,7 @@ mygame-deploy ALL=(root) NOPASSWD: /usr/local/sbin/mygame-deploy *
 | `MYGAME_SSH_KEY` | 新生成的专用私钥完整内容 |
 | `MYGAME_KNOWN_HOSTS` | 上一步可信主机公钥行 |
 
-4. 设置 **Repository variables**：`MYGAME_DEPLOY_ROOT` 为实际 base 路径；先不设置 `MYGAME_DEPLOY_ENABLED`，或设为 `false`。
+4. 设置 **Repository variables**：`MYGAME_DEPLOY_ROOT` 为实际 base 路径，`MYGAME_PUBLIC_URL` 为玩家使用的完整网址（包含协议与端口）；先不设置 `MYGAME_DEPLOY_ENABLED`，或设为 `false`。
 5. 优先使用已有授权的 `gh`，例如 `gh secret set MYGAME_SSH_KEY --repo zhazhahao0512/MYGAME < 私钥文件`；不要把密钥放进命令行参数或 shell 历史。若没有权限，引导用户在 GitHub 安全页面直接填写或通过终端授权，聊天里只汇报字段名与是否配置。
 6. 检查 Actions 已启用且允许工作流中的官方 checkout/setup-node/upload-artifact actions。此仓库的 Actions job 权限仅需 contents:read，部署密钥与仓库管理令牌分离。
 7. 从服务器之外验证专用 SSH 登录、SFTP 上传、严格 host key 校验、`sudo -n` helper 权限；可先上传临时无害文件，再调用无效测试版本/hash确认 helper 拒绝且当前版本不变。不要只用服务器本机 SSH 回连来判断公网可达。GitHub 托管 runner 必须能访问 SSH 入口；有 IP 白名单时按服务器实际政策处理，不能擅自开放所有管理端口。
@@ -117,7 +117,7 @@ mygame-deploy ALL=(root) NOPASSWD: /usr/local/sbin/mygame-deploy *
 2. 首次 Actions 构建先保持自动部署关闭，确认测试、构建和真实浏览器部署包检查通过。下载 artifact 可作备份。
 3. 确认服务器准备完成、密钥配置完成后，把 Repository variable `MYGAME_DEPLOY_ENABLED` 设为字符串 `true`。
 4. 在 GitHub Actions 手动执行 `Test, build and deploy MYGAME`，分支选择 main（或 `gh workflow run deploy.yml --repo zhazhahao0512/MYGAME --ref main`）。等待到远程部署步骤成功，不以“触发成功”代替部署成功。
-5. 检查 `current` 指向本次 `<commit>-<run_id>-<run_attempt>`；本地 `/_health` 返回 ok；`/_version` 的 commit/releaseId 与本次工作流一致；现有公网首页及版本接口正确。在浏览器确认首页、开局、战斗可用，刷新后仍能读取既有存档。
+5. 检查 `current` 指向本次 `<commit>-<run_id>-<run_attempt>`；本地 `/_health` 返回 ok；`/_version` 的 commit/releaseId 与本次工作流一致；确认 `Verify live public deployment` 从 GitHub runner 检查公网首页、版本、资源和真实浏览器战斗通过。该步骤会验证独立浏览器的开局、暂停及刷新后读取存档，不操作玩家存档。公网验收失败会令工作流失败，但不会仅因外部网络异常回退本机健康的版本。另外在更新前后验证同一浏览器的既有存档保持不变。
 6. 故障路径已由单元测试覆盖；不要为测试回退故意破坏线上版本。如需服务器实测回退，在独立测试目录、测试服务和空闲端口进行。
 7. 若 Actions 构建成功但部署跳过，检查开关是否精确等于 `true`、是否 main、是否 PR。若 SSH 失败，检查 host/user/port、公钥、可信 host key、防火墙和 SFTP。若 helper 报错，查看 Actions 日志、`journalctl -u 实际服务`、config 权限及 current。不要反复盲目重跑或用关闭校验来修复。
 8. 相同已成功的部署可以安全重试；失败且已生成版本目录时，重新运行工作流会生成新的 run_attempt，不要覆盖旧版本目录。

@@ -52,6 +52,8 @@ try {
   await page.reload({ waitUntil: 'networkidle' });
   assert.equal(await page.evaluate(() => localStorage.getItem('squad-expedition.save.v1')), saved);
   await page.locator('[data-act="continue"]').click();
+  // Battle saves intentionally resume at the pre-battle checkpoint.
+  await page.locator('[data-act="start-battle"]').click();
   await page.waitForFunction(() => Number(document.querySelector('#battle-canvas')?.dataset.tick) > 25, null, { timeout: 30000 });
   assert.deepEqual(errors, []);
   console.log(`Public deployment verified: ${base.href} ${version.releaseId}; health, commit, JS/CSS, battle, pause and saved-game reload passed.`);

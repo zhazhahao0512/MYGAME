@@ -1,0 +1,64 @@
+name: Test, build and deploy MYGAME
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Never interrupt an update halfway through switching the live release.
+concurrency:
+  group: mygame-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  MYGAME_RELEASE_ID: ${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm test
+      - run: python3 -m unittest discover -s tests -p 'test_deploy.py' -v
+      - run: npm run package:deploy
+      - name: Install test browser
+        run: |
+          npx --no-install playwright-core install --with-deps chromium
+          node --input-type=module -e 'import { chromium } from "playwright-core"; console.log("CHROMIUM_PATH=" + chromium.executablePath())' >> "$GITHUB_ENV"
+      - name: Verify the actual deployment archive in Chromium
+        shell: bash
+        run: |
+          archives=(releases/*.zip)
+          test "${#archives[@]}" -eq 1
+          node scripts/deploy-check.mjs "${archives[0]}"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: MYGAME-server-${{ env.MYGAME_RELEASE_ID }}
+          path: releases/
+          if-no-files-found: error
+          retention-days: 14
+      # Secrets are introduced only after all build/test steps have finished.
+      # Deployment remains disabled until the SSH AI configures the server.
+      - name: Deploy to own server
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.MYGAME_DEPLOY_ENABLED == 'true'
+        env:
+          MYGAME_SSH_HOST: ${{ secrets.MYGAME_SSH_HOST }}
+          MYGAME_SSH_PORT: ${{ secrets.MYGAME_SSH_PORT }}
+          MYGAME_SSH_USER: ${{ secrets.MYGAME_SSH_USER }}
+          MYGAME_SSH_KEY: ${{ secrets.MYGAME_SSH_KEY }}
+          MYGAME_KNOWN_HOSTS: ${{ secrets.MYGAME_KNOWN_HOSTS }}
+          MYGAME_DEPLOY_ROOT: ${{ vars.MYGAME_DEPLOY_ROOT }}
+        run: bash scripts/push-deploy.sh

@@ -1,0 +1,70 @@
+import {chromium} from 'playwright-core';
+import assert from 'node:assert/strict';
+import {spawn} from 'node:child_process';
+import {mkdir} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+const root=fileURLToPath(new URL('../',import.meta.url));
+const port=Number(process.env.BROWSER_TEST_PORT||5188),base=`http://127.0.0.1:${port}`;
+const server=spawn(process.execPath,['scripts/server.mjs'],{cwd:root,env:{...process.env,PORT:String(port)},stdio:'pipe'});
+let browser;const errors=[];
+try{
+  let online=false;for(let n=0;n<80;n++){try{if((await fetch(base)).ok){online=true;break;}}catch{}await new Promise(r=>setTimeout(r,100));}
+  assert.ok(online,'owned test server must start');
+  await mkdir(new URL('../test-results/',import.meta.url),{recursive:true});
+  browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
+  const context=await browser.newContext({viewport:{width:2560,height:1440},deviceScaleFactor:1});
+  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+  const shot=async name=>{await page.screenshot({path:new URL(`../test-results/${name}.png`,import.meta.url).pathname,fullPage:true});};
+  const click=async(act,selector='')=>{
+    const locator=page.locator(`[data-act="${act}"]${selector}`);
+    await (['close','home'].includes(act)?locator.first():locator).click();
+  };
+  const save=async()=>page.evaluate(()=>JSON.parse(localStorage.getItem('squad-expedition.save.v1')));
+  const noOverflow=async()=>assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'page must not overflow horizontally');
+  const engineReady=async()=>{
+    await page.locator('#battle-canvas[data-engine="phaser"]').waitFor({timeout:30000});
+    assert.equal(await page.locator('#battle-canvas canvas').count(),1);
+    assert.equal(await page.locator('#projectiles').count(),0,'old SVG renderer is removed');
+  };
+  await page.goto(base);await noOverflow();await shot('home-2k');assert.equal(await page.locator('[data-act="continue"]').isDisabled(),true);
+  await click('settings');await click('toggle-motion');await click('close');await click('new');await shot('initial-choice-2k');
+  assert.equal(await page.locator('.recruit-card').count(),3);await click('confirm-hero');await shot('recruit-2k');
+  const first=(await save()).party[0].hero;assert.ok((await save()).candidates.every(id=>id!==first));
+  await click('confirm-hero');assert.equal((await save()).party.length,2);await shot('ready-2k');
+  // Browser clock advances the actual application loop; no production debug hooks or state injections.
+  await page.clock.install();await click('start-battle');await engineReady();await page.clock.runFor(1500);await shot('battle-2k');
+  const canvas=await page.locator('#battle-canvas canvas').elementHandle();
+  await click('attributes');assert.equal(await canvas.evaluate(el=>el.isConnected),true,'switching attributes must preserve the Phaser instance');await click('attributes');
+  await click('pause');const time=await page.locator('#battle-clock').textContent(),tick=await page.locator('#battle-canvas').getAttribute('data-tick');await page.clock.runFor(1000);assert.equal(await page.locator('#battle-clock').textContent(),time);assert.equal(await page.locator('#battle-canvas').getAttribute('data-tick'),tick);await click('close');
+  await page.clock.runFor(32000);assert.equal(await page.locator('.shop-shell').count(),1,'battle should finish into shop');
+  assert.equal(await page.locator('.chest-choices').count(),1,'victory opens the chest automatically');await shot('chest-auto-2k');await click('close');
+  await noOverflow();await shot('first-shop-2k');
+  assert.equal(await page.locator('.journey-strip [aria-current="step"]').textContent(),'3领取宝箱');
+  assert.equal(await page.locator('[data-act="next"]').isDisabled(),true);await click('chest');await shot('chest-2k');
+  const original=(await save()).chest.options;await click('refresh-chest','[data-index="1"]');const after=(await save()).chest;
+  assert.equal(after.refreshUsed,true);assert.deepEqual(after.options[0],original[0]);assert.deepEqual(after.options[2],original[2]);assert.notEqual(after.options[1].uid,original[1].uid);
+  await click('close');await page.reload();await click('continue');assert.equal(await page.locator('.chest-choices').count(),1,'continuing an unclaimed shop resumes the reward');assert.equal(await page.locator('[data-act="refresh-chest"]:disabled').count(),3);
+  const beforeSelection=await save();
+  await click('take-reward','[data-index="0"]');assert.equal(await page.locator('[data-act="confirm-acquire"]').isDisabled(),true);
+  await click('pick-slot','[data-hero="0"][data-slot="0"]');assert.ok(await page.locator('.stat-changes>div').count()>0);assert.deepEqual(await save(),beforeSelection,'preview must not change gold or equipment');
+  await click('back-to-chest');assert.equal(await page.locator('.chest-choices').count(),1);assert.deepEqual(await save(),beforeSelection);
+  await click('take-reward','[data-index="0"]');await click('pick-slot','[data-hero="0"][data-slot="0"]');await shot('equip-comparison-2k');await click('confirm-acquire');
+  assert.equal(await page.locator('.journey-strip [aria-current="step"]').textContent(),'4商店整备');
+  await click('augment-info');await click('choose-augment');assert.deepEqual((await save()).augments,['resonant-guard']);await shot('augment-shop-2k');
+  await page.reload();await click('continue');assert.equal(await page.locator('.augment-strip b').textContent(),'坚韧共鸣');
+  assert.equal((await save()).chest.claimed,true);assert.ok((await save()).party[0].gear[0]);assert.equal(await page.locator('[data-act="next"]').isDisabled(),false);
+  await click('buy','[data-index="0"]');await click('pick-slot','[data-hero="0"][data-slot="1"]');await click('confirm-acquire');assert.equal((await save()).shop[0],null);
+  await click('gear','[data-hero="0"][data-slot="1"]');const oldGold=(await save()).gold;await click('sell-gear');assert.ok((await save()).gold>oldGold);assert.equal((await save()).party[0].gear[1],null);
+  await click('gear','[data-hero="0"][data-slot="0"]');await click('transfer');await click('transfer-to','[data-hero="1"][data-slot="2"]');assert.equal((await save()).party[0].gear[0],null);assert.ok((await save()).party[1].gear[2]);
+  await click('formation');const before=(await save()).party.map(h=>h.hero);await click('move','[data-hero="0"][data-direction="1"]');assert.deepEqual((await save()).party.map(h=>h.hero),[before[1],before[0]]);await click('close');
+  await click('next');assert.equal((await save()).floor,2);assert.equal((await save()).phase,'recruit');
+  const originalSave=await save();await click('home');await click('preview-menu');await click('preview','[data-page="shop"]');
+  await shot('shop-2k');assert.deepEqual(await save(),originalSave,'preview must not overwrite the real save');
+  const panelHeight=await page.locator('.hero-panels').evaluate(el=>el.getBoundingClientRect().height);await click('attributes');
+  assert.equal(await page.locator('.stat-grid.secondary').count(),5);assert.equal(await page.locator('.hero-panels').evaluate(el=>el.getBoundingClientRect().height),panelHeight,'attribute pages must keep panel height');await shot('secondary-stats-2k');
+  await page.setViewportSize({width:1440,height:900});await noOverflow();await shot('shop-1440');
+  await click('home');await shot('home-1440');await click('preview-menu');await click('preview','[data-page="result"]');await shot('result-1440');
+  await click('home');await click('preview-menu');await click('preview','[data-page="battle"]');await engineReady();await noOverflow();await page.clock.runFor(3300);assert.equal(await page.locator('.unit-statuses').count(),5);assert.ok((await page.locator('.unit-statuses').allTextContents()).some(text=>text.includes('共鸣')));await shot('battle-1440');
+  assert.deepEqual(errors,[],'no browser runtime or console errors');
+  console.log('Browser checks passed: home, new run, recruitment, actual combat, pause, rewards, persistence, purchase/sale/transfer, formation, next floor, independent previews, 2K/1440 layouts.');
+}finally{if(browser)await browser.close();server.kill('SIGTERM');}

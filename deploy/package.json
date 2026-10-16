@@ -1,0 +1,9 @@
+{
+  "name": "mygame-standalone",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "MYGAME prebuilt standalone deployment; no npm install required",
+  "engines": { "node": ">=22.12.0" },
+  "scripts": { "start": "node server.mjs" }
+}

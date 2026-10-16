@@ -1,0 +1,8 @@
+node_modules/
+dist/
+test-results/
+*.log
+.DS_Store
+releases/
+__pycache__/
+*.pyc

@@ -48,6 +48,7 @@
 | --- | --- | --- | --- | --- |
 | 协作入口与进度文档：AGENTS.md、README.md、docs/PROGRESS.md、docs/decisions/、docs/open-questions.md | 已释放（文档完成） | sync-protocol-20261019 | 2026-10-19 | 基线 8a9f849；认领 a12f998 已推送；结果见 R016，仅文档 |
 | 英雄设计交接：docs/decisions/D003-hero-foundation.md；公共记录仅本轮英雄条目、D003 索引、Q004 与 R017 追加及必要交接更新 | 进行中（文档） | hero-design-01a1441f-20261019 | 2026-10-19 | 基线 6bce9fe；补录本窗口已确认英雄规则，核对未定价与实现差异；不修改游戏代码或其它专项规范 |
+| 战斗 V2 设计与示意图：docs/BATTLE-TACTICS-V2.md、docs/design/battle-v2/、docs/LOCKING-DESIGN.md、docs/TARGET-SELECTION.md、docs/FOUNDATION-NEXT.md；公共回写仅 R018、D004 索引、Q002 与 Q005 起；保留英雄窗口 D003/R017/Q004，顶部交接待对方释放后合并 | 进行中（设计/文档，非游戏实施） | battle-v2-design-20261019-root | 2026-10-19 | 基线 b68590d；协调：避开英雄已认领条目；慢速强敌、五种策略、手动位置偏好、挑战传送带与左右详情示意；仅设计，待审阅 |
 
 认领为共享仓库交接记录，不是自动锁；其他窗口避开“进行中”范围，重叠须先协调。未登记不证明没有窗口工作；中止或接管也须记录。
 

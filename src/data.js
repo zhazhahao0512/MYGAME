@@ -1,6 +1,6 @@
 import { HERO_PROFILES,LANYA_HERO } from './heroes/foundation.js';
 // All content in this file is provisional. It exercises the interface, not final balance.
-export const RULES = Object.freeze({ floors: 20, slots: 4, party: 5, roundSeconds: 40 });
+export const RULES = Object.freeze({ floors: 20, slots: 4, party: 5, roundSeconds: 40, killsPerLevel: 16 });
 export const BASE = Object.freeze({ hp: 340, mana: 100, hpRegen: 2, manaRegen: 5, attack: 28, power: 0,
   attackSpeed: 1, bonusAttackSpeed: 0, totalAttackSpeed: 1, accuracy: 95, evasion: 0, haste: 0, crit: 0, critDamage: 1.5, armor: 12, resist: 10, omni: 0,
   lifeSteal: 0, move: 100, focus: 100, tenacity: 0, armorPen: 0, magicPen: 0,

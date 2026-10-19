@@ -68,7 +68,7 @@ export function makeChoices(run,count,excluded=[]) {
 export function finishRound(run, result) {
   if(!['ready','battle'].includes(run.phase)) fail('当前不在战斗阶段');
   run.gold+=result.gold;run.earned+=result.gold;run.kills+=result.kills;run.xp+=result.kills;
-  run.level=Math.max(run.level,1+Math.floor(run.xp/20));run.lastRound={...result,floor:run.floor};
+  run.level=Math.max(run.level,1+Math.floor(run.xp/RULES.killsPerLevel));run.lastRound={...result,floor:run.floor};
   if(!result.won){run.phase='defeat';return;}
   run.phase='shop';run.shop=makeChoices(run,4);run.refreshes=0;
   run.chest={options:makeChoices(run,3),refreshUsed:false,claimed:false};

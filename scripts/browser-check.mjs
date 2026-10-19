@@ -17,7 +17,7 @@ try{
   // Stable recruitment/shop seed; changing wall-clock dates must not randomize UI transactions.
   await page.clock.setFixedTime(new Date('2026-10-19T00:00:00Z'));
   page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
-  const shot=async name=>{await page.screenshot({path:new URL(`../test-results/${name}.png`,import.meta.url).pathname,fullPage:true});};
+  const shot=async(name,fullPage=true)=>{await page.screenshot({path:new URL(`../test-results/${name}.png`,import.meta.url).pathname,fullPage});};
   const click=async(act,selector='')=>{
     const locator=page.locator(`[data-act="${act}"]${selector}`).filter({visible:true});
     await (['close','home','close-popover'].includes(act)?locator.first():locator).click();
@@ -56,11 +56,19 @@ try{
   await click('augment-info');await click('choose-augment');assert.deepEqual((await save()).augments,['resonant-guard']);await shot('augment-shop-2k');
   await page.reload();await click('continue');assert.equal(await page.locator('.augment-strip b').textContent(),'坚韧共鸣');
   assert.equal(await page.locator('[data-act="next"]').isDisabled(),false);
-  await click('select-offer','[data-source="shop"][data-index="0"]');await click('gear','[data-hero="0"][data-slot="1"]');assert.equal((await save()).shop[0],null);
+  // Preview replacement while the earned budget is intact, then buy one affordable item.
+  // Tankier enemies change kill income; fixed shop indices need not be affordable.
   const beforeReplacement=await save();
-  await click('select-offer','[data-source="shop"][data-index="1"]');await click('gear','[data-hero="0"][data-slot="1"]');
-  assert.equal(await page.locator('.compare-popover').count(),1);assert.deepEqual(await save(),beforeReplacement);await shot('equip-comparison-2k');
+  const affordable=beforeReplacement.shop.map((item,index)=>({item,index})).filter(({item})=>item&&item.price<=beforeReplacement.gold).sort((a,b)=>a.item.price-b.item.price)[0];
+  assert.ok(affordable,'first victory must fund a real shop purchase without injected gold');
+  const offerSelector=`[data-source="shop"][data-index="${affordable.index}"]`;
+  await click('select-offer',offerSelector);await click('gear','[data-hero="0"][data-slot="0"]');
+  assert.equal(await page.locator('.compare-popover').count(),1);assert.deepEqual(await save(),beforeReplacement);
+  // Full-page capture can resize a tall shop page, intentionally closing anchored popovers.
+  await page.locator('.compare-popover').waitFor({state:'visible'});await shot('equip-comparison-2k',false);
   await click('close-popover');await click('cancel-selection');
+  await click('select-offer',offerSelector);await click('gear','[data-hero="0"][data-slot="1"]');
+  assert.equal((await save()).shop[affordable.index],null);assert.equal((await save()).gold,beforeReplacement.gold-affordable.item.price);
   await click('gear','[data-hero="0"][data-slot="1"]');const oldGold=(await save()).gold;
   assert.equal(await page.locator('.modal-backdrop').count(),0);assert.equal(await page.locator('#app').evaluate(el=>el.inert),false);
   await click('sell-gear');assert.ok((await save()).gold>oldGold);assert.equal((await save()).party[0].gear[1],null);

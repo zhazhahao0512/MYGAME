@@ -1,3 +1,4 @@
+import { enemyStats } from './combat/enemies.js';
 import { actionHitChance } from './heroes/accuracy.js';
 import { progressionSummary } from './heroes/progression.js';
 import { threeTargets } from './heroes/integration.js';
@@ -40,8 +41,7 @@ export class Battle {
   spawn(slot,template=null) {
     const floor=this.run.floor,boss=!template&&floor%5===0&&slot===0&&!this.bossKilled;
     const type=template||ENEMY_TYPES.find(t=>t.positions[0]===slot)||ENEMY_TYPES.find(t=>t.positions.includes(slot));
-    const baseStats={...BASE,hp:boss?260+floor*35:(100+floor*10)*type.health,attack:boss?12+floor*2:(4+floor*1.1)*type.damage,power:0,
-      attackSpeed:boss?.65:.55+(slot%3)*.1,armor:floor*1.5,resist:floor*1.5,hpRegen:0,mana:30,manaRegen:1,crit:0,move:type.move};
+    const baseStats=enemyStats(BASE,{floor,slot,type,boss});
     const unit=this.makeUnit({side:'enemy',slot,name:boss?'守门人':type.name,def:{...type,range:type.caster?'ranged':'melee',color:template?'#d6ad67':'#bd897d'},baseStats,skills:enemySkills(boss||type.caster),boss});
     unit.reward=(template?template.reward:boss?15:3)*GOLD_SCALE;unit.challenge=!!template;unit.enemyType=type.id;
     unit.nextAttack=this.tick+ticks(.8);return unit;

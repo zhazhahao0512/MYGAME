@@ -59,6 +59,8 @@
 
 | 首个攻击特效英雄与技能成长：docs/heroes/LANYA.md、docs/heroes/lanya-balance.py、docs/decisions/D008-hero-skills.md；公共回写 D008 索引、R022、Q004/Q010、英雄状态与顶部交接 | 进行中（设计与数值核算，非游戏实施） | hero-lanya-01a1441f-20261019 | 2026-10-19 | 基线 dd996e8；设计八项基础/成长、被动与 1–4 技能、15 次技能升级及后续属性选择；保留装备 D007，不改已确认装备或游戏代码 |
 
+| 战斗 V2 实施：src/app.js、src/style.css、src/battle.js、src/data.js、src/model.js、src/combat/、src/renderer/、src/inspection.js、相关 tests/ 与 scripts/ 检查；战斗规范/FRAMEWORK/README 及共享回写仅 D009/R024、Q005–Q008、战斗状态；顶部待英雄窗口释放后协调 | 进行中（游戏实施） | battle-v2-impl-20261019-root | 2026-10-19 | 基线 b3d6b2a；用户批准按概念图开始修改；双详情、五策略/持久位置指令、慢速推荐位刷新、挑战队列与验证；保留英雄 D008/R022/Q004/Q010 与装备内容，不实现其新英雄/装备 |
+
 认领为共享仓库交接记录，不是自动锁；其他窗口避开“进行中”范围，重叠须先协调。未登记不证明没有窗口工作；中止或接管也须记录。
 
 ### 分层状态快照

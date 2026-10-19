@@ -56,6 +56,7 @@
 | 英雄设计顺序：docs/decisions/D006-hero-design-order.md、D003 的顺序补充；公共回写仅 D006 索引、R020、本行及英雄状态条目，不改其它窗口预留编号或公共顶部 | 已释放（顺序记录完成） | hero-order-01a1441f-20261019 | 2026-10-19 | 基线 9b13dd1；认领 ea2192e 已推送；合入装备 0bf3ae4；先基础/成长、再技能与分类，动画等基础玩法流畅后设计；结果 D006/R020 |
 | 紫装确认与命名攻击特效：docs/EQUIPMENT-DESIGN.md、docs/ATTACK-EFFECTS-DESIGN.md、docs/decisions/D007-purple-effects.md；公共回写仅 D007 索引、R021、Q001/Q009、本窗口行与顶部装备交接 | 已释放（设计/文档完成，未实施游戏） | equipment-effects-20261019-r021 | 2026-10-19 | 基线 3a0a445；认领 d78ffb6 已推送；结果 D007/R021，6 紫装及三条规则已接受、5 被动已命名；保留 D003/D004/D006，扩展建议见 Q009，下一步其它紫装 |
 | 装备后续顺序建议：仅 docs/PROGRESS.md 的本窗口认领、装备状态行及 R023；不占公共顶部、D008/R022/Q004/Q010 或英雄文件 | 已释放（讨论记录完成，无新装备数值或代码） | equipment-roadmap-20261019-r023 | 2026-10-19 | 基线 bff1d83；认领 b2080c1 已推送核验；建议下一批 5 件非攻速物理紫装，详见 R023；保留英雄窗口全部范围，未新增已定稿决定 |
+| 第二批物理紫装：docs/EQUIPMENT-DESIGN.md、docs/ATTACK-EFFECTS-DESIGN.md、docs/equipment/physical-purple-balance.py、docs/decisions/D010-physical-purple-scope.md；公共仅 D010 索引、R025、本窗口及装备状态，必要 Q009 衔接 | 进行中（设计与预算核算，非游戏实施） | equipment-physical-20261019-r025 | 2026-10-19 | 基线 affe30e；用户批准开始 5 件非攻速物理紫装设计；保留英雄 D008/R022/Q004/Q010、战斗 D009/R024/Q005–Q008 和公共顶部，不改首批六件已确认值 |
 
 | 首个攻击特效英雄与技能成长：docs/heroes/LANYA.md、docs/heroes/lanya-balance.py、docs/decisions/D008-hero-skills.md；公共回写 D008 索引、R022、Q004/Q010、英雄状态与顶部交接 | 进行中（设计与数值核算，非游戏实施） | hero-lanya-01a1441f-20261019 | 2026-10-19 | 基线 dd996e8；设计八项基础/成长、被动与 1–4 技能、15 次技能升级及后续属性选择；保留装备 D007，不改已确认装备或游戏代码 |
 

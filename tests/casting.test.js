@@ -54,8 +54,8 @@ test('actual current rank, target count, resistances and mana overrides affect m
  const {b,u}=arena();u.skills=[ability('ranked',10,10,{rank:1,ranks:[{effects:[{type:'damage',amount:10,attack:0,power:0}]},{effects:[{type:'damage',amount:100,attack:0,power:0}]}]}),ability('flat',10,30)];u.ready=[0,0];u.skillModes=['managed','managed'];
  const seed=b.rng.seed,lock=u.targetId;assert.equal(chooseManagedSkill(b,u),1);
  u.skills[0].rank=2;assert.equal(chooseManagedSkill(b,u),0);assert.equal(b.rng.seed,seed);assert.equal(u.targetId,lock);
- const single=evaluateSkill(b,u,0).value;u.skills[0].target='allEnemies';assert.equal(evaluateSkill(b,u,0).value,5*single);
- for(const e of b.enemies)e.stats.resist=100;assert.equal(evaluateSkill(b,u,0).value,2.5*single);
+ const multi=b.enemies.reduce((n,t)=>n+100*b.attackChance(u,t),0);u.skills[0].target='allEnemies';assert.equal(evaluateSkill(b,u,0).value,multi);
+ for(const e of b.enemies)e.stats.resist=100;assert.equal(evaluateSkill(b,u,0).value,multi/2);
  u.skills[0].rank=0;assert.equal(b.skillReason(u,0),'未学习');assert.equal(evaluateSkill(b,u,0),null);
 });
 test('emergency healing breaks an offensive reserve, but overheal and redundant protection are not free benefit',()=>{

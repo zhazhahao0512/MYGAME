@@ -1,4 +1,6 @@
 import { equipmentModifiers } from '../equipment.js';
+import { rankedHeroSkills } from '../heroes/integration.js';
+import { migrateAccuracyBonuses } from '../heroes/accuracy.js';
 import { SKILLS } from '../data.js';
 import { flatModifiers } from './attributes.js';
 export const STATUSES={
@@ -26,10 +28,10 @@ export const EQUIPMENT_EFFECTS={
   rune:{description:'自身获得护盾时恢复 8 点生命，每件装备冷却 1 秒。',trigger:{id:'shelter',event:'shield',relation:'target',cooldown:1,effects:[{type:'heal',target:'self',amount:8}]}},
   clock:{description:'造成暴击时获得 3 秒疾行：攻速 +0.15，技能急速 +20。重复触发刷新时间。',trigger:{id:'tempo',event:'critical',relation:'source',effects:[{type:'status',target:'self',status:'tempo'}]}},
 };
-export function skillsFor(heroId) {return structuredClone(heroId==='stone'?stoneSkills:commonSkills);}
+export function skillsFor(heroId,ranks) {return rankedHeroSkills(heroId,heroId==='stone'?stoneSkills:commonSkills,ranks);}
 export function enemySkills(boss) {return boss?[{id:'boss-crush',key:'Q',name:'重击',cost:10,cooldown:8,initialCooldown:5,priority:10,castTime:.4,retarget:'release',target:'enemy',effects:[{type:'damage',damageType:'physical',attack:1.2,power:0,travel:.2}]}]:[];}
 export function loadoutModifiers(member,augments=[]) {
-  return [...member.gear.flatMap((item,slot)=>item?equipmentModifiers(item,`gear:${slot}`):[]),
+  return [...member.gear.flatMap((item,slot)=>item?equipmentModifiers({...item,stats:migrateAccuracyBonuses(item.stats)},`gear:${slot}`):[]),
     ...augments.flatMap(id=>flatModifiers(`augment:${id}`,AUGMENTS.find(a=>a.id===id)?.stats||{}))];
 }
 export function triggersFor(member,augments=[]) {

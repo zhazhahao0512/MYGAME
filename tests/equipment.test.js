@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import * as M from '../src/model.js';
 import {EQUIPMENT, equipmentById, PASSIVES} from '../src/equipment.js';
+import {skillsFor} from '../src/combat/content.js';
 import {RARITIES} from '../src/data.js';
 import {Battle, STEP} from '../src/battle.js';
 import {setSource, expireStatuses} from '../src/combat/unit.js';
@@ -15,8 +16,8 @@ function shop(ids=[]){const r=runWith(ids);M.finishRound(r,{won:true,kills:20,go
 function fixture(ids=[],hero='wind'){
   const b=new Battle(runWith(ids,hero)),u=b.party[0];
   for(const t of b.enemies){setSource(t,'test',{modifiers:[{stat:'hp',op:'override',value:10000},{stat:'armor',op:'override',value:50},{stat:'resist',op:'override',value:50}]});t.hp=t.stats.hp;t.nextAttack=1e9;t.skills=[];}
-  u.ready.fill(0);u.nextAttack=1e9;
-  setSource(u,'test',{modifiers:[{stat:'crit',op:'override',value:0},{stat:'focus',op:'override',value:1e6},{stat:'hpRegen',op:'flat',value:-u.stats.hpRegen}]});
+  u.skills=skillsFor(hero);u.ready.fill(0);u.nextAttack=1e9;
+  setSource(u,'test',{modifiers:[{stat:'crit',op:'override',value:0},{stat:'accuracy',op:'override',value:1e6},{stat:'hpRegen',op:'flat',value:-u.stats.hpRegen}]});
   return {b,u,t:b.enemies[0]};
 }
 const basic=(b,u,t,options={})=>{const shot=b.fire(u,t,{canMiss:false,...options});b.settle(shot);return shot;};
@@ -138,7 +139,7 @@ test('backwater is a dynamic unique +12, respects strict threshold, and does not
 });
 test('echo binds once to primary first damage, uses release AP snapshot, shares miss, and has independent 12s cooldown',()=>{
   const {b,u}=fixture(['purple_flowing_codex','purple_flowing_codex'],'tide');u.stats.haste=1000;
-  const skill={...u.skills[0],target:'allEnemies',cost:0,castTime:1,effects:[{type:'damage',amount:1,attack:0,power:0,travel:.1},{type:'damage',amount:1,attack:0,power:0,travel:.2}]};u.skills[0]=skill;
+  const skill={...u.skills[0],ranks:undefined,target:'allEnemies',cost:0,castTime:1,effects:[{type:'damage',amount:1,attack:0,power:0,travel:.1},{type:'damage',amount:1,attack:0,power:0,travel:.2}]};u.skills[0]=skill;
   assert.ok(b.cast(u,0));const action=u.casting;u.stats.power=123;const ap=u.stats.power;u.casting=null;b.release(u,action);u.stats.power=999;
   assert.equal(b.shots.length,10);assert.equal(b.shots.filter(s=>s.spellBonus).length,1);near(b.shots[0].spellBonus.damage,(25+.05*ap)/1.5);assert.equal(u.equipment.spellReady,600);
   const first=b.shots[0];first.hit=false;b.settle(first);assert.equal(b.effects.filter(e=>e.originId==='charged_spell_damage').length,0);

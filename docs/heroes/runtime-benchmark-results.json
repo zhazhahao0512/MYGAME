@@ -1,0 +1,3131 @@
+{
+  "standard": "HB-1.0-draft",
+  "implementation": "R048 actual Battle adapter",
+  "window": 40,
+  "seedCount": 16,
+  "limitations": [
+    "partial HB: potential output + synchronized fixed total pressure",
+    "no finite cohorts, T9 healing, support/control overlays or full equipment/hex matrix",
+    "prototype enemies and progression economy still require playtesting"
+  ],
+  "reports": [
+    {
+      "level": 5,
+      "count": 1,
+      "target": "T0",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 146.93656249999978,
+      "minDps": 133.48399999999978,
+      "maxDps": 162.53199999999973,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 1,
+      "target": "T0",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 146.93656249999978,
+      "minDps": 133.48399999999978,
+      "maxDps": 162.53199999999973,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 1,
+      "target": "T1",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 114.65252403846169,
+      "minDps": 104.15115384615399,
+      "maxDps": 126.81307692307712,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 1,
+      "target": "T1",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 114.65252403846169,
+      "minDps": 104.15115384615399,
+      "maxDps": 126.81307692307712,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 1,
+      "target": "T2",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 114.65252403846159,
+      "minDps": 104.15115384615387,
+      "maxDps": 126.81307692307698,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 1,
+      "target": "T2",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 114.65252403846159,
+      "minDps": 104.15115384615387,
+      "maxDps": 126.81307692307698,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 1,
+      "target": "T3",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 94.33768426628004,
+      "minDps": 85.47433095450484,
+      "maxDps": 104.57699375557532,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 1,
+      "target": "T3",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 94.33768426628004,
+      "minDps": 85.47433095450484,
+      "maxDps": 104.57699375557532,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 1,
+      "target": "T4",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 111.92790728144526,
+      "minDps": 101.89463425512945,
+      "maxDps": 123.5584032114185,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 1,
+      "target": "T4",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 111.92790728144526,
+      "minDps": 101.89463425512945,
+      "maxDps": 123.5584032114185,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 1,
+      "target": "T5",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 80.6693256578948,
+      "minDps": 73.27447368421058,
+      "maxDps": 89.21421052631585,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 1,
+      "target": "T5",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 80.6693256578948,
+      "minDps": 73.27447368421058,
+      "maxDps": 89.21421052631585,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 1,
+      "target": "T6",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 93.12983173076944,
+      "minDps": 84.59592307692326,
+      "maxDps": 103.00046153846179,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 1,
+      "target": "T6",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 93.12983173076944,
+      "minDps": 84.59592307692326,
+      "maxDps": 103.00046153846179,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 1,
+      "target": "T7",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 114.65252403846159,
+      "minDps": 104.15115384615387,
+      "maxDps": 126.813076923077,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 1,
+      "target": "T7",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 114.65252403846159,
+      "minDps": 104.15115384615387,
+      "maxDps": 126.813076923077,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 1,
+      "target": "T8",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 90.24966346153853,
+      "minDps": 66.45269230769232,
+      "maxDps": 104.40115384615396,
+      "meanManaEnd": 71.72520000000813,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 1,
+      "target": "T8",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 90.24966346153853,
+      "minDps": 66.45269230769232,
+      "maxDps": 104.40115384615396,
+      "meanManaEnd": 71.72520000000813,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 3,
+      "target": "T0",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 149.19324999999975,
+      "minDps": 137.36899999999977,
+      "maxDps": 162.53199999999973,
+      "meanManaEnd": 71.7252000000081,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 3,
+      "target": "T0",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 149.19324999999975,
+      "minDps": 137.36899999999977,
+      "maxDps": 162.53199999999973,
+      "meanManaEnd": 71.7252000000081,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 3,
+      "target": "T1",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 116.41367788461557,
+      "minDps": 107.19730769230782,
+      "maxDps": 126.81307692307712,
+      "meanManaEnd": 71.7252000000081,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 3,
+      "target": "T1",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 116.41367788461557,
+      "minDps": 107.19730769230782,
+      "maxDps": 126.81307692307712,
+      "meanManaEnd": 71.7252000000081,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 3,
+      "target": "T2",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 116.41367788461542,
+      "minDps": 107.1973076923077,
+      "maxDps": 126.81307692307698,
+      "meanManaEnd": 71.7252000000081,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 3,
+      "target": "T2",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 116.41367788461542,
+      "minDps": 107.1973076923077,
+      "maxDps": 126.81307692307698,
+      "meanManaEnd": 71.7252000000081,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 3,
+      "target": "T3",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 95.77490661239956,
+      "minDps": 88.08933541480813,
+      "maxDps": 104.57699375557532,
+      "meanManaEnd": 71.7252000000081,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 3,
+      "target": "T3",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 95.77490661239956,
+      "minDps": 88.08933541480813,
+      "maxDps": 104.57699375557532,
+      "meanManaEnd": 71.7252000000081,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 3,
+      "target": "T4",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 113.65935576494215,
+      "minDps": 104.77329616413927,
+      "maxDps": 123.5584032114185,
+      "meanManaEnd": 71.7252000000081,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 3,
+      "target": "T4",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 113.65935576494215,
+      "minDps": 104.77329616413927,
+      "maxDps": 123.5584032114185,
+      "meanManaEnd": 71.7252000000081,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 3,
+      "target": "T5",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 81.908865131579,
+      "minDps": 75.43763157894742,
+      "maxDps": 89.21421052631585,
+      "meanManaEnd": 71.7252000000081,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 3,
+      "target": "T5",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 81.908865131579,
+      "minDps": 75.43763157894742,
+      "maxDps": 89.21421052631585,
+      "meanManaEnd": 71.7252000000081,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 3,
+      "target": "T6",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 94.56062980769254,
+      "minDps": 87.08284615384635,
+      "maxDps": 103.00046153846179,
+      "meanManaEnd": 71.7252000000081,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 3,
+      "target": "T6",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 94.56062980769254,
+      "minDps": 87.08284615384635,
+      "maxDps": 103.00046153846179,
+      "meanManaEnd": 71.7252000000081,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 3,
+      "target": "T7",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 116.41367788461544,
+      "minDps": 107.19730769230773,
+      "maxDps": 126.813076923077,
+      "meanManaEnd": 71.7252000000081,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 3,
+      "target": "T7",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 116.41367788461544,
+      "minDps": 107.19730769230773,
+      "maxDps": 126.813076923077,
+      "meanManaEnd": 71.7252000000081,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 3,
+      "target": "T8",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 92.91894230769239,
+      "minDps": 74.89038461538465,
+      "maxDps": 105.68423076923091,
+      "meanManaEnd": 71.7252000000081,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 3,
+      "target": "T8",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 92.91894230769239,
+      "minDps": 74.89038461538465,
+      "maxDps": 105.68423076923091,
+      "meanManaEnd": 71.7252000000081,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 5,
+      "target": "T0",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 151.53787499999976,
+      "minDps": 139.72199999999978,
+      "maxDps": 162.53199999999973,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 5,
+      "target": "T0",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 151.53787499999976,
+      "minDps": 139.72199999999978,
+      "maxDps": 162.53199999999973,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 5,
+      "target": "T1",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 118.2424759615386,
+      "minDps": 109.03615384615398,
+      "maxDps": 126.81307692307712,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 5,
+      "target": "T1",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 118.2424759615386,
+      "minDps": 109.03615384615398,
+      "maxDps": 126.81307692307712,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 5,
+      "target": "T2",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 118.2424759615385,
+      "minDps": 109.0361538461539,
+      "maxDps": 126.81307692307698,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 5,
+      "target": "T2",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 118.2424759615385,
+      "minDps": 109.0361538461539,
+      "maxDps": 126.81307692307698,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 5,
+      "target": "T3",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 97.28665226360384,
+      "minDps": 89.3869669937555,
+      "maxDps": 104.57699375557532,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 5,
+      "target": "T3",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 97.28665226360384,
+      "minDps": 89.3869669937555,
+      "maxDps": 104.57699375557532,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 5,
+      "target": "T4",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 115.43708714317584,
+      "minDps": 106.78643175735961,
+      "maxDps": 123.5584032114185,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 5,
+      "target": "T4",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 115.43708714317584,
+      "minDps": 106.78643175735961,
+      "maxDps": 123.5584032114185,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 5,
+      "target": "T5",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 83.19468750000006,
+      "minDps": 76.73526315789479,
+      "maxDps": 89.21421052631585,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 5,
+      "target": "T5",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 83.19468750000006,
+      "minDps": 76.73526315789479,
+      "maxDps": 89.21421052631585,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 5,
+      "target": "T6",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 96.04554326923098,
+      "minDps": 88.57892307692327,
+      "maxDps": 103.00046153846179,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 5,
+      "target": "T6",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 96.04554326923098,
+      "minDps": 88.57892307692327,
+      "maxDps": 103.00046153846179,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 5,
+      "target": "T7",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 118.24247596153852,
+      "minDps": 109.03615384615387,
+      "maxDps": 126.813076923077,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 5,
+      "target": "T7",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 118.24247596153852,
+      "minDps": 109.03615384615387,
+      "maxDps": 126.813076923077,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 5,
+      "target": "T8",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 95.31108173076932,
+      "minDps": 74.89038461538465,
+      "maxDps": 107.32230769230782,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 5,
+      "count": 5,
+      "target": "T8",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 95.31108173076932,
+      "minDps": 74.89038461538465,
+      "maxDps": 107.32230769230782,
+      "meanManaEnd": 71.72520000000809,
+      "meanCasts": [
+        4,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 1,
+      "target": "T0",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 308.8398656249999,
+      "minDps": 280.2206,
+      "maxDps": 334.4715999999999,
+      "meanManaEnd": 38.70120000000503,
+      "meanCasts": [
+        3,
+        3,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 1,
+      "target": "T0",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 311.88500624999983,
+      "minDps": 284.4090999999999,
+      "maxDps": 337.0928499999998,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 1,
+      "target": "T1",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 220.51824374999936,
+      "minDps": 199.6887333333328,
+      "maxDps": 238.98106666666595,
+      "meanManaEnd": 38.70120000000503,
+      "meanCasts": [
+        3,
+        3,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 1,
+      "target": "T1",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 222.24364999999935,
+      "minDps": 202.23106666666612,
+      "maxDps": 240.35356666666593,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 1,
+      "target": "T2",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 220.5182437500005,
+      "minDps": 199.6887333333337,
+      "maxDps": 238.98106666666735,
+      "meanManaEnd": 38.70120000000503,
+      "meanCasts": [
+        3,
+        3,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 1,
+      "target": "T2",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 222.2436500000004,
+      "minDps": 202.23106666666695,
+      "maxDps": 240.3535666666672,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 1,
+      "target": "T3",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 173.41141932692366,
+      "minDps": 155.3031169230773,
+      "maxDps": 187.8603400000007,
+      "meanManaEnd": 48.701200000004896,
+      "meanCasts": [
+        4,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 1,
+      "target": "T3",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 175.9639073076929,
+      "minDps": 158.1196553846158,
+      "maxDps": 190.67687846153916,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 1,
+      "target": "T4",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 223.08505913461516,
+      "minDps": 204.69566923076908,
+      "maxDps": 241.7183153846151,
+      "meanManaEnd": 68.45120000000394,
+      "meanCasts": [
+        2.125,
+        3,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 1,
+      "target": "T4",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 224.39226346153814,
+      "minDps": 205.88559999999976,
+      "maxDps": 242.40476153846112,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 1,
+      "target": "T5",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 149.86094625000004,
+      "minDps": 135.26324000000005,
+      "maxDps": 162.58864000000008,
+      "meanManaEnd": 38.70120000000503,
+      "meanCasts": [
+        3,
+        3,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 1,
+      "target": "T5",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 150.53056499999994,
+      "minDps": 136.48863999999995,
+      "maxDps": 162.96213999999995,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 1,
+      "target": "T6",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 185.189595,
+      "minDps": 167.47598666666664,
+      "maxDps": 200.78485333333333,
+      "meanManaEnd": 38.70120000000503,
+      "meanCasts": [
+        3,
+        3,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 1,
+      "target": "T6",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 186.38710750000007,
+      "minDps": 169.35985333333338,
+      "maxDps": 201.65785333333343,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 1,
+      "target": "T7",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 220.5182437499998,
+      "minDps": 199.68873333333326,
+      "maxDps": 238.9810666666664,
+      "meanManaEnd": 38.70120000000503,
+      "meanCasts": [
+        3,
+        3,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 1,
+      "target": "T7",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 222.24364999999986,
+      "minDps": 202.2310666666666,
+      "maxDps": 240.35356666666644,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 1,
+      "target": "T8",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 175.7654874999996,
+      "minDps": 148.3102333333331,
+      "maxDps": 199.69456666666616,
+      "meanManaEnd": 38.70120000000503,
+      "meanCasts": [
+        3,
+        3,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 1,
+      "target": "T8",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 177.52284166666627,
+      "minDps": 151.97173333333308,
+      "maxDps": 204.62723333333278,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 3,
+      "target": "T0",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 364.5196968749998,
+      "minDps": 339.42614999999984,
+      "maxDps": 379.1388999999998,
+      "meanManaEnd": 30.701200000004977,
+      "meanCasts": [
+        3,
+        2,
+        4,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 3,
+      "target": "T0",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 354.01620624999975,
+      "minDps": 330.60054999999977,
+      "maxDps": 372.58629999999977,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 3,
+      "target": "T1",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 257.6850062499994,
+      "minDps": 239.40909999999946,
+      "maxDps": 268.009266666666,
+      "meanManaEnd": 30.701200000004977,
+      "meanCasts": [
+        3,
+        2,
+        4,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 3,
+      "target": "T1",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 250.55767916666593,
+      "minDps": 234.15036666666612,
+      "maxDps": 264.01586666666594,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 3,
+      "target": "T2",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 257.6850062500007,
+      "minDps": 239.40910000000048,
+      "maxDps": 268.0092666666675,
+      "meanManaEnd": 30.701200000004977,
+      "meanCasts": [
+        3,
+        2,
+        4,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 3,
+      "target": "T2",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 250.55767916666736,
+      "minDps": 234.1503666666672,
+      "maxDps": 264.0158666666674,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 3,
+      "target": "T3",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 191.0096964423083,
+      "minDps": 178.75100461538514,
+      "maxDps": 201.38175076923145,
+      "meanManaEnd": 48.701200000004896,
+      "meanCasts": [
+        4,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 3,
+      "target": "T3",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 193.56218442307758,
+      "minDps": 180.64914307692362,
+      "maxDps": 204.19828923076994,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 3,
+      "target": "T4",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 270.46610384615354,
+      "minDps": 256.8774230769228,
+      "maxDps": 284.0523999999997,
+      "meanManaEnd": 21.951200000004526,
+      "meanCasts": [
+        2.125,
+        2.875,
+        4,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 3,
+      "target": "T4",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 256.6197451923073,
+      "minDps": 240.16842307692272,
+      "maxDps": 270.38338461538416,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 3,
+      "target": "T5",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 163.16821375,
+      "minDps": 153.51482000000001,
+      "maxDps": 172.03342000000006,
+      "meanManaEnd": 82.70120000000398,
+      "meanCasts": [
+        3,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 3,
+      "target": "T5",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 167.79085749999993,
+      "minDps": 156.99021999999997,
+      "maxDps": 177.15952,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 3,
+      "target": "T6",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 214.95113000000003,
+      "minDps": 199.40227999999996,
+      "maxDps": 223.70601333333335,
+      "meanManaEnd": 30.701200000004977,
+      "meanCasts": [
+        3,
+        2,
+        4,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 3,
+      "target": "T6",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 209.17426833333343,
+      "minDps": 195.57029333333338,
+      "maxDps": 220.58769333333345,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 3,
+      "target": "T7",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 257.6850062499999,
+      "minDps": 239.40910000000002,
+      "maxDps": 268.0092666666665,
+      "meanManaEnd": 30.701200000004977,
+      "meanCasts": [
+        3,
+        2,
+        4,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 3,
+      "target": "T7",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 250.55767916666656,
+      "minDps": 234.15036666666666,
+      "maxDps": 264.01586666666645,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 3,
+      "target": "T8",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 208.1354124999996,
+      "minDps": 180.31919999999968,
+      "maxDps": 234.0414666666661,
+      "meanManaEnd": 30.701200000004977,
+      "meanCasts": [
+        3,
+        2,
+        4,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 3,
+      "target": "T8",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 201.17487708333283,
+      "minDps": 170.90576666666635,
+      "maxDps": 224.18723333333273,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 5,
+      "target": "T0",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 366.9852749999998,
+      "minDps": 339.42614999999984,
+      "maxDps": 385.4926499999998,
+      "meanManaEnd": 30.701200000004977,
+      "meanCasts": [
+        3,
+        2,
+        4,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 5,
+      "target": "T0",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 357.67454999999984,
+      "minDps": 335.1465499999998,
+      "maxDps": 374.41704999999973,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 5,
+      "target": "T1",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 259.46934999999934,
+      "minDps": 239.40909999999946,
+      "maxDps": 272.7450999999993,
+      "meanManaEnd": 30.701200000004977,
+      "meanCasts": [
+        3,
+        2,
+        4,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 5,
+      "target": "T1",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 253.16844999999932,
+      "minDps": 236.6810333333327,
+      "maxDps": 265.23636666666596,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 5,
+      "target": "T2",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 259.46935000000076,
+      "minDps": 239.40910000000048,
+      "maxDps": 272.74510000000083,
+      "meanManaEnd": 30.701200000004977,
+      "meanCasts": [
+        3,
+        2,
+        4,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 5,
+      "target": "T2",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 253.1684500000007,
+      "minDps": 236.68103333333383,
+      "maxDps": 265.23636666666744,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 5,
+      "target": "T3",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 192.94788057692372,
+      "minDps": 178.75100461538514,
+      "maxDps": 202.79002000000068,
+      "meanManaEnd": 48.701200000004896,
+      "meanCasts": [
+        4,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 5,
+      "target": "T3",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 195.5883853846161,
+      "minDps": 181.56754307692364,
+      "maxDps": 205.60655846153918,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 5,
+      "target": "T4",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 272.9483403846151,
+      "minDps": 258.4528076923074,
+      "maxDps": 285.51699999999965,
+      "meanManaEnd": 21.326200000004494,
+      "meanCasts": [
+        2.0625,
+        2.9375,
+        4,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 5,
+      "target": "T4",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 259.2993576923073,
+      "minDps": 243.3191923076919,
+      "maxDps": 271.1156846153841,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 5,
+      "target": "T5",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 164.80362000000002,
+      "minDps": 153.51482000000001,
+      "maxDps": 173.49802000000005,
+      "meanManaEnd": 82.70120000000398,
+      "meanCasts": [
+        3,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 5,
+      "target": "T5",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 169.56356999999994,
+      "minDps": 157.90861999999993,
+      "maxDps": 177.89181999999997,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 5,
+      "target": "T6",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 216.46298000000002,
+      "minDps": 199.40227999999996,
+      "maxDps": 227.64607999999998,
+      "meanManaEnd": 30.701200000004977,
+      "meanCasts": [
+        3,
+        2,
+        4,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 5,
+      "target": "T6",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 211.36601000000007,
+      "minDps": 197.29482666666672,
+      "maxDps": 221.5640933333334,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 5,
+      "target": "T7",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 259.46934999999985,
+      "minDps": 239.40910000000002,
+      "maxDps": 272.7450999999998,
+      "meanManaEnd": 30.701200000004977,
+      "meanCasts": [
+        3,
+        2,
+        4,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 5,
+      "target": "T7",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 253.16844999999984,
+      "minDps": 236.6810333333333,
+      "maxDps": 265.2363666666664,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 5,
+      "target": "T8",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 212.2191083333329,
+      "minDps": 186.80599999999973,
+      "maxDps": 242.92443333333276,
+      "meanManaEnd": 30.701200000004977,
+      "meanCasts": [
+        3,
+        2,
+        4,
+        1
+      ]
+    },
+    {
+      "level": 15,
+      "count": 5,
+      "target": "T8",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 205.26781666666616,
+      "minDps": 175.63576666666637,
+      "maxDps": 234.24586666666605,
+      "meanManaEnd": 14.701200000005231,
+      "meanCasts": [
+        5,
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 1,
+      "target": "T0",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 389.96107656249956,
+      "minDps": 364.77159999999964,
+      "maxDps": 418.5573499999996,
+      "meanManaEnd": 76.6892000000032,
+      "meanCasts": [
+        4,
+        3,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 1,
+      "target": "T0",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 400.18178281249965,
+      "minDps": 372.6125999999996,
+      "maxDps": 430.31884999999954,
+      "meanManaEnd": 30.689200000003854,
+      "meanCasts": [
+        4,
+        3.75,
+        3.25,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 1,
+      "target": "T1",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 267.67371484375013,
+      "minDps": 249.10123437500005,
+      "maxDps": 287.2858437500002,
+      "meanManaEnd": 76.6892000000031,
+      "meanCasts": [
+        4,
+        3,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 1,
+      "target": "T1",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 274.54720800781257,
+      "minDps": 255.94537500000015,
+      "maxDps": 295.19928125000024,
+      "meanManaEnd": 30.689200000003854,
+      "meanCasts": [
+        4,
+        3.75,
+        3.25,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 1,
+      "target": "T2",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 267.6737148437502,
+      "minDps": 249.10123437500005,
+      "maxDps": 287.2858437500002,
+      "meanManaEnd": 76.6892000000031,
+      "meanCasts": [
+        4,
+        3,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 1,
+      "target": "T2",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 274.5472080078127,
+      "minDps": 255.94537500000024,
+      "maxDps": 295.19928125000024,
+      "meanManaEnd": 30.689200000003854,
+      "meanCasts": [
+        4,
+        3.75,
+        3.25,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 1,
+      "target": "T3",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 207.87093628545165,
+      "minDps": 192.7059285714285,
+      "maxDps": 222.71565021008396,
+      "meanManaEnd": 76.6892000000032,
+      "meanCasts": [
+        4,
+        3,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 1,
+      "target": "T3",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 212.22431351759445,
+      "minDps": 196.5923571428571,
+      "maxDps": 227.8804716386554,
+      "meanManaEnd": 30.689200000003854,
+      "meanCasts": [
+        4,
+        3.75,
+        3.25,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 1,
+      "target": "T4",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 273.47731420693236,
+      "minDps": 255.70882090336096,
+      "maxDps": 293.253290441176,
+      "meanManaEnd": 110.689200000003,
+      "meanCasts": [
+        3,
+        3,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 1,
+      "target": "T4",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 284.0824660254722,
+      "minDps": 265.44337184873905,
+      "maxDps": 305.7451628151255,
+      "meanManaEnd": 30.689200000003854,
+      "meanCasts": [
+        4,
+        3.75,
+        3.25,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 1,
+      "target": "T5",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 177.65444419642867,
+      "minDps": 164.44338392857156,
+      "maxDps": 190.07383035714298,
+      "meanManaEnd": 110.689200000003,
+      "meanCasts": [
+        3,
+        3,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 1,
+      "target": "T5",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 184.8082260044644,
+      "minDps": 171.7764642857144,
+      "maxDps": 198.6853035714287,
+      "meanManaEnd": 30.689200000003854,
+      "meanCasts": [
+        4,
+        3.75,
+        3.25,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 1,
+      "target": "T6",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 223.09122187499975,
+      "minDps": 207.0207374999997,
+      "maxDps": 238.70336249999974,
+      "meanManaEnd": 110.689200000003,
+      "meanCasts": [
+        3,
+        3,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 1,
+      "target": "T6",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 232.66901640624977,
+      "minDps": 217.05629999999974,
+      "maxDps": 250.15942499999983,
+      "meanManaEnd": 30.689200000003854,
+      "meanCasts": [
+        4,
+        3.75,
+        3.25,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 1,
+      "target": "T7",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 267.6737148437499,
+      "minDps": 249.10123437499988,
+      "maxDps": 287.28584374999986,
+      "meanManaEnd": 76.6892000000031,
+      "meanCasts": [
+        4,
+        3,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 1,
+      "target": "T7",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 274.5472080078124,
+      "minDps": 255.94537499999987,
+      "maxDps": 295.1992812499999,
+      "meanManaEnd": 30.689200000003854,
+      "meanCasts": [
+        4,
+        3.75,
+        3.25,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 1,
+      "target": "T8",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 212.08547851562494,
+      "minDps": 185.32471874999987,
+      "maxDps": 234.9995156250001,
+      "meanManaEnd": 81.43920000000378,
+      "meanCasts": [
+        3,
+        3,
+        3.5625,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 1,
+      "target": "T8",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 216.4639423828125,
+      "minDps": 184.87440624999988,
+      "maxDps": 245.36784375000008,
+      "meanManaEnd": 24.689200000004313,
+      "meanCasts": [
+        4,
+        3,
+        4,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 3,
+      "target": "T0",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 451.5427515624995,
+      "minDps": 430.86927499999945,
+      "maxDps": 470.04289999999946,
+      "meanManaEnd": 58.689200000003424,
+      "meanCasts": [
+        3,
+        3,
+        4,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 3,
+      "target": "T0",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 451.66867812499953,
+      "minDps": 428.6255499999996,
+      "maxDps": 469.29917499999954,
+      "meanManaEnd": 31.1892000000039,
+      "meanCasts": [
+        4,
+        3.8125,
+        3.1875,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 3,
+      "target": "T1",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 306.8353134765629,
+      "minDps": 291.6057968750004,
+      "maxDps": 319.4643125000004,
+      "meanManaEnd": 58.689200000003424,
+      "meanCasts": [
+        3,
+        3,
+        4,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 3,
+      "target": "T1",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 307.2772988281253,
+      "minDps": 290.5784687500003,
+      "maxDps": 319.9369843750004,
+      "meanManaEnd": 31.1892000000039,
+      "meanCasts": [
+        4,
+        3.8125,
+        3.1875,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 3,
+      "target": "T2",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 306.83531347656293,
+      "minDps": 291.6057968750004,
+      "maxDps": 319.4643125000005,
+      "meanManaEnd": 58.689200000003424,
+      "meanCasts": [
+        3,
+        3,
+        4,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 3,
+      "target": "T2",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 307.27729882812537,
+      "minDps": 290.5784687500003,
+      "maxDps": 319.9369843750004,
+      "meanManaEnd": 31.1892000000039,
+      "meanCasts": [
+        4,
+        3.8125,
+        3.1875,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 3,
+      "target": "T3",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 220.72839659926467,
+      "minDps": 205.24258088235288,
+      "maxDps": 230.9138834033613,
+      "meanManaEnd": 108.56420000000304,
+      "meanCasts": [
+        3.0625,
+        3,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 3,
+      "target": "T3",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 232.4234183954831,
+      "minDps": 218.2490619747898,
+      "maxDps": 243.1747526260503,
+      "meanManaEnd": 31.1892000000039,
+      "meanCasts": [
+        4,
+        3.8125,
+        3.1875,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 3,
+      "target": "T4",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 324.3523445706403,
+      "minDps": 309.93938813025164,
+      "maxDps": 337.4764810924365,
+      "meanManaEnd": 58.689200000003424,
+      "meanCasts": [
+        3,
+        3,
+        4,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 3,
+      "target": "T4",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 321.46253249737345,
+      "minDps": 304.90490021008355,
+      "maxDps": 333.9419931722683,
+      "meanManaEnd": 31.1892000000039,
+      "meanCasts": [
+        4,
+        3.8125,
+        3.1875,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 3,
+      "target": "T5",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 195.2409135044644,
+      "minDps": 181.8864464285715,
+      "maxDps": 204.63823214285725,
+      "meanManaEnd": 110.68920000000303,
+      "meanCasts": [
+        3,
+        3,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 3,
+      "target": "T5",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 204.1405993303572,
+      "minDps": 191.9734107142858,
+      "maxDps": 213.24970535714291,
+      "meanManaEnd": 31.1892000000039,
+      "meanCasts": [
+        4,
+        3.8125,
+        3.1875,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 3,
+      "target": "T6",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 247.21227890624965,
+      "minDps": 230.4410249999997,
+      "maxDps": 258.6935249999997,
+      "meanManaEnd": 110.68920000000303,
+      "meanCasts": [
+        3,
+        3,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 3,
+      "target": "T6",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 259.1468390624998,
+      "minDps": 244.5627749999998,
+      "maxDps": 270.14958749999977,
+      "meanManaEnd": 31.1892000000039,
+      "meanCasts": [
+        4,
+        3.8125,
+        3.1875,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 3,
+      "target": "T7",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 306.8353134765624,
+      "minDps": 291.60579687499984,
+      "maxDps": 319.4643124999999,
+      "meanManaEnd": 58.689200000003424,
+      "meanCasts": [
+        3,
+        3,
+        4,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 3,
+      "target": "T7",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 307.27729882812497,
+      "minDps": 290.57846874999984,
+      "maxDps": 319.9369843749999,
+      "meanManaEnd": 31.1892000000039,
+      "meanCasts": [
+        4,
+        3.8125,
+        3.1875,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 3,
+      "target": "T8",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 246.34050976562511,
+      "minDps": 220.41479687499995,
+      "maxDps": 275.5378125000002,
+      "meanManaEnd": 58.689200000003886,
+      "meanCasts": [
+        3,
+        3,
+        4,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 3,
+      "target": "T8",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 252.40366992187506,
+      "minDps": 221.66335937499997,
+      "maxDps": 284.2072656250001,
+      "meanManaEnd": 24.68920000000425,
+      "meanCasts": [
+        4,
+        3,
+        4,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 5,
+      "target": "T0",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 456.00888437499947,
+      "minDps": 436.7198999999995,
+      "maxDps": 470.04289999999946,
+      "meanManaEnd": 58.689200000003424,
+      "meanCasts": [
+        3,
+        3,
+        4,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 5,
+      "target": "T0",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 455.5037437499995,
+      "minDps": 429.69542499999955,
+      "maxDps": 473.21967499999954,
+      "meanManaEnd": 32.18920000000392,
+      "meanCasts": [
+        4,
+        3.9375,
+        3.0625,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 5,
+      "target": "T1",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 296.3841035156253,
+      "minDps": 280.8397187500003,
+      "maxDps": 305.99190625000045,
+      "meanManaEnd": 110.68920000000303,
+      "meanCasts": [
+        3,
+        3,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 5,
+      "target": "T1",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 310.00233984375035,
+      "minDps": 292.3721406250003,
+      "maxDps": 322.57479687500046,
+      "meanManaEnd": 32.18920000000392,
+      "meanCasts": [
+        4,
+        3.9375,
+        3.0625,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 5,
+      "target": "T2",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 296.3841035156254,
+      "minDps": 280.8397187500003,
+      "maxDps": 305.99190625000045,
+      "meanManaEnd": 110.68920000000303,
+      "meanCasts": [
+        3,
+        3,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 5,
+      "target": "T2",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 310.00233984375046,
+      "minDps": 292.3721406250003,
+      "maxDps": 322.57479687500046,
+      "meanManaEnd": 32.18920000000392,
+      "meanCasts": [
+        4,
+        3.9375,
+        3.0625,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 5,
+      "target": "T3",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 227.7501373424369,
+      "minDps": 210.4074023109243,
+      "maxDps": 238.00993119747886,
+      "meanManaEnd": 85.18920000000313,
+      "meanCasts": [
+        3.75,
+        3,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 5,
+      "target": "T3",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 234.62928939075618,
+      "minDps": 219.8298524159663,
+      "maxDps": 244.89635976890744,
+      "meanManaEnd": 32.18920000000392,
+      "meanCasts": [
+        4,
+        3.9375,
+        3.0625,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 5,
+      "target": "T4",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 327.58189174107093,
+      "minDps": 313.6437920168063,
+      "maxDps": 337.4764810924365,
+      "meanManaEnd": 58.689200000003424,
+      "meanCasts": [
+        3,
+        3,
+        4,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 5,
+      "target": "T4",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 324.24034663865496,
+      "minDps": 307.2155698529407,
+      "maxDps": 336.9570667016801,
+      "meanManaEnd": 32.18920000000392,
+      "meanCasts": [
+        4,
+        3.9375,
+        3.0625,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 5,
+      "target": "T5",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 197.6882377232144,
+      "minDps": 187.05126785714293,
+      "maxDps": 204.63823214285725,
+      "meanManaEnd": 110.68920000000303,
+      "meanCasts": [
+        3,
+        3,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 5,
+      "target": "T5",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 206.07276562500007,
+      "minDps": 194.28408035714295,
+      "maxDps": 214.97131250000007,
+      "meanManaEnd": 32.18920000000392,
+      "meanCasts": [
+        4,
+        3.9375,
+        3.0625,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 5,
+      "target": "T6",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 250.32603281249965,
+      "minDps": 237.07177499999972,
+      "maxDps": 258.6935249999997,
+      "meanManaEnd": 110.68920000000303,
+      "meanCasts": [
+        3,
+        3,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 5,
+      "target": "T6",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 261.5018718749998,
+      "minDps": 246.59771249999977,
+      "maxDps": 272.3598374999998,
+      "meanManaEnd": 32.18920000000392,
+      "meanCasts": [
+        4,
+        3.9375,
+        3.0625,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 5,
+      "target": "T7",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 296.3841035156249,
+      "minDps": 280.83971874999986,
+      "maxDps": 305.9919062499999,
+      "meanManaEnd": 110.68920000000303,
+      "meanCasts": [
+        3,
+        3,
+        3,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 5,
+      "target": "T7",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 310.0023398437499,
+      "minDps": 292.3721406249999,
+      "maxDps": 322.5747968749999,
+      "meanManaEnd": 32.18920000000392,
+      "meanCasts": [
+        4,
+        3.9375,
+        3.0625,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 5,
+      "target": "T8",
+      "mode": "managed",
+      "seeds": 16,
+      "meanDps": 251.18693847656266,
+      "minDps": 221.77776562500003,
+      "maxDps": 283.7608750000002,
+      "meanManaEnd": 58.68920000000386,
+      "meanCasts": [
+        3,
+        3,
+        4,
+        1
+      ]
+    },
+    {
+      "level": 20,
+      "count": 5,
+      "target": "T8",
+      "mode": "auto",
+      "seeds": 16,
+      "meanDps": 256.7948408203126,
+      "minDps": 230.85164062500007,
+      "maxDps": 292.43032812500013,
+      "meanManaEnd": 24.689200000004224,
+      "meanCasts": [
+        4,
+        3,
+        4,
+        1
+      ]
+    }
+  ],
+  "defense": [
+    {
+      "count": 1,
+      "attacker": "A1",
+      "seeds": 16,
+      "survival": 0,
+      "meanObservedSeconds": 16.832500000000003,
+      "rightCensored": 0
+    },
+    {
+      "count": 1,
+      "attacker": "A2",
+      "seeds": 16,
+      "survival": 0,
+      "meanObservedSeconds": 18.236250000000002,
+      "rightCensored": 0
+    },
+    {
+      "count": 1,
+      "attacker": "A3",
+      "seeds": 16,
+      "survival": 0,
+      "meanObservedSeconds": 16.895000000000003,
+      "rightCensored": 0
+    },
+    {
+      "count": 1,
+      "attacker": "A4",
+      "seeds": 16,
+      "survival": 0,
+      "meanObservedSeconds": 15.270000000000003,
+      "rightCensored": 0
+    },
+    {
+      "count": 1,
+      "attacker": "A5",
+      "seeds": 16,
+      "survival": 0,
+      "meanObservedSeconds": 15.520000000000005,
+      "rightCensored": 0
+    },
+    {
+      "count": 1,
+      "attacker": "A6",
+      "seeds": 16,
+      "survival": 0,
+      "meanObservedSeconds": 15.770000000000005,
+      "rightCensored": 0
+    },
+    {
+      "count": 1,
+      "attacker": "A7",
+      "seeds": 16,
+      "survival": 0,
+      "meanObservedSeconds": 9.2075,
+      "rightCensored": 0
+    },
+    {
+      "count": 1,
+      "attacker": "A8",
+      "seeds": 16,
+      "survival": 0,
+      "meanObservedSeconds": 15.270000000000003,
+      "rightCensored": 0
+    },
+    {
+      "count": 3,
+      "attacker": "A1",
+      "seeds": 16,
+      "survival": 0,
+      "meanObservedSeconds": 17.645000000000003,
+      "rightCensored": 0
+    },
+    {
+      "count": 3,
+      "attacker": "A2",
+      "seeds": 16,
+      "survival": 0,
+      "meanObservedSeconds": 18.35,
+      "rightCensored": 0
+    },
+    {
+      "count": 3,
+      "attacker": "A3",
+      "seeds": 16,
+      "survival": 0,
+      "meanObservedSeconds": 17.520000000000003,
+      "rightCensored": 0
+    },
+    {
+      "count": 3,
+      "attacker": "A4",
+      "seeds": 16,
+      "survival": 0,
+      "meanObservedSeconds": 15.457500000000003,
+      "rightCensored": 0
+    },
+    {
+      "count": 3,
+      "attacker": "A5",
+      "seeds": 16,
+      "survival": 0,
+      "meanObservedSeconds": 13.270000000000003,
+      "rightCensored": 0
+    },
+    {
+      "count": 3,
+      "attacker": "A6",
+      "seeds": 16,
+      "survival": 0,
+      "meanObservedSeconds": 16.270000000000003,
+      "rightCensored": 0
+    },
+    {
+      "count": 3,
+      "attacker": "A7",
+      "seeds": 16,
+      "survival": 0,
+      "meanObservedSeconds": 9.8325,
+      "rightCensored": 0
+    },
+    {
+      "count": 3,
+      "attacker": "A8",
+      "seeds": 16,
+      "survival": 0,
+      "meanObservedSeconds": 15.457500000000003,
+      "rightCensored": 0
+    },
+    {
+      "count": 5,
+      "attacker": "A1",
+      "seeds": 16,
+      "survival": 0,
+      "meanObservedSeconds": 17.520000000000003,
+      "rightCensored": 0
+    },
+    {
+      "count": 5,
+      "attacker": "A2",
+      "seeds": 16,
+      "survival": 0,
+      "meanObservedSeconds": 18.415000000000003,
+      "rightCensored": 0
+    },
+    {
+      "count": 5,
+      "attacker": "A3",
+      "seeds": 16,
+      "survival": 0,
+      "meanObservedSeconds": 17.020000000000003,
+      "rightCensored": 0
+    },
+    {
+      "count": 5,
+      "attacker": "A4",
+      "seeds": 16,
+      "survival": 0,
+      "meanObservedSeconds": 15.270000000000003,
+      "rightCensored": 0
+    },
+    {
+      "count": 5,
+      "attacker": "A5",
+      "seeds": 16,
+      "survival": 0,
+      "meanObservedSeconds": 13.770000000000003,
+      "rightCensored": 0
+    },
+    {
+      "count": 5,
+      "attacker": "A6",
+      "seeds": 16,
+      "survival": 0,
+      "meanObservedSeconds": 16.082500000000003,
+      "rightCensored": 0
+    },
+    {
+      "count": 5,
+      "attacker": "A7",
+      "seeds": 16,
+      "survival": 0,
+      "meanObservedSeconds": 9.9575,
+      "rightCensored": 0
+    },
+    {
+      "count": 5,
+      "attacker": "A8",
+      "seeds": 16,
+      "survival": 0,
+      "meanObservedSeconds": 15.270000000000003,
+      "rightCensored": 0
+    }
+  ],
+  "builds": [
+    {
+      "items": [],
+      "spentGold": 0,
+      "count": 1,
+      "seeds": 16,
+      "meanDps": 220.51824374999936
+    },
+    {
+      "items": [],
+      "spentGold": 0,
+      "count": 3,
+      "seeds": 16,
+      "meanDps": 257.6850062499994
+    },
+    {
+      "items": [],
+      "spentGold": 0,
+      "count": 5,
+      "seeds": 16,
+      "meanDps": 259.46934999999934
+    },
+    {
+      "items": [
+        "purple_gale_blades"
+      ],
+      "spentGold": 1500,
+      "count": 1,
+      "seeds": 16,
+      "meanDps": 265.4862958333325
+    },
+    {
+      "items": [
+        "purple_gale_blades"
+      ],
+      "spentGold": 1500,
+      "count": 3,
+      "seeds": 16,
+      "meanDps": 301.9735895833325
+    },
+    {
+      "items": [
+        "purple_gale_blades"
+      ],
+      "spentGold": 1500,
+      "count": 5,
+      "seeds": 16,
+      "meanDps": 291.85610624999913
+    },
+    {
+      "items": [
+        "purple_steel_greatsword"
+      ],
+      "spentGold": 1500,
+      "count": 1,
+      "seeds": 16,
+      "meanDps": 269.18282708333385
+    },
+    {
+      "items": [
+        "purple_steel_greatsword"
+      ],
+      "spentGold": 1500,
+      "count": 3,
+      "seeds": 16,
+      "meanDps": 311.5620895833339
+    },
+    {
+      "items": [
+        "purple_steel_greatsword"
+      ],
+      "spentGold": 1500,
+      "count": 5,
+      "seeds": 16,
+      "meanDps": 313.7526833333339
+    },
+    {
+      "items": [
+        "purple_radiant_staff"
+      ],
+      "spentGold": 1600,
+      "count": 1,
+      "seeds": 16,
+      "meanDps": 234.35649374999934
+    },
+    {
+      "items": [
+        "purple_radiant_staff"
+      ],
+      "spentGold": 1600,
+      "count": 3,
+      "seeds": 16,
+      "meanDps": 270.41000624999936
+    },
+    {
+      "items": [
+        "purple_radiant_staff"
+      ],
+      "spentGold": 1600,
+      "count": 5,
+      "seeds": 16,
+      "meanDps": 258.0351999999993
+    },
+    {
+      "items": [
+        "purple_gale_blades",
+        "purple_combo_bow",
+        "purple_battle_spear"
+      ],
+      "spentGold": 5150,
+      "count": 1,
+      "seeds": 16,
+      "meanDps": 405.04683541666543
+    },
+    {
+      "items": [
+        "purple_gale_blades",
+        "purple_combo_bow",
+        "purple_battle_spear"
+      ],
+      "spentGold": 5150,
+      "count": 3,
+      "seeds": 16,
+      "meanDps": 431.632599999999
+    },
+    {
+      "items": [
+        "purple_gale_blades",
+        "purple_combo_bow",
+        "purple_battle_spear"
+      ],
+      "spentGold": 5150,
+      "count": 5,
+      "seeds": 16,
+      "meanDps": 436.00017499999905
+    },
+    {
+      "items": [
+        "purple_gale_blades",
+        "purple_watch_blades",
+        "purple_bloodpact_blade"
+      ],
+      "spentGold": 5550,
+      "count": 1,
+      "seeds": 16,
+      "meanDps": 345.0030250000002
+    },
+    {
+      "items": [
+        "purple_gale_blades",
+        "purple_watch_blades",
+        "purple_bloodpact_blade"
+      ],
+      "spentGold": 5550,
+      "count": 3,
+      "seeds": 16,
+      "meanDps": 386.1860687500001
+    },
+    {
+      "items": [
+        "purple_gale_blades",
+        "purple_watch_blades",
+        "purple_bloodpact_blade"
+      ],
+      "spentGold": 5550,
+      "count": 5,
+      "seeds": 16,
+      "meanDps": 375.20174166666686
+    }
+  ]
+}

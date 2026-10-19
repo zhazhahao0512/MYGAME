@@ -9,7 +9,7 @@ import {STATUSES,skillsFor} from '../src/combat/content.js';
 import {TriggerQueue} from '../src/combat/events.js';
 function arena(hero='stone',augments=[]) {
   const run=M.createRun(91);run.party=[{hero,gear:[null,null,null,null],auto:true}];run.phase='ready';run.augments=augments;
-  return new Battle(run);
+  const b=new Battle(run);b.party[0].skills=skillsFor(hero);return b;
 }
 function configure(unit,values) {setSource(unit,'fixture',{modifiers:Object.entries(values).map(([stat,value])=>({id:stat,stat,op:'override',value,priority:100}))});}
 function quiet(b) {for(const u of b.units()){u.nextAttack=Infinity;u.ready=u.skills.map(()=>Infinity);configure(u,{hpRegen:0,manaRegen:0});}}
@@ -102,10 +102,10 @@ test('impact snapshots resist later stat changes and fully shielded hits do not 
 });
 test('stone shield, orange equipment healing and augment stacking form one working chain',()=>{
   const run=M.createRun(77);run.phase='ready';run.augments=['resonant-guard'];run.party=[{hero:'stone',gear:[M.makeItem(run,5,'rune'),null,null,null],auto:true}];
-  const b=new Battle(run),u=b.party[0];quiet(b);u.hp=100;u.ready[2]=0;
-  assert.equal(u.stats.hp,560);assert.equal(b.cast(u,2),true);
+  const b=new Battle(run),u=b.party[0];quiet(b);u.hp=100;u.skills=skillsFor('stone');u.ready[2]=0;
+  assert.equal(u.stats.hp,u.baseStats.hp+40);assert.equal(b.cast(u,2),true);
   assert.equal(u.hp,108);assert.ok(u.shield>0);
-  assert.equal(u.stats.armor,30+8+4);
+  assert.equal(u.stats.armor,u.baseStats.armor+8+4);
   const events=b.events.history.map(e=>e.type);assert.ok(events.includes('shield')&&events.includes('heal')&&events.includes('status'));
   assert.equal(b.events.suppressed,0);
 });
@@ -117,7 +117,7 @@ test('orange clock triggers on critical impact rather than projectile launch',()
 });
 test('reciprocal zero-cooldown retaliation terminates, independent attacks can trigger again, and rewards occur once',()=>{
   const b=arena('tide');quiet(b);const a=b.party[0],z=b.enemies[0];
-  for(const u of [a,z]){configure(u,{hp:1000,hpRegen:0,manaRegen:0,armor:0,attack:10,crit:0});u.hp=1000;u.triggers=[{id:'reflect',event:'damaged',relation:'target',effects:[{type:'damage',target:'attacker',amount:1,damageType:'physical'}]}];}
+  for(const u of [a,z]){configure(u,{hp:1000,hpRegen:0,manaRegen:0,armor:0,attack:10,crit:0,accuracy:1000});u.hp=1000;u.triggers=[{id:'reflect',event:'damaged',relation:'target',effects:[{type:'damage',target:'attacker',amount:1,damageType:'physical'}]}];}
   b.settle(b.fire(a,z));assert.equal(z.hp,989);assert.equal(a.hp,999);assert.equal(b.events.pending.length,0);assert.ok(b.events.suppressed>0);
   b.settle(b.fire(a,z));assert.equal(z.hp,978);assert.equal(a.hp,998);
   z.hp=1;const shot=b.fire(a,z);b.settle(shot);b.settle(shot);assert.equal(b.kills,1);

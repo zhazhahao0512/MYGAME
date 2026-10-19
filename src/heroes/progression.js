@@ -14,8 +14,8 @@ export const GROWTH_OPTIONS=[
 const sum=a=>a.reduce((n,v)=>n+v,0);
 export function rankReason(ranks,level,index){
   if(!Number.isInteger(index)||index<0||index>3)return '技能无效';
-  if(sum(ranks)>=Math.min(15,level))return '没有技能点';
   if(ranks[index]>=SKILL_CAPS[index])return '已满级';
+  if(sum(ranks)>=Math.min(15,level))return '没有技能点';
   if(index===3&&level<(ranks[3]+1)*5)return `${(ranks[3]+1)*5}级解锁`;
   if(index<3&&level===2&&ranks[index]>=1)return '2级须学习不同技能';
   if(index<3&&level<6&&ranks[index]>=3)return '6级可升四级';

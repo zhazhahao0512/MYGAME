@@ -3,10 +3,11 @@ import assert from 'node:assert/strict';
 import {Battle,STEP,hitChance,cooldown} from '../src/battle.js';
 import {createRun,recruit} from '../src/model.js';
 import {setSource} from '../src/combat/unit.js';
+import {skillsFor} from '../src/combat/content.js';
 import {HEROES} from '../src/data.js';
 function battle(options){const r=createRun(5);recruit(r,r.candidates[0]);recruit(r,r.candidates[0]);return new Battle(r,options);}
-test('focus versus movement and ability haste follow agreed formulas',()=>{
-  assert.equal(hitChance(100,200),.5);assert.equal(hitChance(120,200),.6);assert.equal(hitChance(200,100),1);assert.equal(hitChance(-5,100),0);assert.equal(cooldown(10,100),5);
+test('accuracy minus evasion and distance, and ability haste follow agreed formulas',()=>{
+  assert.equal(hitChance(95,20,25),.5);assert.equal(hitChance(120,20,40),.6);assert.equal(hitChance(200,100),1);assert.equal(hitChance(-5,100),0);assert.equal(cooldown(10,100),5);
 });
 test('damage snapshots at launch, settles only on impact, respects current shields, and lifesteal uses actual HP loss',()=>{
   const b=battle(),source=b.party[0],target=b.enemies[0];source.stats.attack=100;source.stats.crit=0;source.stats.lifeSteal=.1;source.stats.omni=0;source.stats.healing=0;source.hp=100;target.stats.armor=0;target.hp=500;
@@ -34,7 +35,7 @@ test('dead enemies grant kill rewards only once',()=>{
   b.settle(b.fire(source,target));b.settle(b.fire(source,target));assert.equal(b.kills,1);assert.equal(b.gold,30);
 });
 test('manual ultimate consumes mana and cooldown once and rejects immediate second activation',()=>{
-  const b=battle(),unit=b.party[0];unit.auto=false;unit.ready[3]=0;unit.mana=100;assert.equal(b.cast(unit,3),true);assert.equal(unit.mana,70);assert.equal(b.cast(unit,3),false);assert.equal(unit.mana,70);assert.equal(b.shots.length,5);
+  const b=battle(),unit=b.party[0];unit.skills=skillsFor('tide');unit.auto=false;unit.ready[3]=0;unit.mana=100;assert.equal(b.cast(unit,3),true);assert.equal(unit.mana,70);assert.equal(b.cast(unit,3),false);assert.equal(unit.mana,70);assert.equal(b.shots.length,5);
 });
 test('no unbounded heal-overflow and no healing on dead unit',()=>{
   const b=battle();b.party[1].hp=0;for(let i=0;i<100;i++)b.step();assert.equal(b.party[1].hp,0);assert.ok(b.party[0].hp<=b.party[0].stats.hp);

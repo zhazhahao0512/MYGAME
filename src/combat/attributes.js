@@ -1,3 +1,4 @@
+import { combineHeroAttackSpeed } from '../heroes/integration.js';
 // Each source owns its modifiers. Removal deletes a source, never subtracts values.
 const compare = (a,b) => (a.priority||0)-(b.priority||0) || (a.id<b.id?-1:a.id>b.id?1:0);
 export function flatModifiers(id, stats) {
@@ -24,7 +25,7 @@ export function resolveStats(base, modifiers=[]) {
   result.attackSpeed=Math.max(.05,result.attackSpeed);
   result.crit=Math.min(1,result.crit);result.tenacity=Math.min(.6,result.tenacity);
   result.reduction=Math.min(.8,result.reduction);
-  return result;
+  return combineHeroAttackSpeed(base,modifiers,result);
 }
 export function resolveRules(base, overrides=[]) {
   const rules={...base};

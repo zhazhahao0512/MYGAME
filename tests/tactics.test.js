@@ -12,8 +12,8 @@ function setup(options={}){
 }
 test('five strategies rank actual hit chance, HP ratio, absolute HP and fixed slot distances',()=>{
  const b=setup(),u=b.party[0];
- for(const e of b.enemies){e.hp=50;e.stats.hp=100;e.stats.move=200;}
- b.enemies[3].hp=20;b.enemies[3].stats.hp=1000;b.enemies[2].hp=10;b.enemies[4].stats.move=100;
+ for(const e of b.enemies){e.hp=50;e.stats.hp=100;e.stats.evasion=200;}
+ b.enemies[3].hp=20;b.enemies[3].stats.hp=1000;b.enemies[2].hp=10;b.enemies[4].stats.evasion=0;
  const seed=b.rng.seed;
  for(const [mode,expected] of [['hit',4],['ratio',3],['health',2],['near',0],['far',4]]){
   assert.ok(b.setTactics(0,{mode}));assert.equal(b.target(u).slot,expected);

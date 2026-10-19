@@ -60,7 +60,9 @@ export function lanyaAttackPayload(battle,unit,target){
 }
 export function lanyaMainHit(battle,unit,payload){
   if(!payload||!unit)return;
-  unit.ready[1]=Math.max(battle.tick,unit.ready[1]-Math.round(payload.refund/battle.stepSeconds));
+  // Fractional deadlines preserve .15/.25 seconds across repeated hits; execution
+  // still happens on the next simulation step, with no accumulating round-up.
+  unit.ready[1]=Math.max(battle.tick,unit.ready[1]-payload.refund/battle.stepSeconds);
 }
 function perHit(unit,target,extra=0){
   const s=unit.stats,t=target.stats;

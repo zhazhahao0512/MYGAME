@@ -32,6 +32,7 @@ for (const seed of [1, 7, 42]) {
       assert.equal(run.phase, 'ready');
       assert.equal(run.party.length, Math.min(5, floor + 1));
 
+      run.party.forEach((_,i)=>M.recommendSkills(run,i));
       run.phase = 'battle';
       const battle = new Battle(run);
       for (let tick = 0; tick < 15000 && ['combat', 'cleanup'].includes(battle.phase); tick++) battle.step();

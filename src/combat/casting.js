@@ -1,3 +1,5 @@
+import { actionHitChance } from '../heroes/accuracy.js';
+import { lanyaSkillValue } from '../heroes/lanya.js';
 // Casting policy is deterministic and read-only except for its explicit plan state.
 // Scores describe useful effect amounts, never sampled hits or future spawn knowledge.
 export const CAST_MODES=['managed','auto','manual'];
@@ -7,9 +9,10 @@ export const nextSkillMode=mode=>CAST_MODES[(CAST_MODES.indexOf(mode)+1)%CAST_MO
 const HORIZON=8;
 const EPS=1e-8;
 function expectedDamage(source,target,effect) {
-  const s=source.stats,t=target.stats,magic=(effect.damageType||'magic')==='magic';
-  const hit=effect.canMiss===true?Math.max(0,Math.min(1,s.focus/Math.max(1,t.move))):1;
-  const raw=((effect.amount||0)+s.attack*(effect.attack??1)+s.power*(effect.power??.8))*(1+s.damageAmp)*100/(100+Math.max(0,(magic?t.resist:t.armor)-(magic?s.magicPen:s.armorPen)))*(1-t.reduction);
+  const s=source.stats,t=target.stats,damageType=effect.damageType||'magic',magic=['magic','shield_piercing_magic'].includes(damageType);
+  const hit=effect.canMiss===false?1:actionHitChance(source,target,effect);
+  const amount=((effect.amount||0)+s.attack*(effect.attack??1)+s.power*(effect.power??.8))*(1+s.damageAmp);
+  const raw=damageType==='true'?amount:amount*100/(100+Math.max(0,(magic?t.resist:t.armor)-(magic?s.magicPen:s.armorPen)))*(1-t.reduction);
   return {reliable:raw,hit,mean:raw*hit*(effect.canCrit?1+s.crit*(s.critDamage-1):1)};
 }
 function pressure(battle,target) {
@@ -30,10 +33,13 @@ export function evaluateSkill(battle,unit,index) {
   if(!skill||skill.rank===0)return null;
   const targets=battle.previewSkillTargets(unit,skill);
   if(!targets.length)return null;
-  let damage=0,support=0,band=4,purpose='damage';
+  const heroValue=lanyaSkillValue(battle,unit,index,skill);
+  if(heroValue&&heroValue.value===0&&index!==2)return null;
+  let damage=heroValue?.value||0,support=0,band=heroValue?.band||4,purpose='damage';
   for(const target of targets)for(const effect of skill.effects) {
     if(effect.type==='damage') {
-      const d=expectedDamage(unit,target,effect);
+      const source=unit.def?.id==='lanya'&&index===2?{...unit,stats:{...unit.stats,accuracy:unit.stats.accuracy+skill.accuracy}}:unit;
+      const d=expectedDamage(source,target,effect);
       damage+=Math.min(target.hp+target.shield,d.mean);
       band=Math.min(band,3);
       if(d.hit>=.9&&d.reliable>=target.hp+target.shield&&(target.boss||target.challenge||target.casting))band=Math.min(band,2);

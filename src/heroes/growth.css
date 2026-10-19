@@ -15,3 +15,5 @@
 .hero-growth th,.hero-growth td{text-align:left;padding:6px 10px;border-bottom:1px solid #d7bb8326}
 .hero-growth-button{margin-top:8px}.hero-panel .hero-growth-button{align-self:flex-start}
 @media(max-width:900px){.hero-growth-modal .modal-header{padding:12px 18px}.hero-growth-modal .modal-header h2{font-size:20px}.growth-skills article{gap:8px}.hero-growth .btn{min-height:44px}.growth-skills .btn{min-width:64px}.growth-choices{gap:8px}}
+
+.skill-rank{font-size:9px;font-style:normal;color:#d7bb83;position:absolute;right:4px;top:1px}

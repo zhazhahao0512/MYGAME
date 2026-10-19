@@ -127,8 +127,10 @@ npm run build
 
 挑战传送带点击“加入”后进入待入场队列，等补怪时刻及推荐空位；击杀才给奖励。桌面左下英雄/右下敌人详情；手机横屏在技能装备、属性、战术、敌人之间切换，重复点属性切主要/次要。技能/装备说明仍会暂停。
 
-`node scripts/battle-v2-check.mjs` 检查真实鼠标/触屏指令、队列与存档恢复。实现边界及可调整参数见 [战斗 V2](docs/BATTLE-TACTICS-V2.md) 和 [COMBAT](docs/COMBAT.md)：当前仍沿用旧命中/属性公式，新英雄、装备和精准迁移另行接续。
+`node scripts/battle-v2-check.mjs` 检查真实鼠标/触屏指令、队列与存档恢复。实现边界及可调整参数见 [战斗 V2](docs/BATTLE-TACTICS-V2.md) 和 [COMBAT](docs/COMBAT.md)：当前已按D024/D025接入47件装备、岚牙及精准/闪避与距离命中；其他英雄专属技能仍待设计。
 
 战斗视觉已按概念图修正为地牢背景与青红信息卡，头像/图标仍为文字占位。[查看真实运行截图与改前对照](docs/design/battle-v2/README.md)。`node scripts/battle-visual-check.mjs` 检查桌面/触屏布局并重建截图；该检查已随 `test:battle` 执行。
 
-三模式施法与真实界面见[实现记录](docs/design/casting-modes/README.md)；`node scripts/casting-mode-check.mjs`验证四尺寸独立切换、手动普通技能、暂停和保存恢复。托管为当前示例技能提供收益/用蓝计划，岚牙、正式技能加点和全套英雄平衡仍待接续。
+三模式施法与真实界面见[实现记录](docs/design/casting-modes/README.md)；`node scripts/casting-mode-check.mjs`验证四尺寸独立切换、手动普通技能、暂停和保存恢复。托管已覆盖示例技能与岚牙专属机制；全套英雄平衡仍待校准。
+
+英雄面板的“成长”入口支持关外加点、推荐补点和16级后的属性三选一。固定八项成长持续，法强只由装备增加。岚牙可从正常随机招募取得，完整说明与实际木桩结果见[英雄接入](docs/heroes/RUNTIME.md)。

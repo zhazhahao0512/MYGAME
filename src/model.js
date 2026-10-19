@@ -1,3 +1,7 @@
+import { memberBaseStats,prepareHeroSave } from './heroes/integration.js';
+import { initializeProgression } from './heroes/progression.js';
+import { migrateAccuracyBonuses } from './heroes/accuracy.js';
+export { upgradeSkill,recommendSkills,chooseGrowth,progressionSummary } from './heroes/progression.js';
 import { BASE, HEROES, heroById, ITEMS, LEGACY_RARITIES, RULES } from './data.js';
 import { normalizeSkillModes } from './combat/casting.js';
 import { normalizeTactics } from './combat/tactics.js';
@@ -9,13 +13,11 @@ const fail = message => { throw new Error(message); };
 export function random(run) { let t = run.seed += 0x6d2b79f5; t = Math.imul(t ^ t >>> 15,t|1); t ^= t + Math.imul(t ^ t >>> 7,t|61); run.seed >>>= 0; return ((t ^ t >>> 14) >>> 0)/4294967296; }
 export function sample(run, entries, count) { const list=[...entries]; for(let i=list.length-1;i>0;i--){const j=Math.floor(random(run)*(i+1));[list[i],list[j]]=[list[j],list[i]];} return list.slice(0,count); }
 export function createRun(seed = Date.now() >>> 0) {
-  const run={version:2,seed,floor:1,level:1,xp:0,gold:0,kills:0,earned:0,party:[],augments:[],phase:'initial',candidates:[],shop:[],refreshes:0,chest:null,serial:0,lastRound:null,createdAt:Date.now()};
+  const run={version:2,heroContentVersion:1,seed,floor:1,level:1,xp:0,gold:0,kills:0,earned:0,party:[],augments:[],phase:'initial',candidates:[],shop:[],refreshes:0,chest:null,serial:0,lastRound:null,createdAt:Date.now()};
   run.candidates=sample(run,HEROES.map(h=>h.id),3); return run;
 }
 export function baseStatsFor(member, level=1) {
-  const stats={...BASE,...heroById(member.hero).stats};
-  stats.hp += (level-1)*25; stats.attack += (level-1)*2; stats.power += (level-1)*2;
-  return stats;
+  return memberBaseStats(member,level,BASE);
 }
 export function statsFor(member, level=1, augments=[]) {return resolveStats(baseStatsFor(member,level),loadoutModifiers(member,augments));}
 export function chooseAugment(run,id) {
@@ -26,6 +28,7 @@ export function recruit(run,id) {
   if(!['initial','recruit'].includes(run.phase)||!run.candidates.includes(id)) fail('这个英雄不在当前候选中');
   if(run.party.length>=RULES.party||run.party.some(h=>h.hero===id)) fail('无法招募重复英雄');
   const initial=run.phase==='initial'; run.party.push({hero:id,gear:[null,null,null,null],skillModes:normalizeSkillModes(),tactics:normalizeTactics()});
+  initializeProgression(run.party.at(-1),run.level,run.seed);
   if(initial){run.phase='recruit';run.candidates=sample(run,HEROES.map(h=>h.id).filter(id=>!run.party.some(h=>h.hero===id)),3);}
   else {run.phase='ready';run.candidates=[];}
 }
@@ -54,7 +57,7 @@ export function makeLegacyItem(run, index=0, baseId) {
   const base=baseId?ITEMS.find(item=>item.id===baseId):ITEMS[Math.floor(random(run)*ITEMS.length)],rarity=LEGACY_RARITIES[index];
   if(!base||!rarity)fail('旧装备模板不存在');
   return {uid:`item-${++run.serial}`,base:base.id,name:base.name,mark:base.mark,rarity:rarity.id,
-    stats:Object.fromEntries(Object.entries(base.stats).map(([k,v])=>[k,Number((v*rarity.scale).toFixed(3))])),price:rarity.price*GOLD_SCALE,
+    stats:migrateAccuracyBonuses(Object.fromEntries(Object.entries(base.stats).map(([k,v])=>[k,Number((v*rarity.scale).toFixed(3))]))),price:rarity.price*GOLD_SCALE,
     effect:rarity.id==='orange'?(EQUIPMENT_EFFECTS[base.id]?.description||'特殊效果预留，待后续设计'):null};
 }
 export function makeChoices(run,count,excluded=[]) {
@@ -65,7 +68,7 @@ export function makeChoices(run,count,excluded=[]) {
 export function finishRound(run, result) {
   if(!['ready','battle'].includes(run.phase)) fail('当前不在战斗阶段');
   run.gold+=result.gold;run.earned+=result.gold;run.kills+=result.kills;run.xp+=result.kills;
-  run.level=1+Math.floor(run.xp/30);run.lastRound={...result,floor:run.floor};
+  run.level=Math.max(run.level,1+Math.floor(run.xp/20));run.lastRound={...result,floor:run.floor};
   if(!result.won){run.phase='defeat';return;}
   run.phase='shop';run.shop=makeChoices(run,4);run.refreshes=0;
   run.chest={options:makeChoices(run,3),refreshUsed:false,claimed:false};
@@ -177,6 +180,8 @@ export function parseSave(raw) {
       if(d){item.name=d.name;item.mark=d.mark;item.rarity=d.rarity;item.stats={...d.stats};item.price=d.price;delete item.effect;}
     }
     run.serial=Math.max(run.serial,...allItems.map(i=>Number(/^item-(\d+)$/.exec(i.uid)?.[1]||0)));
+    if(!prepareHeroSave(run))return null;
+    for(const item of [...run.party.flatMap(m=>m.gear),...run.shop,...(run.chest?.options||[])].filter(Boolean))item.stats=migrateAccuracyBonuses(item.stats);
     for(const member of run.party){member.tactics=normalizeTactics(member.tactics);member.skillModes=normalizeSkillModes(member.skillModes);delete member.auto;}
     if(run.phase==='battle')run.phase='ready';return run;
   } catch{return null;}

@@ -1,7 +1,8 @@
+import { HERO_PROFILES,LANYA_HERO } from './heroes/foundation.js';
 // All content in this file is provisional. It exercises the interface, not final balance.
 export const RULES = Object.freeze({ floors: 20, slots: 4, party: 5, roundSeconds: 40 });
-export const BASE = Object.freeze({ hp: 340, mana: 100, hpRegen: 2, manaRegen: 5, attack: 28, power: 12,
-  attackSpeed: 1, haste: 0, crit: .05, critDamage: 1.5, armor: 12, resist: 10, omni: 0,
+export const BASE = Object.freeze({ hp: 340, mana: 100, hpRegen: 2, manaRegen: 5, attack: 28, power: 0,
+  attackSpeed: 1, bonusAttackSpeed: 0, totalAttackSpeed: 1, accuracy: 95, evasion: 0, haste: 0, crit: 0, critDamage: 1.5, armor: 12, resist: 10, omni: 0,
   lifeSteal: 0, move: 100, focus: 100, tenacity: 0, armorPen: 0, magicPen: 0,
   damageAmp: 0, reduction: 0, healing: 0, shielding: 0 });
 export const HEROES = [
@@ -13,10 +14,12 @@ export const HEROES = [
   { id:'shade', name:'夜隼', role:'刺客', mark:'影', color:'#b6b9d2', description:'寻找虚弱的目标，在恰当时机完成收割。', tags:['目标选择','暴击'], attackRule:'weakest', stats:{attack:34,crit:.2,move:108} },
   { id:'tide', name:'听潮', role:'术士', mark:'潮', color:'#95bacb', description:'以灵活的法术节奏，为队伍创造机会。', tags:['法术支援','技能急速'], attackRule:'random', stats:{power:32,haste:20,mana:120} },
 ];
+HEROES.push(LANYA_HERO);
+for(const hero of HEROES){const p=HERO_PROFILES[hero.id];Object.assign(hero,{role:p.role,range:p.range,stats:{...p.base,power:0,crit:0},growth:p.growth,subtypes:p.subtypes,routes:p.routes});}
 export const heroById = id => HEROES.find(h => h.id === id);
-export const STAT_LABELS = {hp:'生命上限',mana:'法力上限',hpRegen:'生命回复',manaRegen:'法力回复',attack:'攻击力',power:'法术强度',attackSpeed:'攻击速度',haste:'技能急速',crit:'暴击率',critDamage:'暴击伤害',armor:'物理抗性',resist:'魔法抗性',omni:'全能吸血',lifeSteal:'吸血',move:'移动速度',focus:'专注',tenacity:'韧性',armorPen:'护甲穿透',magicPen:'法术穿透',damageAmp:'伤害增幅',reduction:'受到伤害降低',healing:'治疗增强',shielding:'护盾增强'};
+export const STAT_LABELS = {hp:'生命上限',mana:'法力上限',hpRegen:'生命回复',manaRegen:'法力回复',attack:'攻击力',power:'法术强度',attackSpeed:'攻击速度',haste:'技能急速',crit:'暴击率',critDamage:'暴击伤害',armor:'物理抗性',resist:'魔法抗性',omni:'全能吸血',lifeSteal:'吸血',move:'旧移速',focus:'旧专注',accuracy:'精准',evasion:'闪避',bonusAttackSpeed:'额外攻速',totalAttackSpeed:'总攻速倍率',tenacity:'韧性',armorPen:'护甲穿透',magicPen:'法术穿透',damageAmp:'伤害增幅',reduction:'受到伤害降低',healing:'治疗增强',shielding:'护盾增强'};
 export const PRIMARY = ['attack','power','attackSpeed','haste','crit','omni','armor','resist'];
-export const SECONDARY = ['critDamage','lifeSteal','move','focus','armorPen','magicPen','tenacity','damageAmp','reduction','healing','shielding'];
+export const SECONDARY = ['critDamage','lifeSteal','evasion','accuracy','armorPen','magicPen','tenacity','damageAmp','reduction','healing','shielding'];
 export const PERCENT = new Set(['crit','critDamage','omni','lifeSteal','tenacity','damageAmp','reduction','healing','shielding']);
 export function statText(key, value) { return PERCENT.has(key) ? `${Math.round(value*100)}%` : key==='attackSpeed' ? value.toFixed(2) : ['hpRegen','manaRegen'].includes(key) ? `${Number(value.toFixed(1))}/s` : String(Number(value.toFixed(1))); }
 export const LEGACY_RARITIES = [

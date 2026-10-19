@@ -6,6 +6,9 @@ import { actionHitChance,migrateAccuracyBonuses } from '../src/heroes/accuracy.j
 import { lanyaSkills,releaseLanya,lanyaAttackPayload,lanyaMainHit,lanyaMechanicReason,lanyaAutoReady } from '../src/heroes/lanya.js';
 import { BASE } from '../src/data.js';
 import { createUnit,applyStatus,expireStatuses } from '../src/combat/unit.js';
+import { combineHeroAttackSpeed,memberBaseStats,rankedHeroSkills,threeTargets } from '../src/heroes/integration.js';
+import { renderGrowth } from '../src/heroes/growth-ui.js';
+import { LANYA_HERO } from '../src/heroes/foundation.js';
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-7,`${a} != ${b}`);
 function fixture(level=1){const m={hero:'lanya'};initializeProgression(m,level,123);return {level,seed:123,party:[m],phase:'ready'};}
 test('individual panels, zero AP/crit, fractional growth persists past 15',()=>{
@@ -60,7 +63,7 @@ test('Lanya charges consume on launch, ultimate takeover has no free remnants',(
   releaseLanya(b,u,3,b.getSkill(u,3));assert.equal(u.edgeCharges,0);assert.equal(u.ready[1],600);assert.equal(lanyaMechanicReason(u,0),'大招维持中');
   const payload=lanyaAttackPayload(b,u,target);assert.equal(payload.parts[0].damage,60);assert.equal(payload.parts.length,2);
   b.tick=500;expireStatuses(u,b.tick);assert.equal(lanyaAttackPayload(b,u,target).parts.length,1);assert.equal(payload.parts[0].damage,60);
-  lanyaMainHit(b,u,payload);assert.equal(u.ready[1],587); // .25s rounds to the 20ms simulation grid.
+  lanyaMainHit(b,u,payload);assert.equal(u.ready[1],587.5);
   assert.equal(u.edgeCharges,0);
 });
 test('ultimate never grants unlearned abilities; three-arrow skill has zero AP ratio',()=>{
@@ -68,4 +71,17 @@ test('ultimate never grants unlearned abilities; three-arrow skill has zero AP r
   assert.equal(payload.parts.length,1);assert.equal(payload.refund,0);assert.equal(u.stats.bonusAttackSpeed,.364);
   const skill=b.getSkill(u,2);assert.equal(skill.effects[0].power,0);assert.equal(skill.effects[0].amount,140);
   releaseLanya(b,u,2,skill);assert.equal(u.stats.accuracy,110);assert.equal(u.stats.evasion,9);
+});
+test('ordinary AS pools add before Lanya total multiplier; targeting has three distinct slots',()=>{
+  const base=memberBaseStats({hero:'lanya'},15,BASE),stats={...base,bonusAttackSpeed:base.bonusAttackSpeed+.7};
+  combineHeroAttackSpeed(base,[{stat:'attackSpeed',op:'percent',value:.4}],stats);
+  near(stats.attackSpeed,.91*(1+.364+.7+.4)*1.1);
+  const candidates=Array.from({length:5},(_,slot)=>({id:`t${slot}`,slot}));
+  assert.deepEqual(threeTargets(candidates[2],candidates).map(t=>t.slot),[2,1,3]);
+  assert.equal(threeTargets(candidates[2],[candidates[2]]).length,1);
+});
+test('growth panel exposes pending choices and current rank values without assuming every skill has damage',()=>{
+  const r=fixture(16);recommendSkills(r,0);const defs=rankedHeroSkills('lanya',[],r.party[0].progression.ranks);
+  const html=renderGrowth(r,0,LANYA_HERO,defs);assert.match(html,/被动真伤×4/);assert.match(html,/70%额外攻速/);assert.match(html,/data-act="choose-growth"/);
+  assert.ok(html.indexOf('data-act="choose-growth"')<html.indexOf('growth-skills'));
 });

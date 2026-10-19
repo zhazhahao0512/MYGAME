@@ -116,7 +116,7 @@
 | 装备接续类目建议：docs/EQUIPMENT-DESIGN.md 后续工作段；公共仅本行、装备接续补充与 R051，不占 R049/R050、全局顶部或游戏源码 | 已释放（讨论/文档完成，无新装备数值） | equipment-next-20261020-r051 | 2026-10-20 | 认领5b4ab75已发布核验，合入d27b3ab；结果见R051，建议法系生存三分支，再防御/辅助/红/橙；保留R049怪物/经验与R050英雄设计范围 |
 | 全页面UI审阅与AI沟通方法：docs/design/ui-audit-20261020/；公共仅本行、UI审阅补充与R052追加，不改游戏源码/其它窗口顶部结论 | 进行中（截图分析/建议文档） | ui-audit-20261020-r052 | 2026-10-20 | 基线7baa024；使用frontend-design与Playwright观察首页/招募/准备/成长/战斗/奖励/商店/结算，建议不代表实施授权；避开R049/R050范围，预留R052，无新D编号 |
 
-| 紫装整批设计：docs/EQUIPMENT-DESIGN.md、equipment/purple-survival-support-r052.json 与 purple-survival-support-balance.py、ATTACK-EFFECTS-DESIGN末尾；新D027/索引独立条目；公共仅本行、装备补充/R052 | 进行中（设计与独立估值，无游戏实施） | equipment-batch-20261020-r052 | 2026-10-20 | 基线7faef8e；用户要求一次多设计避免多轮，整批补法系生存/防御/辅助紫装；保留R049怪物与R050/D026英雄范围，不改已有装备或游戏源码 |
+| 紫装整批设计：docs/EQUIPMENT-DESIGN.md、equipment/purple-survival-support-r053.json 与 purple-survival-support-balance.py、ATTACK-EFFECTS-DESIGN末尾；新D027/索引独立条目；公共仅本行、装备补充/R053 | 进行中（设计与独立估值，无游戏实施） | equipment-batch-20261020-r053 | 2026-10-20 | 基线7faef8e；用户要求一次多设计避免多轮，整批补法系生存/防御/辅助紫装；初次推送遇并行UI认领R052，合并1b37e52并改用R053；保留R049怪物/R050英雄/R052 UI范围，不改已有装备或游戏源码 |
 
 认领为共享仓库交接记录，不是自动锁；其他窗口避开“进行中”范围，重叠须先协调。未登记不证明没有窗口工作；中止或接管也须记录。
 

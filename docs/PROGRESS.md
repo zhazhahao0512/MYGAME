@@ -38,7 +38,17 @@
 | 拖动与站位 | 仅在商店调整装备/站位；鼠标、触屏共用 Pointer Events；拖动英雄名字交换完整英雄对象，装备跟随；空白落点/取消不交易 | [pointer-drag.js](../src/pointer-drag.js)、[model.js](../src/model.js) |
 | 部署 | 自有服务器，无 GPT 托管；推送 main 后构建测试，配置开关启用时 SSH 更新；本机健康失败回退，公网验收失败另报失败 | [工作流](../.github/workflows/deploy.yml)、[SSH 交接](../deploy/automation/SSH_AI_TASK.md) |
 
-## 任务状态与接续顺序
+<a id="module-status"></a>
+## 任务状态与接续顺序（module-status）
+
+### 窗口认领
+
+| 模块 / 文件范围 | 状态 | 窗口 | 日期（北京时间） | 基线 / 交接 |
+| --- | --- | --- | --- | --- |
+| 协作入口与进度文档：AGENTS.md、README.md、docs/PROGRESS.md、docs/decisions/、docs/open-questions.md | 进行中 | sync-protocol-20261019 | 2026-10-19 | 8a9f849；仅文档，不改游戏或专项设计；完成后释放 |
+
+认领为共享仓库交接记录，不是自动锁；其他窗口先避开此范围，范围重叠须先协调。
+
 
 | ID | 事项 | 状态 | 接手时要注意 |
 | --- | --- | --- | --- |

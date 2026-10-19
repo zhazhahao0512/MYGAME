@@ -128,3 +128,5 @@ npm run build
 挑战传送带点击“加入”后进入待入场队列，等补怪时刻及推荐空位；击杀才给奖励。桌面左下英雄/右下敌人详情；手机横屏在技能装备、属性、战术、敌人之间切换，重复点属性切主要/次要。技能/装备说明仍会暂停。
 
 `node scripts/battle-v2-check.mjs` 检查真实鼠标/触屏指令、队列与存档恢复。实现边界及可调整参数见 [战斗 V2](docs/BATTLE-TACTICS-V2.md) 和 [COMBAT](docs/COMBAT.md)：当前仍沿用旧命中/属性公式，新英雄、装备和精准迁移另行接续。
+
+战斗视觉已按概念图修正为地牢背景与青红信息卡，头像/图标仍为文字占位。[查看真实运行截图与改前对照](docs/design/battle-v2/README.md)。`node scripts/battle-visual-check.mjs` 检查桌面/触屏布局并重建截图；该检查已随 `test:battle` 执行。

@@ -109,3 +109,5 @@ try{
 
 // Keep V2 commands and queue coverage in the existing CI battle check.
 await import('./battle-v2-check.mjs');
+
+await import('./battle-visual-check.mjs');

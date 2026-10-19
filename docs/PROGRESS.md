@@ -112,7 +112,7 @@
 | 正式47件装备接入：src/equipment.js、data/model/battle/app/style、combat装备/属性/单位、相关tests/scripts与字体子集；EQUIPMENT/ATTACK-EFFECTS/COMBAT、D021接续、新D024及索引、Q001/Q009局部衔接；公共仅本行/装备交接与状态/R047 | 已释放（47件接入与本地验证完成，待部署/后续平衡） | equipment-runtime-20261019-r047 | 2026-10-19 | 认领af9dfc3已发布；合入R046与R048独立模块至dec7395并保留双方，D024/R047完成47件/35配方/11被动、金币/旧存档；102项逻辑、构建、桌面/手机合成及商店/战斗/全流程通过。共享源码已释放供R048英雄整合，复用装备钩子与version2迁移；未部署 |
 | 英雄完整接入：src/heroes/、data/model/battle/app/combat、相关tests/scripts与字体；英雄规则/COMBAT/精准/交互/README；公共仅英雄状态、D025/R048、Q010–Q012与必要Q001实施边界 | 已释放（英雄整合与本地验证完成） | hero-content-20261019-r048 | 2026-10-19 | 独立认领de2bd9c、模块dec7395；装备a3453b9释放后发布共享认领5ff1bce；完整复用装备钩子/version2存档，113项与桌面/手机回归、3264场实际木桩通过。结果D025/R048随本条提交同步main；后续平衡/完整HB/部署另接 |
 
-| 怪物耐久与关卡数值校准：src/combat/enemies.js、battle.js 出怪、必要 tactics.js、data.js/model.js 经验节奏；scripts/enemy-balance-check.mjs、tests/enemies.test.js；docs/ENEMY-BALANCE.md、COMBAT 与共享顶部/R049 | 进行中（数值修复/实战核验） | enemy-balance-20261020-r049 | 2026-10-20 | 基线4639cd4；英雄60–87攻击而怪物沿用100级生命，复现首次受击至死亡时间后校准固定楼层曲线；同步检查挑战/首领、收入经验与通关；实测增血后20层仅12–15级，扩围临时升级阈值校准；不修改英雄装备面板或部署 |
+| 怪物耐久与关卡数值校准：src/combat/enemies.js、battle.js 出怪、必要 tactics.js、data.js/model.js 经验节奏；scripts/enemy-balance-check.mjs、tests/enemies.test.js、scripts/browser-check.mjs；docs/ENEMY-BALANCE.md、COMBAT 与共享顶部/R049 | 进行中（数值修复/实战核验） | enemy-balance-20261020-r049 | 2026-10-20 | 基线4639cd4；英雄60–87攻击而怪物沿用100级生命，复现首次受击至死亡时间后校准固定楼层曲线；同步检查挑战/首领、收入经验与通关；实测增血后20层仅12–15级，扩围临时升级阈值校准；浏览器旧脚本固定商品因收入变化金币不足，扩围仅按实际预算选择购买/替换测试商品；不修改英雄装备面板或部署 |
 
 | 首批五英雄与坦克建议：docs/heroes/LISHAN-DRAFT.md、新D026及索引；公共仅本认领、英雄设计补充/CONTENT-01、Q013、R050追加，不改R049顶部/COMBAT/游戏源码 | 已释放（坦克建议与阶段记录完成） | hero-tank-design-20261020-r050 | 2026-10-20 | 认领7baa024已发布；保留R049怪物/R051装备/R052界面范围，D026仅确认先设计四名后统一实施；砺山V0.1面板/技能/预算待用户评审，未改游戏源码；接续Q013 |
 

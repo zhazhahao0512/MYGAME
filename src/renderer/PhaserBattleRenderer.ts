@@ -297,7 +297,8 @@ class BattleScene extends Phaser.Scene {
       this.trails.lineBetween(ex,base,ex-10,base-10).lineBetween(ex,base,ex-13,base+3);
     }
     for(const shot of battle.shots){if(shot.id>this.launched&&shot.start>=battle.tick-5)this.flashes.set(shot.source,{tick:shot.start,color:shot.skill?COLORS.blue:0xe6dfca});this.launched=Math.max(this.launched,shot.id);}
-    const shots = motion ? [...battle.shots].sort((a,b)=>Number(b.source===selected)-Number(a.source===selected)||b.id-a.id).slice(0,LIMITS.projectiles) : [];
+    // Attack travel conveys targeting and impact timing; reduced motion keeps this essential cue.
+    const shots = [...battle.shots].sort((a,b)=>Number(b.source===selected)-Number(a.source===selected)||b.id-a.id).slice(0,LIMITS.projectiles);
     for (let n = 0; n < this.projectiles.length; n++) {
       const sprite = this.projectiles[n], shot = shots[n];
       if (!shot) { sprite.dot.setVisible(false); sprite.glow.setVisible(false); continue; }
@@ -307,12 +308,12 @@ class BattleScene extends Phaser.Scene {
       if (!target || target.id !== shot.target || target.hp <= 0) { sprite.dot.setVisible(false); sprite.glow.setVisible(false); continue; }
       const t = Phaser.Math.Clamp((battle.tick - shot.start) / (shot.end - shot.start), 0, 1);
       const x = Phaser.Math.Linear(from.root.x, to.root.x, t);
-      const y = Phaser.Math.Linear(from.root.y, to.root.y, t) - Math.sin(t * Math.PI) * (this.compact ? (shot.skill?28:12) : shot.skill ? 70 : 25);
+      const y = Phaser.Math.Linear(from.root.y, to.root.y, t) - (motion ? Math.sin(t * Math.PI) * (this.compact ? (shot.skill?28:12) : shot.skill ? 70 : 25) : 0);
       const tint = shot.skill ? 0x77d6ea : 0xe6dfca;
       if(shot.source===selected&&t>.8)this.flashes.set(shot.target,{tick:battle.tick,color:tint});
       sprite.dot.setVisible(true).setAlpha(shot.source===selected?1:.55).setPosition(x, y).setTint(tint).setDisplaySize(shot.skill ? 9 : 5, shot.skill ? 9 : 5);
-      sprite.glow.setVisible(true).setPosition(x, y).setTint(tint).setDisplaySize(shot.skill ? 28 : 16, shot.skill ? 28 : 16);
-      this.trails.lineStyle(shot.skill ? 2 : 1, tint, shot.source===selected?.9:.3).lineBetween(x - (to.root.x - from.root.x) * .025, y + 2, x, y);
+      sprite.glow.setVisible(motion).setPosition(x, y).setTint(tint).setDisplaySize(shot.skill ? 28 : 16, shot.skill ? 28 : 16);
+      if (motion) this.trails.lineStyle(shot.skill ? 2 : 1, tint, shot.source===selected?.9:.3).lineBetween(x - (to.root.x - from.root.x) * .025, y + 2, x, y);
     }
   }
 

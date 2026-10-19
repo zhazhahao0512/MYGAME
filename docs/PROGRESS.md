@@ -63,6 +63,7 @@
 | 战斗视觉偏差复盘：仅 docs/PROGRESS.md 本窗口认领、UI-05 与 R027；不占英雄 D011/R026/Q010 或公共顶部 | 已释放（复盘记录完成，无游戏代码） | battle-visual-review-20261019-r027 | 2026-10-19 | 认领 76563f1 已推送核验；R027 对照实图确认视觉还原不足，精准接入暂停，等待用户后续指向；保留英雄 D011/R026/Q010 与顶部范围 |
 | 战斗视觉还原：src/app.js、src/style.css、src/renderer/PhaserBattleRenderer.ts、public/ 战斗素材、相关 scripts/ 截图与交互检查；docs/design/battle-v2/、战斗界面规范与共享顶部/UI-05/D012/R028 | 已释放（视觉代码与本地检查完成，待用户看实际图） | battle-visual-impl-20261019-r028 | 2026-10-19 | 认领 177cc7e 已推送核验；D012/R028 完成地牢环境、紧凑信息卡、阵营色/金色选择、传送带与双详情视觉；真实截图已保存，精准继续暂停，保留英雄 D013/R029 范围 |
 | 岚牙技能 DPS 木桩估算：docs/heroes/LANYA-DPS.md、docs/heroes/lanya-dps.py、LANYA.md 分工与结果入口、新增 docs/decisions/D013-hero-skill-roles.md；公共仅 D013 索引、R029、Q004/Q010 补充、英雄状态与本窗口认领，不占战斗公共顶部/D012/R028 | 已释放（DPS分析与原则记录完成，未实施游戏） | hero-lanya-dps-20261019-r029 | 2026-10-19 | 基线 177cc7e；认领79d009e及范围扩展800d325均已推送；结果D013/R029；固定等级/装备，比较单技能1级到满级的10秒爆发、40秒含蓝耗平均DPS及三箭辅助收益；用户追加核心/配合/补短板三技能分工及海克斯强化余地，预留 D013；不改技能工作值、游戏源码或装备 |
+| 统一英雄测试标准：docs/heroes/HERO-BENCHMARK.md、hero-benchmark-v1.json、check-hero-benchmark.py、LANYA-DPS.md 版本边界；docs/decisions/D014-hero-benchmark-scope.md；公共仅D014索引、R031、Q004/Q011、英雄状态，不占战斗顶部/R030 | 进行中（方案与配置核验，非游戏实施） | hero-benchmark-20261019-r031 | 2026-10-19 | 基线b406603，合入db99e39并让出R030/顶部；统一1/3/5目标、输出/承伤木桩、成长/装备/海克斯与报告口径；不改游戏、装备或已有英雄数值 |
 
 | 战斗英雄属性排版：src/style.css；必要 src/app.js 与相关截图检查；docs/design/battle-v2/、共享顶部/UI-05/R030 | 进行中（局部界面优化） | battle-hero-stats-20261019-r030 | 2026-10-19 | 基线 b406603；保留 D012 视觉方向与两页属性，改善标签/数字对齐和分隔，检查真实页面；不改战斗数值，精准迁移仍暂停；预留 R030 |
 

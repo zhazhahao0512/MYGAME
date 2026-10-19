@@ -121,6 +121,8 @@
 
 | 紫装整批设计：docs/EQUIPMENT-DESIGN.md、equipment/purple-survival-support-r053.json 与 purple-survival-support-balance.py、ATTACK-EFFECTS-DESIGN末尾；新D027/索引独立条目；公共仅本行、装备补充/R053 | 进行中（设计与独立估值，无游戏实施） | equipment-batch-20261020-r053 | 2026-10-20 | 基线7faef8e；用户要求一次多设计避免多轮，整批补法系生存/防御/辅助紫装；初次推送遇并行UI认领R052，合并1b37e52并改用R053；保留R049怪物/R050英雄/R052 UI范围，不改已有装备或游戏源码 |
 
+| 坦克接受与法师初稿：docs/heroes/LISHAN-DRAFT.md、JINLI-DRAFT.md；D026接续、新D028及索引独立条目；公共仅本行/首批英雄补充/CONTENT-01/Q013/R054，不改R049/R053范围或游戏源码 | 进行中（仅设计与算式核验） | hero-mage-design-20261020-r054 | 2026-10-20 | 基线3547dd2；用户接受砺山首版并要求下一个，设计印记爆发法师；四方案完成前不接新英雄代码；D027由装备占用，预留D028/R054 |
+
 认领为共享仓库交接记录，不是自动锁；其他窗口避开“进行中”范围，重叠须先协调。未登记不证明没有窗口工作；中止或接管也须记录。
 
 ### 分层状态快照

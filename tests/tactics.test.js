@@ -72,7 +72,7 @@ test('full preferred rows wait; compatible challenges bypass them and earn only 
  b.enemies[4].hp=0;b.tick=b.nextSpawn;b.refreshSpawns();
  assert.equal(b.enemies[4].name,CHALLENGE_TYPES[1].name);assert.equal(b.enemies[4].challenge,true);
  assert.deepEqual(b.pendingChallenges.map(o=>o.id),['front']);assert.equal(b.gold,0);assert.equal(b.living('enemy').length,5);
- const u=b.enemies[4];b.dealDamage(b.party[0],u,{damage:1e9,vamp:0});b.dealDamage(b.party[0],u,{damage:1e9,vamp:0});assert.equal(b.gold,21);assert.equal(b.kills,1);
+ const u=b.enemies[4];b.dealDamage(b.party[0],u,{damage:1e9,vamp:0});b.dealDamage(b.party[0],u,{damage:1e9,vamp:0});assert.equal(b.gold,210);assert.equal(b.kills,1);
 });
 test('expiry only advances on simulation time; accepted challenges do not expire',()=>{
  const b=setup();const offer=b.challengeOffers[0];b.acceptChallenge(offer.id);

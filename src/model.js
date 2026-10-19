@@ -1,14 +1,15 @@
-import { BASE, HEROES, heroById, ITEMS, RARITIES, RULES } from './data.js';
+import { BASE, HEROES, heroById, ITEMS, LEGACY_RARITIES, RULES } from './data.js';
 import { normalizeSkillModes } from './combat/casting.js';
 import { normalizeTactics } from './combat/tactics.js';
 import { resolveStats } from './combat/attributes.js';
 import { loadoutModifiers, AUGMENTS, EQUIPMENT_EFFECTS } from './combat/content.js';
+import { EQUIPMENT, equipmentById, GOLD_SCALE } from './equipment.js';
 export const SAVE_KEY = 'squad-expedition.save.v1';
 const fail = message => { throw new Error(message); };
 export function random(run) { let t = run.seed += 0x6d2b79f5; t = Math.imul(t ^ t >>> 15,t|1); t ^= t + Math.imul(t ^ t >>> 7,t|61); run.seed >>>= 0; return ((t ^ t >>> 14) >>> 0)/4294967296; }
 export function sample(run, entries, count) { const list=[...entries]; for(let i=list.length-1;i>0;i--){const j=Math.floor(random(run)*(i+1));[list[i],list[j]]=[list[j],list[i]];} return list.slice(0,count); }
 export function createRun(seed = Date.now() >>> 0) {
-  const run={version:1,seed,floor:1,level:1,xp:0,gold:0,kills:0,earned:0,party:[],augments:[],phase:'initial',candidates:[],shop:[],refreshes:0,chest:null,serial:0,lastRound:null,createdAt:Date.now()};
+  const run={version:2,seed,floor:1,level:1,xp:0,gold:0,kills:0,earned:0,party:[],augments:[],phase:'initial',candidates:[],shop:[],refreshes:0,chest:null,serial:0,lastRound:null,createdAt:Date.now()};
   run.candidates=sample(run,HEROES.map(h=>h.id),3); return run;
 }
 export function baseStatsFor(member, level=1) {
@@ -28,15 +29,32 @@ export function recruit(run,id) {
   if(initial){run.phase='recruit';run.candidates=sample(run,HEROES.map(h=>h.id).filter(id=>!run.party.some(h=>h.hero===id)),3);}
   else {run.phase='ready';run.candidates=[];}
 }
+// Numeric rarity arguments remain a compatibility entry point for legacy test fixtures.
+// All live offers use the fixed catalogue; explicit formal IDs are stable across rarities.
 export function makeItem(run, forcedRarity, forcedBase) {
-  const base=forcedBase?ITEMS.find(item=>item.id===forcedBase):ITEMS[Math.floor(random(run)*ITEMS.length)];
-  if(!base)fail('装备模板不存在');
-  // Provisional weights, not finalized balance. Every tier can appear from either source.
-  const f=run.floor;const weights=[Math.max(4,42-f*2),25,18+f*.4,8+f*.8,1+f*.25,3+f*.2];
-  let index=forcedRarity;
-  if(index===undefined){let roll=random(run)*weights.reduce((a,b)=>a+b,0);index=weights.findIndex(w=>(roll-=w)<0);}
-  const rarity=RARITIES[index]; const stats=Object.fromEntries(Object.entries(base.stats).map(([k,v])=>[k,Number((v*rarity.scale).toFixed(3))]));
-  return {uid:`item-${++run.serial}`,base:base.id,name:base.name,mark:base.mark,rarity:rarity.id,stats,price:rarity.price,
+  const requested=forcedBase|| (equipmentById(forcedRarity)?forcedRarity:null);
+  if((requested&&!equipmentById(requested))||typeof forcedRarity==='number')return makeLegacyItem(run,forcedRarity,forcedBase);
+  let pool=EQUIPMENT;
+  if(requested)pool=[equipmentById(requested)];
+  else {
+    const f=run.floor,weights=[Math.max(30,85-f*3),Math.min(50,14+f*2),Math.min(25,1+f)];
+    let roll=random(run)*weights.reduce((a,b)=>a+b,0);
+    const rarity=forcedRarity||['white','blue','purple'][weights.findIndex(w=>(roll-=w)<0)];
+    pool=pool.filter(item=>item.rarity===rarity);
+  }
+  if(!pool.length)fail('该品级暂无正式装备');
+  let roll=random(run)*pool.reduce((sum,item)=>sum+item.weight,0);
+  const definition=pool.find(item=>(roll-=item.weight)<0)||pool.at(-1);
+  return instantiate(run,definition);
+}
+function instantiate(run,definition) {
+  return {uid:`item-${++run.serial}`,base:definition.id,name:definition.name,mark:definition.mark,rarity:definition.rarity,stats:{...definition.stats},price:definition.price};
+}
+export function makeLegacyItem(run, index=0, baseId) {
+  const base=baseId?ITEMS.find(item=>item.id===baseId):ITEMS[Math.floor(random(run)*ITEMS.length)],rarity=LEGACY_RARITIES[index];
+  if(!base||!rarity)fail('旧装备模板不存在');
+  return {uid:`item-${++run.serial}`,base:base.id,name:base.name,mark:base.mark,rarity:rarity.id,
+    stats:Object.fromEntries(Object.entries(base.stats).map(([k,v])=>[k,Number((v*rarity.scale).toFixed(3))])),price:rarity.price*GOLD_SCALE,
     effect:rarity.id==='orange'?(EQUIPMENT_EFFECTS[base.id]?.description||'特殊效果预留，待后续设计'):null};
 }
 export function makeChoices(run,count,excluded=[]) {
@@ -52,7 +70,7 @@ export function finishRound(run, result) {
   run.phase='shop';run.shop=makeChoices(run,4);run.refreshes=0;
   run.chest={options:makeChoices(run,3),refreshUsed:false,claimed:false};
 }
-export const refreshCost = run => 8+run.refreshes*4;
+export const refreshCost = run => 80+run.refreshes*40;
 export function refreshShop(run) {
   if(run.phase!=='shop') fail('只能在商店刷新');
   const cost=refreshCost(run);if(run.gold<cost) fail('金币不足');
@@ -127,13 +145,13 @@ export function nextFloor(run) {
 }
 
 function validItem(item) {
-  return item===null || !!(item && typeof item.uid==='string' && ITEMS.some(i=>i.id===item.base) && RARITIES.some(r=>r.id===item.rarity)
+  return item===null || !!(item && typeof item.uid==='string' && (equipmentById(item.base)||ITEMS.some(i=>i.id===item.base)) && LEGACY_RARITIES.some(r=>r.id===item.rarity)
     && typeof item.name==='string' && typeof item.mark==='string' && Number.isFinite(item.price)&&item.price>=0&&item.stats&&Object.entries(item.stats).every(([k,v])=>Object.hasOwn(BASE,k)&&Number.isFinite(v)));
 }
 export function parseSave(raw) {
   try {
     const run=JSON.parse(raw);
-    if(!run||run.version!==1||!Number.isInteger(run.floor)||run.floor<1||run.floor>20||!['initial','recruit','ready','battle','shop','victory','defeat'].includes(run.phase))return null;
+    if(!run||![1,2].includes(run.version)||!Number.isInteger(run.floor)||run.floor<1||run.floor>20||!['initial','recruit','ready','battle','shop','victory','defeat'].includes(run.phase))return null;
     if(run.augments===undefined)run.augments=[];
     if(!Array.isArray(run.augments)||run.augments.length>1||run.augments.some(id=>!AUGMENTS.some(a=>a.id===id)))return null;
     if(!['gold','xp','level','seed','serial','kills','earned','refreshes'].every(k=>Number.isFinite(run[k])&&run[k]>=0))return null;
@@ -143,7 +161,47 @@ export function parseSave(raw) {
     if(['initial','recruit'].includes(run.phase)&&(run.candidates.length!==3||new Set(run.candidates).size!==3||run.candidates.some(id=>run.party.some(h=>h.hero===id))))return null;
     if(run.phase!=='initial'&&run.party.length===0)return null;
     if(run.phase==='shop'&&(run.shop.length!==4||!run.chest||!Array.isArray(run.chest.options)||run.chest.options.length!==3||!run.chest.options.every(i=>i&&validItem(i))||typeof run.chest.claimed!=='boolean'||typeof run.chest.refreshUsed!=='boolean'))return null;
+    const owned=run.party.flatMap(h=>h.gear).filter(Boolean);
+    if(new Set(owned.map(i=>i.uid)).size!==owned.length)return null;
+    const allItems=[...owned,...run.shop,...(run.chest?.options||[])].filter(Boolean);
+    if(run.version===1){
+      // Version 1 used a ten-times smaller currency unit; no stat rescaling.
+      if(allItems.some(i=>equipmentById(i.base)))return null;
+      run.gold*=GOLD_SCALE;run.earned*=GOLD_SCALE;
+      if(run.lastRound?.gold!==undefined)run.lastRound.gold*=GOLD_SCALE;
+      for(const item of allItems)item.price*=GOLD_SCALE;
+      run.version=2;
+    }
+    for(const item of allItems){
+      const d=equipmentById(item.base);
+      if(d){item.name=d.name;item.mark=d.mark;item.rarity=d.rarity;item.stats={...d.stats};item.price=d.price;delete item.effect;}
+    }
+    run.serial=Math.max(run.serial,...allItems.map(i=>Number(/^item-(\d+)$/.exec(i.uid)?.[1]||0)));
     for(const member of run.party){member.tactics=normalizeTactics(member.tactics);member.skillModes=normalizeSkillModes(member.skillModes);delete member.auto;}
     if(run.phase==='battle')run.phase='ready';return run;
   } catch{return null;}
+}
+
+export const upgradesFor = item => EQUIPMENT.filter(d=>d.recipe?.includes(item?.base));
+export function previewCombine(run,id,hero,slot,anchorUid) {
+  if(run.phase!=='shop')fail('只能在商店合成装备');
+  const definition=equipmentById(id),anchor=run.party[hero]?.gear[slot];
+  if(!definition?.recipe||!anchor||anchor.uid!==anchorUid||!definition.recipe.includes(anchor.base))fail('材料已变化，请重新选择');
+  const available=[{hero,slot,item:anchor},...run.party.flatMap((h,hi)=>h.gear.flatMap((item,si)=>item&&(hi!==hero||si!==slot)?[{hero:hi,slot:si,item}]:[]))];
+  const used=new Set(),materials=[],missing=[];
+  for(const base of definition.recipe){
+    const entry=available.find(e=>e.item.base===base&&!used.has(e.item.uid));
+    if(entry){used.add(entry.item.uid);materials.push(entry);}else missing.push(equipmentById(base).name);
+  }
+  const reason=missing.length?`缺少：${missing.join('、')}`:run.gold<definition.combineFee?'金币不足':'';
+  return {definition,materials,missing,reason,cost:definition.combineFee,goldAfter:run.gold-definition.combineFee,hero,slot,anchorUid,uids:materials.map(m=>m.item.uid)};
+}
+export function combineEquipment(run,id,hero,slot,anchorUid,expectedUids) {
+  const quote=previewCombine(run,id,hero,slot,anchorUid);
+  if(quote.reason)fail(quote.reason);
+  if(!Array.isArray(expectedUids)||expectedUids.length!==quote.uids.length||expectedUids.some((uid,i)=>uid!==quote.uids[i]))fail('合成材料已变化，请重新确认');
+  const item=instantiate(run,quote.definition);
+  for(const m of quote.materials)run.party[m.hero].gear[m.slot]=null;
+  run.party[hero].gear[slot]=item;run.gold=quote.goldAfter;
+  return item;
 }

@@ -1,3 +1,4 @@
+import { equipmentModifiers } from '../equipment.js';
 import { SKILLS } from '../data.js';
 import { flatModifiers } from './attributes.js';
 export const STATUSES={
@@ -28,7 +29,7 @@ export const EQUIPMENT_EFFECTS={
 export function skillsFor(heroId) {return structuredClone(heroId==='stone'?stoneSkills:commonSkills);}
 export function enemySkills(boss) {return boss?[{id:'boss-crush',key:'Q',name:'重击',cost:10,cooldown:8,initialCooldown:5,priority:10,castTime:.4,retarget:'release',target:'enemy',effects:[{type:'damage',damageType:'physical',attack:1.2,power:0,travel:.2}]}]:[];}
 export function loadoutModifiers(member,augments=[]) {
-  return [...member.gear.flatMap((item,slot)=>item?flatModifiers(`gear:${slot}`,item.stats):[]),
+  return [...member.gear.flatMap((item,slot)=>item?equipmentModifiers(item,`gear:${slot}`):[]),
     ...augments.flatMap(id=>flatModifiers(`augment:${id}`,AUGMENTS.find(a=>a.id===id)?.stats||{}))];
 }
 export function triggersFor(member,augments=[]) {

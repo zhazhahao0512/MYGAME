@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import * as M from '../src/model.js';
 import { HEROES } from '../src/data.js';
 const ready=()=>{const r=M.createRun(20261015);M.recruit(r,r.candidates[0]);M.recruit(r,r.candidates[0]);return r;};
-const shop=()=>{const r=ready();M.finishRound(r,{won:true,kills:25,gold:75,seconds:25});return r;};
+const shop=()=>{const r=ready();M.finishRound(r,{won:true,kills:25,gold:750,seconds:25});return r;};
 
 test('initial choice plus four recruitment rounds yields five unique heroes with three candidates each',()=>{
   const r=ready();assert.equal(r.party.length,2);
@@ -24,26 +24,26 @@ test('chest items can be sold exactly once, and a pending chest blocks departure
   M.sellReward(r,0);assert.equal(r.gold,expected);assert.throws(()=>M.sellReward(r,1));M.nextFloor(r);assert.equal(r.floor,2);
 });
 test('orange limit is per hero, replacement in the same slot is legal and invalid purchase is atomic',()=>{
-  const r=shop();r.gold=500;r.party[0].gear[0]=M.makeItem(r,5);r.shop[0]=M.makeItem(r,5);
+  const r=shop();r.gold=5000;r.party[0].gear[0]=M.makeItem(r,5);r.shop[0]=M.makeItem(r,5);
   const before=JSON.stringify(r);assert.throws(()=>M.acquire(r,'shop',0,0,1),/橙装/);assert.equal(JSON.stringify(r),before);
   M.acquire(r,'shop',0,0,0);assert.equal(r.party[0].gear.filter(Boolean).length,1);
   r.shop[1]=M.makeItem(r,5);M.acquire(r,'shop',1,1,0);assert.equal(r.party[1].gear[0].rarity,'orange');
 });
 test('full-slot replacement sells exactly the old item, deducts price, and does not create a bag',()=>{
-  const r=shop();r.gold=200;r.party[0].gear[2]=M.makeItem(r,2);const old=r.party[0].gear[2],item=r.shop[0],expected=r.gold-item.price+M.salePrice(old);
+  const r=shop();r.gold=2000;r.party[0].gear[2]=M.makeItem(r,2);const old=r.party[0].gear[2],item=r.shop[0],expected=r.gold-item.price+M.salePrice(old);
   M.acquire(r,'shop',0,0,2);assert.equal(r.gold,expected);assert.equal(r.party[0].gear[2].uid,item.uid);assert.equal(r.shop[0],null);assert.equal(r.inventory,undefined);assert.throws(()=>M.acquire(r,'shop',0,0,3));
 });
 test('failed affordability check leaves items and money unchanged',()=>{
   const r=shop();r.gold=0;const before=JSON.stringify(r);assert.throws(()=>M.acquire(r,'shop',0,0,0),/金币/);assert.equal(JSON.stringify(r),before);
 });
 test('equipment preview is read-only, includes replacement sale, and agrees with committed capped stats',()=>{
-  const r=shop();r.gold=100;
+  const r=shop();r.gold=1000;
   r.party[0].gear[0]={...M.makeItem(r,0),stats:{attack:20,crit:1}};
   r.shop[0]={...M.makeItem(r,1),stats:{power:30,crit:2}};
   const before=structuredClone(r),stats=M.statsFor(r.party[0],r.level);
   const quote=M.previewAcquisition(r,'shop',0,0,0);
   assert.deepEqual(r,before);assert.equal(quote.reason,'');
-  assert.equal(quote.goldAfter,100+M.salePrice(r.party[0].gear[0])-r.shop[0].price);
+  assert.equal(quote.goldAfter,1000+M.salePrice(r.party[0].gear[0])-r.shop[0].price);
   assert.ok(quote.changes.some(c=>c.key==='attack'&&c.after<c.before));
   assert.ok(quote.changes.some(c=>c.key==='power'&&c.after>c.before));
   assert.ok(!quote.changes.some(c=>c.key==='crit'),'already capped crit does not show a false increase');
@@ -52,7 +52,7 @@ test('equipment preview is read-only, includes replacement sale, and agrees with
   for(const change of quote.changes){assert.equal(change.before,stats[change.key]);assert.equal(change.after,after[change.key]);}
 });
 test('equipment preview reports blocking rules before confirmation and acquisition still revalidates',()=>{
-  const r=shop();r.party[0].gear[0]=M.makeItem(r,5);r.shop[0]=M.makeItem(r,5);r.gold=500;
+  const r=shop();r.party[0].gear[0]=M.makeItem(r,5);r.shop[0]=M.makeItem(r,5);r.gold=5000;
   assert.match(M.previewAcquisition(r,'shop',0,0,1).reason,/橙装/);
   assert.equal(M.previewAcquisition(r,'shop',0,0,0).reason,'');
   const quote=M.previewAcquisition(r,'shop',0,1,0);assert.equal(quote.reason,'');
@@ -71,8 +71,8 @@ test('equipment can only be changed in shop and stats are recomputed after remov
   r.phase='ready';assert.throws(()=>M.transferGear(r,0,0,1,0));assert.throws(()=>M.sellGear(r,0,0));assert.throws(()=>M.moveHero(r,0,1));
 });
 test('refresh prices increase per shop, old stock is discarded, and price resets next round',()=>{
-  const r=shop();r.gold=100;const previous=r.shop.map(i=>i.uid);M.refreshShop(r);assert.equal(r.gold,92);assert.equal(M.refreshCost(r),12);assert.ok(r.shop.every(i=>!previous.includes(i.uid)));
-  M.sellReward(r,0);M.nextFloor(r);M.recruit(r,r.candidates[0]);M.finishRound(r,{won:true,kills:0,gold:0});assert.equal(M.refreshCost(r),8);
+  const r=shop();r.gold=1000;const previous=r.shop.map(i=>i.uid);M.refreshShop(r);assert.equal(r.gold,920);assert.equal(M.refreshCost(r),120);assert.ok(r.shop.every(i=>!previous.includes(i.uid)));
+  M.sellReward(r,0);M.nextFloor(r);M.recruit(r,r.candidates[0]);M.finishRound(r,{won:true,kills:0,gold:0});assert.equal(M.refreshCost(r),80);
 });
 test('no clear gold bonus is awarded; final chest precedes victory',()=>{
   const r=ready();r.floor=20;M.finishRound(r,{won:true,kills:5,gold:15});assert.equal(r.gold,15);assert.equal(r.phase,'shop');M.sellReward(r,0);M.nextFloor(r);assert.equal(r.phase,'victory');

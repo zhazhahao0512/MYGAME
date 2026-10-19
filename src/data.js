@@ -19,7 +19,7 @@ export const PRIMARY = ['attack','power','attackSpeed','haste','crit','omni','ar
 export const SECONDARY = ['critDamage','lifeSteal','move','focus','armorPen','magicPen','tenacity','damageAmp','reduction','healing','shielding'];
 export const PERCENT = new Set(['crit','critDamage','omni','lifeSteal','tenacity','damageAmp','reduction','healing','shielding']);
 export function statText(key, value) { return PERCENT.has(key) ? `${Math.round(value*100)}%` : key==='attackSpeed' ? value.toFixed(2) : ['hpRegen','manaRegen'].includes(key) ? `${Number(value.toFixed(1))}/s` : String(Number(value.toFixed(1))); }
-export const RARITIES = [
+export const LEGACY_RARITIES = [
   {id:'white',name:'普通',color:'#babfb6',scale:1,price:16},
   {id:'green',name:'优良',color:'#a2c47b',scale:1.35,price:23},
   {id:'blue',name:'精良',color:'#86b5de',scale:1.75,price:32},
@@ -27,6 +27,9 @@ export const RARITIES = [
   {id:'red',name:'强化',color:'#e48d85',scale:2.8,price:58},
   {id:'orange',name:'特殊',color:'#efb45f',scale:2.2,price:48},
 ];
+export const RARITIES = LEGACY_RARITIES.filter(r=>r.id!=='green').map(r=>({id:r.id,color:r.color,name:({white:'基础',blue:'进阶',purple:'史诗',red:'成装',orange:'特殊'})[r.id]}));
+export const rarityFor = id => RARITIES.find(r=>r.id===id)||LEGACY_RARITIES.find(r=>r.id===id);
+// Legacy templates are retained only for existing saves and explicit compatibility fixtures.
 export const ITEMS = [
   {id:'sword',name:'磨砺短刃',mark:'刃',stats:{attack:10}},
   {id:'orb',name:'余烬法珠',mark:'珠',stats:{power:14}},

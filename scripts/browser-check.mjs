@@ -13,7 +13,10 @@ try{
   await mkdir(new URL('../test-results/',import.meta.url),{recursive:true});
   browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
   const context=await browser.newContext({viewport:{width:2560,height:1440},deviceScaleFactor:1});
-  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+  const page=await context.newPage();
+  // Stable recruitment/shop seed; changing wall-clock dates must not randomize UI transactions.
+  await page.clock.setFixedTime(new Date('2026-10-19T00:00:00Z'));
+  page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
   const shot=async name=>{await page.screenshot({path:new URL(`../test-results/${name}.png`,import.meta.url).pathname,fullPage:true});};
   const click=async(act,selector='')=>{
     const locator=page.locator(`[data-act="${act}"]${selector}`).filter({visible:true});
@@ -36,7 +39,7 @@ try{
   const canvas=await page.locator('#battle-canvas canvas').elementHandle();
   await click('attributes');assert.equal(await canvas.evaluate(el=>el.isConnected),true,'switching attributes must preserve the Phaser instance');await click('attributes');
   await click('pause');const time=await page.locator('#battle-clock').textContent(),tick=await page.locator('#battle-canvas').getAttribute('data-tick');await page.clock.runFor(1000);assert.equal(await page.locator('#battle-clock').textContent(),time);assert.equal(await page.locator('#battle-canvas').getAttribute('data-tick'),tick);await click('close');
-  await page.clock.runFor(52000);assert.equal(await page.locator('.shop-shell').count(),1,'battle should finish into shop');
+  await page.clock.runFor(52000);assert.equal(await page.locator('.shop-shell').count(),1,`battle should finish into shop: ${JSON.stringify({phase:(await save()).phase,clock:await page.locator('#battle-clock').allTextContents(),errors})}`);
   assert.equal(await page.locator('.chest-choices').count(),1,'victory shows inline chest and party');
   assert.equal(await page.locator('[role="dialog"]').count(),0);await shot('chest-inline-2k');
   await noOverflow();assert.equal(await page.locator('[data-act="next"]').isDisabled(),true);

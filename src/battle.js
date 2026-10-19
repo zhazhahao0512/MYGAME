@@ -6,6 +6,8 @@ import { skillsFor, enemySkills, loadoutModifiers, triggersFor, STATUSES } from 
 import { CAST_MODES, normalizeSkillModes, chooseManagedSkill } from './combat/casting.js';
 import { TriggerQueue } from './combat/events.js';
 import { BATTLE_V2, ENEMY_TYPES, CHALLENGE_TYPES, TARGET_MODES, normalizeTactics, rankTargets } from './combat/tactics.js';
+import { GOLD_SCALE } from './equipment.js';
+import { initializeEquipment, hasPassive, syncEquipment, changeEquipmentTarget, absorbEquipmentShield, procSnapshot, basicHit, recordParticipation, restoreTakedownMana } from './combat/equipment.js';
 export const STEP=.02;
 export const hitChance=(focus,move)=>Math.max(0,Math.min(1,focus/Math.max(1,move)));
 export const cooldown=(seconds,haste)=>seconds/(1+Math.max(0,haste)/100);
@@ -20,7 +22,7 @@ export class Battle {
     this.party=run.party.map((member,slot)=>this.makeUnit({side:'hero',slot,name:heroById(member.hero).name,def:heroById(member.hero),
       baseStats:baseStatsFor(member,run.level),modifiers:loadoutModifiers(member,run.augments),
       skills:skillsFor(member.hero),triggers:triggersFor(member,run.augments),skillModes:member.skillModes}));
-    for(const [index,unit] of this.party.entries()){unit.tactics=normalizeTactics(run.party[index].tactics);unit.targetId=null;unit.targetRule=null;}
+    for(const [index,unit] of this.party.entries()){initializeEquipment(unit,run.party[index].gear);unit.tactics=normalizeTactics(run.party[index].tactics);unit.targetId=null;unit.targetRule=null;}
     this.enemies=Array.from({length:5},(_,slot)=>this.spawn(slot));
     this.challengeOffers=Array.from({length:3},(_,i)=>this.makeOffer(this.tuning.offerSeconds+i*this.tuning.offerStagger));
     this.addFeed('战斗开始 · 点英雄再点敌人，保存优先位置。');
@@ -37,7 +39,7 @@ export class Battle {
     const baseStats={...BASE,hp:boss?260+floor*35:(100+floor*10)*type.health,attack:boss?12+floor*2:(4+floor*1.1)*type.damage,power:0,
       attackSpeed:boss?.65:.55+(slot%3)*.1,armor:floor*1.5,resist:floor*1.5,hpRegen:0,mana:30,manaRegen:1,crit:0,move:type.move};
     const unit=this.makeUnit({side:'enemy',slot,name:boss?'守门人':type.name,def:{...type,color:template?'#d6ad67':'#bd897d'},baseStats,skills:enemySkills(boss||type.caster),boss});
-    unit.reward=template?template.reward:boss?15:3;unit.challenge=!!template;unit.enemyType=type.id;
+    unit.reward=(template?template.reward:boss?15:3)*GOLD_SCALE;unit.challenge=!!template;unit.enemyType=type.id;
     unit.nextAttack=this.tick+ticks(.8);return unit;
   }
   makeOffer(seconds=this.tuning.offerSeconds) {
@@ -79,7 +81,7 @@ export class Battle {
     const target=targetId?this.living('enemy').find(u=>u.id===targetId):null;
     if(targetId&&!target)return false;
     unit.tactics=normalizeTactics({...unit.tactics,...patch});this.run.party[index].tactics={...unit.tactics};
-    unit.targetId=target?.id||null;unit.targetRule=unit.rules.attackTarget===unit.baseRules.attackTarget?'player':unit.rules.attackTarget;return true;
+    changeEquipmentTarget(unit,target?.id||null);unit.targetId=target?.id||null;unit.targetRule=unit.rules.attackTarget===unit.baseRules.attackTarget?'player':unit.rules.attackTarget;return true;
   }
   commandTarget(index,id){const target=this.living('enemy').find(u=>u.id===id);return !!target&&this.setTactics(index,{preferredSlot:target.slot},id);}
   addFeed(text){this.feed.unshift({time:this.time,text});this.feed.length=Math.min(this.feed.length,6);}
@@ -107,17 +109,17 @@ export class Battle {
     });
   }
   target(source,rule=source.rules.attackTarget) {
-    const units=this.living(source.side==='hero'?'enemy':'hero');if(!units.length){source.targetId=null;return null;}
+    const units=this.living(source.side==='hero'?'enemy':'hero');if(!units.length){changeEquipmentTarget(source,null);source.targetId=null;return null;}
     // Source overrides stay compatible with special content; defaults use player intent.
     const override=rule!==source.baseRules.attackTarget;
     const key=override?rule:'player';
     if(source.side==='hero'&&source.tactics){
       if(source.targetRule!==key){source.targetId=null;source.targetRule=key;}
       const locked=units.find(u=>u.id===source.targetId);if(locked)return locked;
-      if(!override){const chosen=rankTargets(source,units,source.tactics,(a,b)=>this.attackChance(a,b),this.tuning.neighborRadius)[0];source.targetId=chosen.id;return chosen;}
+      if(!override){const chosen=rankTargets(source,units,source.tactics,(a,b)=>this.attackChance(a,b),this.tuning.neighborRadius)[0];changeEquipmentTarget(source,chosen.id);source.targetId=chosen.id;return chosen;}
     }
     const chosen=rule==='random'?units[Math.floor(random(this.rng)*units.length)]:rule==='slot3'?units.find(u=>u.slot===2)||units[0]:rule==='weakest'?units.reduce((a,b)=>a.hp<b.hp?a:b):units[0];
-    source.targetId=chosen.id;return chosen;
+    changeEquipmentTarget(source,chosen.id);source.targetId=chosen.id;return chosen;
   }
   getSkill(unit,index) {
     const skill=unit?.skills[index];if(!skill)return null;
@@ -148,18 +150,22 @@ export class Battle {
     return (rule==='weakest'?[...candidates].sort((a,b)=>a.hp-b.hp):rule==='slot3'?[...candidates].sort((a,b)=>(b.slot===2)-(a.slot===2)):candidates).slice(0,1);
   }
   snapshot(source,target,multiplier=1,skill=false,options={}) {
+    syncEquipment(source,this.tick);syncEquipment(target,this.tick);
     const s=source.stats,t=target.stats,magic=(options.damageType||(skill?'magic':'physical'))==='magic';
     const hit=options.canMiss===false||(options.canMiss!==true&&skill)||random(this.rng)<hitChance(s.focus,t.move);
     const crit=(options.canCrit??!skill)&&random(this.rng)<s.crit;
     const resistance=Math.max(0,(magic?t.resist:t.armor)-(magic?s.magicPen:s.armorPen));
     const raw=((options.amount||0)+s.attack*(options.attack??multiplier)+s.power*(options.power??(skill ? .8 : 0)))
-      *(crit?s.critDamage:1)*(1+s.damageAmp)*100/(100+resistance)*(1-t.reduction);
-    return {hit,crit,damage:Math.max(0,raw),vamp:(skill?0:s.lifeSteal)+s.omni,lifeSteal:skill?0:s.lifeSteal,omni:s.omni,healing:s.healing};
+      *(crit?s.critDamage+(!skill&&hasPassive(source,'basic_crit_multiplier')?.15:0):1)*(1+s.damageAmp)*100/(100+resistance)*(1-t.reduction)*(!skill&&!magic&&hasPassive(target,'basic_physical_guard')?.92:1);
+    return {hit,crit,powerSnapshot:s.power,damageType:magic?'magic':'physical',damage:Math.max(0,raw),vamp:(skill?0:s.lifeSteal)+s.omni,lifeSteal:skill?0:s.lifeSteal,omni:s.omni,healing:s.healing};
   }
   fire(source,target,{skill=false,multiplier=1,duration,...options}={}) {
+    if(!skill)changeEquipmentTarget(source,target.id);
+    syncEquipment(source,this.tick);syncEquipment(target,this.tick);
     const shot={id:++this.shotSerial,source:source.id,target:target.id,side:source.side,sourceSlot:source.slot,targetSlot:target.slot,
       start:this.tick,end:this.tick+ticks(duration??1/source.stats.attackSpeed),skill,origin:skill?'skill':'attack',originId:options.originId||(skill?'skill':'attack'),skillKey:options.skillKey||'',onHit:structuredClone(options.onHit||[]),
       ...this.snapshot(source,target,multiplier,skill,options)};
+    if(!skill){if(hasPassive(source,'triple_hit_damage'))shot.comboDamage=procSnapshot(this,source,target,source.stats.attack*.30,'physical','triple_hit_damage');}
     this.shots.push(shot);
     if(!skill){source.attack={start:shot.start,end:shot.end};this.emit('attack',source,target);this.flushTriggers();}
     return shot;
@@ -170,7 +176,10 @@ export class Battle {
     if(!target||target.hp<=0)return;
     this.events.root(()=>{
       if(!shot.hit){target.lastEvent={text:'闪避',tick:this.tick,type:'dodge'};this.emitEffect('dodge',target,0,false,this.visualSource(source,shot));this.emit('dodge',source,target);return;}
+      if(!shot.skill&&hasPassive(source,'low_health_lifesteal')&&source.hp>0&&source.hp<source.stats.hp*.5){shot={...shot,vamp:shot.vamp+.03,lifeSteal:shot.lifeSteal+.03};}
       this.dealDamage(source,target,shot);
+      if(!shot.skill)basicHit(this,source,target,shot);
+      if(shot.spellBonus&&target.hp>0)this.dealDamage(source,target,shot.spellBonus);
       if(target.hp>0&&source)for(const effect of shot.onHit||[])this.applyEffect(source,target,effect,this.visualSource(source,shot));
     });
     this.flushTriggers();
@@ -179,19 +188,21 @@ export class Battle {
   dealDamage(source,target,snapshot) {
     if(target.hp<=0)return;
     if(snapshot.damage>0)target.lastDamagedTick=this.tick;
-    const absorbed=Math.min(target.shield,snapshot.damage);target.shield-=absorbed;
+    const absorbed=Math.min(target.shield,snapshot.damage);target.shield-=absorbed;absorbEquipmentShield(target,absorbed);
     const lost=Math.min(target.hp,snapshot.damage-absorbed);target.hp=Math.max(0,target.hp-lost);
     target.lastEvent={text:lost>0?`${snapshot.crit?'暴击 ':''}−${Math.round(lost)}`:`护盾 −${Math.round(absorbed)}`,tick:this.tick,type:'damage'};
     if(lost>0||absorbed>0)this.emitEffect('damage',target,lost,!!snapshot.crit,{...this.visualSource(source,snapshot),hpLoss:lost,shieldLoss:absorbed});
-    this.emit('hit',source,target,lost,{absorbed});
-    if(snapshot.crit)this.emit('critical',source,target,lost);
+    recordParticipation(this,source,target,lost+absorbed);
+    if(!snapshot.suppressHitTriggers){this.emit('hit',source,target,lost,{absorbed});if(snapshot.crit)this.emit('critical',source,target,lost);}
     this.emit('damaged',source,target,lost,{absorbed});
     if(source?.hp>0&&lost>0&&snapshot.vamp>0)this.heal(source,source,lost*snapshot.vamp*(1+snapshot.healing),{...this.visualSource(source,snapshot),healingKind:snapshot.lifeSteal>0?(snapshot.omni>0?'vamp':'lifesteal'):'omni'});
+    syncEquipment(target,this.tick);
     if(target.hp===0) {
+      restoreTakedownMana(this,target);
       this.emitEffect('death',target);this.emit('kill',source,target);this.emit('death',source,target);
       target.shield=0;target.attack=null;target.casting=null;target.pendingCast=null;target.castPlan=null;
       if(target.side==='enemy') {
-        this.kills++;const gold=target.reward??(target.boss?15:3);this.gold+=gold;
+        this.kills++;const gold=target.reward??(target.boss?150:30);this.gold+=gold;
         if(target.boss)this.bossKilled=true;
         // The slot stays empty until the shared spawn scheduler can fill it.
         this.addFeed(`${target.name}被击败 · +${gold} 金币`);
@@ -200,7 +211,7 @@ export class Battle {
   }
   heal(source,target,amount,context={}) {
     if(target.hp<=0)return;
-    const actual=Math.max(0,Math.min(target.stats.hp-target.hp,amount));target.hp+=actual;
+    const actual=Math.max(0,Math.min(target.stats.hp-target.hp,amount));target.hp+=actual;syncEquipment(target,this.tick);
     if(actual>0){this.emitEffect('heal',target,actual,false,{...this.visualSource(source,context),healingKind:context.healingKind||'heal'});this.emit('heal',source,target,actual);}
   }
   addStatus(source,target,statusId) {
@@ -281,9 +292,18 @@ export class Battle {
     let targets=action.targets.map(id=>this.find(id)).filter(u=>u?.hp>0);
     if(skill.retarget==='release'&&targets.length<action.targets.length)targets=this.skillTargets(unit,skill);
     if(!targets.length){this.emit('fizzle',unit,unit,0,{skill:skill.id});this.flushTriggers();return;}
+    const empowered=hasPassive(unit,'charged_spell_damage')&&unit.equipment.spellReady<=this.tick&&skill.effects.some(e=>e.type==='damage');
+    let firstDamage=true;
     this.events.root(()=>{
       for(const target of targets)for(const effect of skill.effects) {
-        if(effect.type==='damage')this.fire(unit,target,{skill:true,duration:effect.travel??.3,...effect,originId:skill.id,skillKey:unit.side==='hero'?String(action.index+1):skill.key});
+        if(effect.type==='damage'){
+          const shot=this.fire(unit,target,{skill:true,duration:effect.travel??.3,...effect,originId:skill.id,skillKey:unit.side==='hero'?String(action.index+1):skill.key});
+          if(empowered&&firstDamage){
+            shot.spellBonus=procSnapshot(this,unit,target,25+.05*shot.powerSnapshot,'magic','charged_spell_damage');
+            unit.equipment.spellReady=this.tick+ticks(12);
+          }
+          firstDamage=false;
+        }
         else this.applyEffect(unit,target,effect,{origin:'skill',originId:skill.id,skillKey:unit.side==='hero'?String(action.index+1):skill.key});
       }
       this.emit('cast',unit,unit,0,{skill:skill.id});
@@ -294,7 +314,7 @@ export class Battle {
     if(!['combat','cleanup'].includes(this.phase))return;
     this.tick++;
     if(this.tick>=this.durationTicks&&this.phase==='combat'){this.phase='cleanup';this.pendingChallenges=[];this.challengeOffers=[];this.challengeRevision++;this.addFeed('时间到，停止补位。清理剩余敌人！');}
-    for(const unit of this.units())expireStatuses(unit,this.tick);
+    for(const unit of this.units()){expireStatuses(unit,this.tick);syncEquipment(unit,this.tick);}
     const due=this.shots.filter(s=>s.end<=this.tick);this.shots=this.shots.filter(s=>s.end>this.tick);
     for(const shot of due)this.settle(shot);
     if(!this.living('hero').length){this.phase='lost';this.shots=[];for(const u of this.units())u.pendingCast=null;return;}
@@ -307,6 +327,7 @@ export class Battle {
       // Natural regeneration remains outside heal triggers. Only its display is batched.
       this.regenTotals.set(unit.id,(this.regenTotals.get(unit.id)||0)+unit.hp-hpBefore);
       if(this.tick%50===0){const actual=this.regenTotals.get(unit.id);if(actual>0)this.emitEffect('heal',unit,actual,false,{source:unit.id,origin:'regen',originId:'regen',healingKind:'regen'});this.regenTotals.delete(unit.id);}
+      syncEquipment(unit,this.tick);
       unit.mana=Math.min(unit.stats.mana,unit.mana+unit.stats.manaRegen*STEP);
       if(unit.pendingCast&&unit.pendingCast.expiresAt<this.tick){unit.pendingCast=null;unit.lastCommandReason='指令已过期';}
       if(isControlled(unit)){unit.pendingCast=null;continue;}

@@ -31,7 +31,7 @@ test('timer expiry wins a same-tick race against scheduled respawn',()=>{
 });
 test('dead enemies grant kill rewards only once',()=>{
   const b=battle(),source=b.party[0],target=b.enemies[0];source.stats.attack=999;source.stats.crit=0;target.hp=1;
-  b.settle(b.fire(source,target));b.settle(b.fire(source,target));assert.equal(b.kills,1);assert.equal(b.gold,3);
+  b.settle(b.fire(source,target));b.settle(b.fire(source,target));assert.equal(b.kills,1);assert.equal(b.gold,30);
 });
 test('manual ultimate consumes mana and cooldown once and rejects immediate second activation',()=>{
   const b=battle(),unit=b.party[0];unit.auto=false;unit.ready[3]=0;unit.mana=100;assert.equal(b.cast(unit,3),true);assert.equal(unit.mana,70);assert.equal(b.cast(unit,3),false);assert.equal(unit.mana,70);assert.equal(b.shots.length,5);

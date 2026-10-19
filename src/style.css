@@ -344,3 +344,20 @@
  .battle-v2 .skill-cell{padding-top:calc(28 * var(--ui))}
  .battle-v2 .cast-skill{min-width:calc(32 * var(--ui));min-height:calc(28 * var(--ui));font-size:calc(10 * var(--ui))}
 }
+
+/* Fixed equipment: compact offer summaries, full descriptions in inspection. */
+.item-passive{display:block;font-size:11px;line-height:1.7;color:#c1b598;margin-top:8px;overflow-wrap:anywhere}
+.offer .item-passive{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.recipe-summary{font-size:12px;line-height:1.8;color:var(--muted);margin:12px 0;overflow-wrap:anywhere}
+.upgrade-routes{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:12px;margin:12px 0}
+.upgrade-routes>small{color:var(--muted);font-size:11px;line-height:1.6}
+.upgrade-route{display:flex;flex-direction:column;gap:5px;text-align:left;padding:10px;background:#252720;border:1px solid #676047;border-radius:3px;min-height:44px}
+.upgrade-route:hover,.upgrade-route:focus-visible{border-color:var(--accent);background:#333326}
+.upgrade-route>span{display:flex;justify-content:space-between;gap:12px;font-size:13px}
+.upgrade-route b{font-size:11px;color:var(--accent)}
+.upgrade-route>small{font-size:11px;line-height:1.6;overflow-wrap:anywhere}
+.combine-materials{padding-left:20px;font-size:12px;line-height:1.9}
+.shop-popover .popover-content{min-height:0;overflow:auto;overscroll-behavior:contain}
+
+.shop-popover{display:flex;flex-direction:column;overflow:hidden}
+.shop-popover>header,.shop-popover>footer{flex-shrink:0}

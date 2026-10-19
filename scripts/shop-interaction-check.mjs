@@ -18,7 +18,7 @@ try {
     const gear=(h,s)=>page.locator(`[data-act="gear"][data-hero="${h}"][data-slot="${s}"]`);
     const hero=h=>page.locator(`[data-drag="hero"][data-hero="${h}"]`);
     const save=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('squad-expedition.save.v1')));
-    const fixture=async(claimed=false,gold=300)=>{
+    const fixture=async(claimed=false,gold=3000)=>{
       await page.goto(url);
       await page.evaluate(async({claimed,gold})=>{
         const M=await import('/src/model.js'),{HEROES}=await import('/src/data.js');

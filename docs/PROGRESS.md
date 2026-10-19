@@ -142,6 +142,8 @@
 | 首批红装整批设计：新docs/equipment/RED-EQUIPMENT.md、red-equipment-r060.json、red-equipment-balance.py；EQUIPMENT-DESIGN与ATTACK-EFFECTS仅接续/链接；新D031/索引、Q009独立补充；公共仅本行/装备补充/R060 | 进行中（设计与独立核算，未实施游戏） | equipment-red-20261020-r060 | 2026-10-20 | 起始b35458f；初次认领推送遇并行R058/D030与R059，保留合并96f7caa后改R060/D031；用户要求继续红装计划，19件/26路线为拟定批量；保留既有59件参数、运行47件及动画/英雄范围 |
 | 已确认UI接入：src/app.js仅itemBox/gearButtons/heroPanels/renderShop/offerCard/选择预览渲染，不动R059动效设置/循环；新增src/expedition-ui.css、scripts/ui-theme-check.mjs；UI规范/实图、新D032/索引、公共UI补充/R061 | 进行中（界面实施/浏览器验收） | ui-unification-20261020-r061 | 2026-10-20 | 基线96f7caa；用户要求开始修改代码、装备完整名称、宝箱商店战斗统一R055/R057风格；不改renderer/战斗结算/数值，避开R059动画范围，预留D032/R061；app.js只改上述展示函数与样式导入 |
 
+| 角色攻击表现与怪物节奏：renderer/、battle.js出怪/只读表现、combat/tactics/enemies；app.js仅传送带/renderBattle/updateChallenges与帮助文字，不动R061商店/英雄展示；必要data/model经验；相关tests与动画/节奏浏览器脚本；COMBAT/TACTICS/UI/数值报告、D033/索引、公共战斗补充/R062 | 进行中（动画实施；补怪方向与满员挑战待回复） | battle-pacing-20261020-r062 | 2026-10-20 | 基线b2df1e7；用户要求角色同色、近远程区分、怪物更强、挑战点击直上；频率措辞矛盾与满员处理先澄清；避开R060装备和R061已认领函数 |
+
 认领为共享仓库交接记录，不是自动锁；其他窗口避开“进行中”范围，重叠须先协调。未登记不证明没有窗口工作；中止或接管也须记录。
 
 ### 分层状态快照

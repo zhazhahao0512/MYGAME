@@ -23,7 +23,20 @@ test('opening remains playable for a low-output pair with only legal level-one s
  assert.equal(b.phase,'won');assert.ok(b.kills>=10);assert.ok(b.time>40,'end of spawning still requires cleanup');
 });
 test('durable enemies still grant one reward and calibrated kill XP; existing levels never decrease',()=>{
- const run=runAt();M.finishRound(run,{won:true,gold:480,kills:16,seconds:50});assert.equal(run.level,2);assert.equal(run.xp,16);assert.equal(run.gold,480);
+ const run=runAt();M.finishRound(run,{won:true,gold:360,kills:12,seconds:50});assert.equal(run.level,2);assert.equal(run.xp,12);assert.equal(run.gold,360);
  run.phase='ready';run.level=30;M.finishRound(run,{won:true,gold:30,kills:1,seconds:50});assert.equal(run.level,30);
  const b=new Battle(runAt()),target=b.enemies[0];b.dealDamage(b.party[0],target,{damage:1e6,vamp:0});b.dealDamage(b.party[0],target,{damage:1e6,vamp:0});assert.equal(b.kills,1);assert.equal(b.gold,30);
+});
+
+test('challenge stats clearly exceed same-archetype ordinary enemies',()=>{
+ const b=new Battle(runAt(4,3));
+ for(const [type,slot] of [[CHALLENGE_TYPES[0],0],[CHALLENGE_TYPES[1],4],[CHALLENGE_TYPES[2],2]]){
+  const normal=b.enemies[slot],elite=b.spawn(slot,type);
+  assert.ok(elite.stats.hp>=normal.stats.hp*2.99);assert.ok(elite.stats.attack>=normal.stats.attack*1.79);assert.ok(elite.reward>normal.reward);
+ }
+});
+test('attack color and melee/ranged identity are captured at launch',()=>{
+ const b=new Battle(runAt()),u=b.party[0];u.def={...u.def,color:'#123456',range:'melee'};
+ const shot=b.fire(u,b.enemies[0]);u.def={...u.def,color:'#abcdef',range:'ranged'};
+ assert.equal(shot.visualColor,'#123456');assert.equal(shot.attackRange,'melee');assert.equal(b.visualSource(u,shot).visualColor,'#123456');
 });

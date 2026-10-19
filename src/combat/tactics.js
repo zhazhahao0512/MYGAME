@@ -21,14 +21,14 @@ export function rankTargets(source,candidates,tactics,chance,radius=1) {
 }
 
 // Playtest defaults, not final balance. All positions here are zero-based.
-export const BATTLE_V2 = Object.freeze({spawnSeconds:6,batchSize:2,neighborRadius:1,queueLimit:3,offerSeconds:12,offerStagger:4});
+export const BATTLE_V2 = Object.freeze({spawnSeconds:2,batchSize:5,neighborRadius:1,offerSeconds:12,offerStagger:4});
 export const ENEMY_TYPES = Object.freeze([
-  {id:'guard',name:'铁卫',mark:'卫',role:'前排守卫',positions:[0,1],health:1.2,damage:1,move:100},
-  {id:'claw',name:'灰爪',mark:'爪',role:'中排斗士',positions:[2,1,3],health:1,damage:1.1,move:104},
-  {id:'hexer',name:'咒术师',mark:'咒',role:'后排术士',positions:[4,3,2],health:.85,damage:1.15,move:100},
+  {id:'guard',color:'#d49a91',name:'铁卫',mark:'卫',role:'前排守卫',positions:[0,1],health:1.2,damage:1,move:100},
+  {id:'claw',color:'#d2ae7b',name:'灰爪',mark:'爪',role:'中排斗士',positions:[2,1,3],health:1,damage:1.1,move:104},
+  {id:'hexer',color:'#ac9ed1',name:'咒术师',mark:'咒',role:'后排术士',positions:[4,3,2],health:.85,damage:1.15,move:100},
 ]);
 export const CHALLENGE_TYPES = Object.freeze([
-  {...ENEMY_TYPES[0],id:'elite-guard',name:'精英铁卫',reward:18,health:2.2,damage:1.3,description:'耐久更高的前排挑战。'},
-  {...ENEMY_TYPES[2],id:'elite-hexer',name:'深渊咒术师',reward:21,health:1.8,damage:1.5,description:'会施放重击的后排挑战。',caster:true},
-  {...ENEMY_TYPES[1],id:'rival',name:'游侠挑战者',role:'敌方英雄',mark:'侠',positions:[3,4,2],reward:25,health:2,damage:1.4,description:'敌方英雄挑战，不是招募同伴。',caster:true},
+  {...ENEMY_TYPES[0],id:'elite-guard',name:'精英铁卫',reward:18,health:3.6,damage:1.8,description:'耐久更高的前排挑战。'},
+  {...ENEMY_TYPES[2],id:'elite-hexer',name:'深渊咒术师',reward:21,health:2.55,damage:2.07,description:'会施放重击的后排挑战。',caster:true},
+  {...ENEMY_TYPES[1],id:'rival',name:'游侠挑战者',role:'敌方英雄',mark:'侠',positions:[3,4,2],reward:25,health:3,damage:1.98,description:'敌方英雄挑战，不是招募同伴。',caster:true},
 ]);

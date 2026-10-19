@@ -59,29 +59,28 @@ test('deaths retain fixed slots until batch time; new instances never receive ol
  assert.deepEqual(b.enemies.map(u=>u.id),ids);b.step();assert.notEqual(b.enemies[0].id,ids[0]);assert.deepEqual(b.enemies.slice(1).map(u=>u.id),ids.slice(1));
  const hp=b.enemies[0].hp;b.settle(shot);assert.equal(b.enemies[0].hp,hp);
 });
-test('challenge acceptance is bounded, duplicate safe, free, and does not spawn immediately',()=>{
- const b=setup(),ids=b.enemies.map(u=>u.id),gold=b.gold,id=b.challengeOffers[0].id;
- assert.ok(b.acceptChallenge(id));assert.equal(b.acceptChallenge(id),false);
- assert.deepEqual(b.enemies.map(u=>u.id),ids);assert.equal(b.gold,gold);
- for(let i=1;i<BATTLE_V2.queueLimit;i++)assert.ok(b.acceptChallenge(b.challengeOffers[0].id));
- assert.equal(b.acceptChallenge(b.challengeOffers[0].id),false);
- assert.ok(b.cancelChallenge(id));assert.equal(b.cancelChallenge(id),false);
+test('challenges enter vacancies immediately, reject full boards and duplicate clicks without cost',()=>{
+ const b=setup(),id=b.challengeOffers[0].id,ids=b.enemies.map(u=>u.id),seed=b.offerRng.seed;
+ assert.equal(b.canAcceptChallenge(id),false);assert.equal(b.acceptChallenge(id),false);assert.deepEqual(b.enemies.map(u=>u.id),ids);assert.equal(b.offerRng.seed,seed);
+ const offer=b.challengeOffers[0],slot=offer.type.positions[0],old=b.enemies[slot],shot=b.fire(b.party[0],old,{duration:10});old.hp=0;
+ const next=b.nextSpawn;assert.ok(b.canAcceptChallenge(id));assert.ok(b.acceptChallenge(id));assert.equal(b.acceptChallenge(id),false);
+ assert.notEqual(b.enemies[slot].id,old.id);assert.equal(b.enemies[slot].challenge,true);assert.equal(b.nextSpawn,next);assert.equal(b.tick,0);assert.equal(b.gold,0);
+ const hp=b.enemies[slot].hp;b.settle(shot);assert.equal(b.enemies[slot].hp,hp,'old shot does not hit immediate replacement');
 });
-test('full preferred rows wait; compatible challenges bypass them and earn only on kill',()=>{
- const b=setup();b.pendingChallenges=[{id:'front',type:CHALLENGE_TYPES[0]},{id:'back',type:CHALLENGE_TYPES[1]}];
- b.enemies[4].hp=0;b.tick=b.nextSpawn;b.refreshSpawns();
- assert.equal(b.enemies[4].name,CHALLENGE_TYPES[1].name);assert.equal(b.enemies[4].challenge,true);
- assert.deepEqual(b.pendingChallenges.map(o=>o.id),['front']);assert.equal(b.gold,0);assert.equal(b.living('enemy').length,5);
- const u=b.enemies[4];b.dealDamage(b.party[0],u,{damage:1e9,vamp:0});b.dealDamage(b.party[0],u,{damage:1e9,vamp:0});assert.equal(b.gold,210);assert.equal(b.kills,1);
+test('recommended positions fall back to another vacancy and rewards happen once on kill',()=>{
+ const b=setup();b.challengeOffers[0].type=CHALLENGE_TYPES[0];b.enemies[4].hp=0;
+ assert.ok(b.acceptChallenge(b.challengeOffers[0].id));const u=b.enemies[4];assert.equal(u.name,CHALLENGE_TYPES[0].name);assert.equal(b.living('enemy').length,5);
+ b.dealDamage(b.party[0],u,{damage:1e9,vamp:0});b.dealDamage(b.party[0],u,{damage:1e9,vamp:0});assert.equal(b.gold,180);assert.equal(b.kills,1);
 });
-test('expiry only advances on simulation time; accepted challenges do not expire',()=>{
- const b=setup();const offer=b.challengeOffers[0];b.acceptChallenge(offer.id);
- b.tick=offer.expiresAt;b.refreshSpawns();assert.equal(b.pendingChallenges[0].id,offer.id);
- const ids=b.challengeOffers.map(o=>o.id);b.tick+=10000;b.refreshSpawns();assert.ok(b.challengeOffers.every(o=>!ids.includes(o.id)));assert.equal(b.pendingChallenges[0].id,offer.id);
+test('expiry and round deadline reject stale offers; regular batches fill all vacancies',()=>{
+ const b=setup(),offer=b.challengeOffers[0];b.enemies.forEach(u=>u.hp=0);b.tick=offer.expiresAt;
+ assert.equal(b.acceptChallenge(offer.id),false);b.refreshSpawns();assert.ok(b.challengeOffers.every(o=>o.id!==offer.id));assert.equal(b.living('enemy').length,5);
+ const c=setup();c.enemies[0].hp=0;c.tick=c.durationTicks;assert.equal(c.acceptChallenge(c.challengeOffers[0].id),false);
 });
-test('timer expiry beats spawning and cancels queued challenges; live challenges still require cleanup',()=>{
- const b=setup({duration:.1});b.nextSpawn=5;b.acceptChallenge(b.challengeOffers[0].id);b.enemies[0].hp=0;const id=b.enemies[0].id;
- for(let i=0;i<5;i++)b.step();assert.equal(b.phase,'cleanup');assert.equal(b.enemies[0].id,id);assert.equal(b.pendingChallenges.length,0);assert.equal(b.challengeOffers.length,0);
- assert.equal(b.acceptChallenge('anything'),false);assert.equal(b.phase,'cleanup');
+test('timer expiry beats replenishment and new challenges; live challenges still require cleanup',()=>{
+ const b=setup({duration:.1});b.enemies[0].hp=0;b.challengeOffers[0].type=CHALLENGE_TYPES[0];assert.ok(b.acceptChallenge(b.challengeOffers[0].id));
+ b.nextSpawn=5;b.enemies[1].hp=0;const id=b.enemies[1].id;
+ for(let i=0;i<5;i++)b.step();assert.equal(b.phase,'cleanup');assert.equal(b.enemies[1].id,id);assert.equal(b.challengeOffers.length,0);
+ assert.equal(b.acceptChallenge('anything'),false);assert.ok(b.enemies[0].hp>0);
  for(const e of b.enemies)e.hp=0;b.step();assert.equal(b.phase,'won');
 });

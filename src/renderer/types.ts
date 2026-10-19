@@ -17,7 +17,7 @@ export interface UnitView {
   readonly casting?: { readonly start: number; readonly end: number; readonly skill: { readonly name: string } } | null;
   readonly statuses?: ReadonlyMap<string, { readonly stacks: number; readonly expiresAt: number; readonly definition: { readonly name: string } }>;
   readonly stats: { readonly hp: number; readonly mana: number; readonly hpRegen: number; readonly manaRegen: number };
-  readonly def?: { readonly name: string; readonly color: string; readonly role: string; readonly mark: string };
+  readonly def?: { readonly range?: 'melee' | 'ranged'; readonly name: string; readonly color: string; readonly role: string; readonly mark: string };
 }
 
 export interface ShotView {
@@ -31,6 +31,8 @@ export interface ShotView {
   readonly end: number;
   readonly skill: boolean;
   readonly skillKey?: string;
+  readonly visualColor?: string;
+  readonly attackRange?: 'melee' | 'ranged';
 }
 
 export interface EffectEvent {
@@ -46,6 +48,8 @@ export interface EffectEvent {
   readonly origin?: string;
   readonly originId?: string;
   readonly skillKey?: string;
+  readonly visualColor?: string;
+  readonly attackRange?: 'melee' | 'ranged';
   readonly hpLoss?: number;
   readonly shieldLoss?: number;
   readonly healingKind?: string;

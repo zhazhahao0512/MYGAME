@@ -38,6 +38,7 @@ class BattleScene extends Phaser.Scene {
   private actors: Actor[] = [];
   private projectiles: { dot: Phaser.GameObjects.Image; glow: Phaser.GameObjects.Image }[] = [];
   private popups: Popup[] = [];
+  private strikes: { image: Phaser.GameObjects.Image; born: number; target: string; side: Side; slot: number }[] = [];
   private bursts!: Record<'damage' | 'heal' | 'shield' | 'spawn', Phaser.GameObjects.Particles.ParticleEmitter>;
   private labels!: Phaser.GameObjects.Text[];
   private hoverLabel!: Phaser.GameObjects.Text;
@@ -60,6 +61,13 @@ class BattleScene extends Phaser.Scene {
     const texture = this.add.graphics();
     texture.fillStyle(0xffffff).fillCircle(5, 5, 4);
     texture.generateTexture('spark', 10, 10);
+    texture.clear().lineStyle(3,0xffffff).lineBetween(3,16,24,16);
+    texture.fillStyle(0xffffff).fillTriangle(20,9,31,16,20,23);
+    texture.generateTexture('attack-arrow',32,32);
+    texture.clear().lineStyle(4,0xffffff).beginPath().arc(15,16,12,-1.25,1.25).strokePath();
+    texture.generateTexture('attack-slash',32,32);
+    texture.clear().lineStyle(3,0xffffff).strokeCircle(16,16,10).fillStyle(0xffffff).fillCircle(16,16,4);
+    texture.generateTexture('attack-spell',32,32);
     texture.destroy();
 
     for (const side of ['hero', 'enemy'] as const) {
@@ -72,6 +80,7 @@ class BattleScene extends Phaser.Scene {
       });
     }
     for (let n = 0; n < LIMITS.popups; n++) {
+      this.strikes.push({image:this.add.image(0,0,'attack-slash').setDepth(9).setVisible(false),born:-100,target:'',side:'enemy',slot:0});
       this.popups.push({ text: this.label('', 18, COLORS.text).setDepth(12).setVisible(false), born: 0, x: 0, y: 0, active: false });
     }
     const emitter = (tint: number, gravityY: number, angle: { min: number; max: number }) =>
@@ -202,7 +211,7 @@ class BattleScene extends Phaser.Scene {
       actor.mark.setText(!unit ? '+' : dead ? '·' : unit.def?.mark || (unit.boss ? '王' : '怪')).setColor(Phaser.Display.Color.IntegerToColor(color).rgba).setAlpha(dead ? 0 : .65);
       actor.role.setVisible(!this.compact&&!dead).setText(unit ? unit.def?.role || (unit.boss ? '首领' : '敌方单位') : '队伍空位');
       const name = !unit ? '等待同伴' : !dead ? unit.name : actor.side === 'hero' ? '已阵亡' : this.owner.battle.phase === 'cleanup' ? '已清除' : '空位';
-      actor.name.setText(name).setColor(selected?'#ffe6ae':'#f1e6d2').setAlpha(dead ? .65 : 1);
+      actor.name.setText(name).setColor(unit?.def?.color||'#f1e6d2').setAlpha(dead ? .65 : 1);
       if(!this.compact)actor.name.setY(dead?-actor.height*.08:-actor.height/2+52*actor.height/300);
       const subtitle = !unit ? '前四层招募' : dead && actor.side === 'enemy' ? this.owner.battle.phase === 'cleanup' ? '停止补位' : `${Math.max(0, ((this.owner.battle.nextSpawn || 0) - this.owner.battle.tick) * .02).toFixed(1)}s` : actor.side === 'hero' ? `Lv.${this.owner.battle.run.level}` : unit.boss ? '只出现一次' : unit.challenge?'额外挑战':'按推荐位置补怪';
       const activeStatuses = [...(unit?.statuses?.values() || [])];
@@ -282,6 +291,10 @@ class BattleScene extends Phaser.Scene {
     if (label.text !== text) label.setText(text);
   }
 
+  private attackTint(color?: string) {
+    return color && /^#[0-9a-f]{6}$/i.test(color) ? Number.parseInt(color.slice(1),16) : 0xe6dfca;
+  }
+
   private refreshProjectiles(motion: boolean) {
     this.trails.clear();
     const battle = this.owner.battle;
@@ -296,7 +309,7 @@ class BattleScene extends Phaser.Scene {
       for(let i=0;i<segments;i+=2){const a=i/segments,b=Math.min(1,(i+1)/segments);this.trails.lineBetween(sx+(ex-sx)*a,base-Math.sin(a*Math.PI)*rise,sx+(ex-sx)*b,base-Math.sin(b*Math.PI)*rise);}
       this.trails.lineBetween(ex,base,ex-10,base-10).lineBetween(ex,base,ex-13,base+3);
     }
-    for(const shot of battle.shots){if(shot.id>this.launched&&shot.start>=battle.tick-5)this.flashes.set(shot.source,{tick:shot.start,color:shot.skill?COLORS.blue:0xe6dfca});this.launched=Math.max(this.launched,shot.id);}
+    for(const shot of battle.shots){if(shot.id>this.launched&&shot.start>=battle.tick-5)this.flashes.set(shot.source,{tick:shot.start,color:this.attackTint(shot.visualColor)});this.launched=Math.max(this.launched,shot.id);}
     // Attack travel conveys targeting and impact timing; reduced motion keeps this essential cue.
     const shots = [...battle.shots].sort((a,b)=>Number(b.source===selected)-Number(a.source===selected)||b.id-a.id).slice(0,LIMITS.projectiles);
     for (let n = 0; n < this.projectiles.length; n++) {
@@ -307,13 +320,17 @@ class BattleScene extends Phaser.Scene {
       const target = this.unit(to);
       if (!target || target.id !== shot.target || target.hp <= 0) { sprite.dot.setVisible(false); sprite.glow.setVisible(false); continue; }
       const t = Phaser.Math.Clamp((battle.tick - shot.start) / (shot.end - shot.start), 0, 1);
-      const x = Phaser.Math.Linear(from.root.x, to.root.x, t);
-      const y = Phaser.Math.Linear(from.root.y, to.root.y, t) - (motion ? Math.sin(t * Math.PI) * (this.compact ? (shot.skill?28:12) : shot.skill ? 70 : 25) : 0);
-      const tint = shot.skill ? 0x77d6ea : 0xe6dfca;
-      if(shot.source===selected&&t>.8)this.flashes.set(shot.target,{tick:battle.tick,color:tint});
-      sprite.dot.setVisible(true).setAlpha(shot.source===selected?1:.55).setPosition(x, y).setTint(tint).setDisplaySize(shot.skill ? 9 : 5, shot.skill ? 9 : 5);
-      sprite.glow.setVisible(motion).setPosition(x, y).setTint(tint).setDisplaySize(shot.skill ? 28 : 16, shot.skill ? 28 : 16);
-      if (motion) this.trails.lineStyle(shot.skill ? 2 : 1, tint, shot.source===selected?.9:.3).lineBetween(x - (to.root.x - from.root.x) * .025, y + 2, x, y);
+      const melee=!shot.skill&&shot.attackRange==='melee',direction=to.root.x>=from.root.x?1:-1;
+      const x=melee?from.root.x+direction*(from.width*.3):Phaser.Math.Linear(from.root.x,to.root.x,t);
+      const y=melee?from.root.y-from.height*.25:Phaser.Math.Linear(from.root.y,to.root.y,t)-(motion&&shot.skill?Math.sin(t*Math.PI)*(this.compact?28:70):0);
+      const tint=this.attackTint(shot.visualColor),size=melee?(this.compact?13:22):shot.skill?(this.compact?13:19):(this.compact?14:22);
+      // Melee winds up at the source; the impact slash is created only by a settled damage event.
+      sprite.dot.setTexture(melee?'attack-slash':shot.skill?'attack-spell':'attack-arrow')
+        .setVisible(true).setAlpha((shot.source===selected?1:.75)*(melee?.4+.6*t:1)).setPosition(x,y).setTint(tint)
+        .setDisplaySize(size,size).setRotation(melee?(direction<0?Math.PI:0)+(motion?(t-.5)*1.2:0):Math.atan2(to.root.y-from.root.y,to.root.x-from.root.x));
+      sprite.glow.setVisible(motion&&!melee).setPosition(x,y).setTint(tint).setDisplaySize(shot.skill?30:20,shot.skill?30:20);
+      if(motion&&!melee)this.trails.lineStyle(shot.skill?2:1.5,tint,shot.source===selected?.8:.4).lineBetween(x-direction*12,y,x,y);
+
     }
   }
 
@@ -327,9 +344,14 @@ class BattleScene extends Phaser.Scene {
       return;
     }
     if (event.type === 'death') return;
+    if(event.type==='damage'&&event.origin==='attack'&&event.attackRange==='melee'){
+      const strike=this.strikes.find(s=>!s.image.visible)||this.strikes.reduce((a,b)=>a.born<b.born?a:b);
+      strike.born=event.tick;strike.target=event.target;strike.side=event.side;strike.slot=event.slot;
+      strike.image.setTint(this.attackTint(event.visualColor)).setVisible(true);
+    }
     const selected=this.owner.battle.party[this.owner.options.selected()]?.id;
     this.feedback.add(event,selected,this.compact?12:24);
-    const color=event.type==='heal'?COLORS.green:event.type==='shield'||(event.shieldLoss||0)>0?COLORS.blue:event.crit?COLORS.gold:event.origin==='skill'?0x77d6ea:0xe6dfca;
+    const color=event.type==='heal'?COLORS.green:event.type==='shield'||(event.shieldLoss||0)>0?COLORS.blue:this.attackTint(event.visualColor);
     this.flashes.set(event.target,{tick:event.tick,color});
     if(event.source&&event.source!==event.target&&event.origin!=='attack')this.flashes.set(event.source,{tick:event.tick,color});
     if (emitParticles && event.type !== 'dodge') {
@@ -348,6 +370,12 @@ class BattleScene extends Phaser.Scene {
       this.showEvent(event, motion && bursts++ < LIMITS.burstsPerFrame);
     }
     this.feedback.trim(this.compact?12:24);
+    for(const strike of this.strikes){
+      const actor=this.actors[(strike.side==='hero'?0:5)+strike.slot],age=tick-strike.born;
+      const visible=age>=0&&age<10&&this.unit(actor)?.id===strike.target;
+      strike.image.setVisible(visible);
+      if(visible)strike.image.setPosition(actor.root.x,actor.root.y-actor.height*.22).setDisplaySize(this.compact?24:42,this.compact?24:42).setAlpha(1-age/10).setRotation(motion?(age/10-.5)*.6:0);
+    }
     this.feedback.groups.forEach((group,index)=>{
       const popup=this.popups[index],actor=this.actors[(group.side==='hero'?0:5)+group.slot];
       const style=feedbackStyle(group),age=(tick-group.born)*20;

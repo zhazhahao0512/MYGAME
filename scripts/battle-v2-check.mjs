@@ -36,10 +36,16 @@ try{
   if(!touch){
    await click('inspect-enemy');await click('select-enemy','[data-index="1"]');assert.match(await page.locator('#target-preference').textContent(),/优先位置 5/,'inspection never changes stored intent');
   }
-  await click('accept-challenge');assert.equal(await page.locator('.queued-challenge').count(),1);assert.match(await page.locator('#queue-count').textContent(),/1\/3/);
+  assert.equal(await page.locator('[data-act="accept-challenge"]:enabled').count(),0,'full enemy side disables challenges');
+  for(let i=0;i<150&&!await page.locator('[data-act="accept-challenge"]:enabled').count();i++)await page.clock.runFor(100);
+  assert.ok(await page.locator('[data-act="accept-challenge"]:enabled').count(),'real combat produces a vacancy');
+  const tickBefore=await page.locator('#battle-canvas').getAttribute('data-tick');
+  await click('accept-challenge');assert.match(await page.locator('#queue-count').textContent(),/5\/5/);
+  assert.match(await page.locator('#challenge-queue').textContent(),/号位/,'challenge appears immediately on the field');
+  assert.equal(await page.locator('#battle-canvas').getAttribute('data-tick'),tickBefore,'entry needs no combat tick or refill wait');
+  assert.equal(await page.locator('[data-act="accept-challenge"]:enabled').count(),0);
+  assert.equal(await page.locator('[data-act="cancel-challenge"]').count(),0);
   const countdown=await page.locator('#spawn-countdown').textContent();await click('pause');await page.clock.runFor(1000);assert.equal(await page.locator('#spawn-countdown').textContent(),countdown);await click('close');
-  await click('cancel-challenge');assert.equal(await page.locator('.queued-challenge').count(),0);
-  await click('accept-challenge');
   if(touch)await click('detail-tactics');
   await click('clear-target');assert.match(await page.locator('#target-preference').textContent(),/全场/);
   await page.screenshot({path:`test-results/battle-v2/${touch?'phone-tactics':'desktop-tactics'}.png`});
@@ -49,7 +55,7 @@ try{
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth&&document.documentElement.scrollHeight<=innerHeight),'fits viewport');
   await page.screenshot({path:`test-results/battle-v2/${touch?'phone':'desktop'}-battle.png`});
   if(!touch){await page.setViewportSize({width:1440,height:900});await page.clock.runFor(100);await page.screenshot({path:'test-results/battle-v2/desktop-1440.png'});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth&&document.documentElement.scrollHeight<=innerHeight));}
-  await context.close();console.log(`${touch?'Touch':'Desktop'}: canvas commands, five modes, independent intent, challenge queue/pause/cancel and viewport passed.`);
+  await context.close();console.log(`${touch?'Touch':'Desktop'}: canvas commands, five modes, independent intent, immediate challenges/full-board protection/pause and viewport passed.`);
  }
  // Real run uses normal storage; reopening resumes at pre-battle checkpoint with intent retained.
  const page=await browser.newPage({viewport:{width:1440,height:900}});page.on('pageerror',e=>errors.push(e.message));await page.goto(url);

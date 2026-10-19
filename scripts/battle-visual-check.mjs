@@ -19,7 +19,10 @@ try{
   await click('select-unit','[data-hero="2"]');
   const box=await page.locator('canvas').boundingBox(),actors=JSON.parse(await page.locator('#battle-canvas').getAttribute('data-actors')),enemy=actors.find(a=>a.side==='enemy'&&a.index===4);
   if(touch)await page.touchscreen.tap(box.x+enemy.x,box.y+enemy.y);else await page.mouse.click(box.x+enemy.x,box.y+enemy.y);
-  await click('accept-challenge');if(touch)await click('detail-loadout');
+  assert.equal(await page.locator('[data-act="accept-challenge"]:enabled').count(),0,'full board disables challenge entry');
+  for(let n=0;n<150&&!await page.locator('[data-act="accept-challenge"]:enabled').count();n++)await page.clock.runFor(100);
+  assert.ok(await page.locator('[data-act="accept-challenge"]:enabled').count(),'wait for an actual combat vacancy');
+  await click('accept-challenge');assert.match(await page.locator('#queue-count').textContent(),/5\/5/);if(touch)await click('detail-loadout');
   await page.clock.runFor(3600);
   if(!touch){
    // Inspect a living opponent through the actual UI so the review image includes its resource panel.

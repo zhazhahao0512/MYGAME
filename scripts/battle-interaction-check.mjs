@@ -107,7 +107,7 @@ try{
   assert.deepEqual(errors,[]);console.log('Battle interaction checks passed, including actual shield/vamp renderer colors.');
 }catch(error){if(activePage&&!activePage.isClosed())await activePage.screenshot({path:'test-results/battle-interaction/failure.png'}).catch(()=>{});throw error;}finally{if(browser)await browser.close();server.kill('SIGTERM');}
 
-// Keep V2 commands and queue coverage in the existing CI battle check.
+// Keep V2 commands and immediate-challenge coverage in the existing CI battle check.
 await import('./battle-v2-check.mjs');
 
 await import('./battle-visual-check.mjs');

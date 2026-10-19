@@ -32,14 +32,14 @@ try {
  const trace=await page.evaluate(async()=>{
   const [{Battle},{createRun},{PhaserBattleRenderer}]=await Promise.all([import('/src/battle.js'),import('/src/model.js'),import('/src/renderer/PhaserBattleRenderer.ts')]);
   document.body.innerHTML='<div id="animation-stage" style="width:1400px;height:650px"></div>';
-  const run=createRun(42);run.phase='ready';run.party=['stone','lanya'].map(hero=>({hero,gear:[null,null,null,null]}));
+  const run=createRun(42);run.phase='ready';run.party=['wind','lanya','blade'].map(hero=>({hero,gear:[null,null,null,null]}));
   const battle=new Battle(run),control=new Battle(structuredClone(run));
-  for(const b of [battle,control]){for(const u of b.units())u.nextAttack=Infinity;b.fire(b.party[0],b.enemies[1],{duration:1});b.fire(b.party[1],b.enemies[2],{duration:1,skill:true,canMiss:false,originId:'animation-check'});}
+  for(const b of [battle,control]){for(const u of b.units())u.nextAttack=Infinity;b.fire(b.party[0],b.enemies[1],{duration:1});b.fire(b.party[1],b.enemies[2],{duration:1,skill:true,canMiss:false,originId:'animation-check'});b.fire(b.party[2],b.enemies[3],{duration:1,canMiss:false});}
   const state={motion:true,paused:false};const host=document.querySelector('#animation-stage');
   const renderer=new PhaserBattleRenderer(host,battle,{advance(){},selected:()=>0,select(){},motion:()=>state.motion,paused:()=>state.paused});
   await new Promise(resolve=>{const check=()=>host.dataset.engine?resolve():setTimeout(check,20);check();});
   const scene=renderer.game.scene.getScene('battle');
-  const frame=()=>{scene.update(0,0);return scene.projectiles.filter(p=>p.dot.visible).slice(0,2).map(p=>({x:p.dot.x,y:p.dot.y,size:p.dot.displayWidth,glow:p.glow.visible}));};
+  const frame=()=>{scene.update(0,0);return scene.projectiles.filter(p=>p.dot.visible).map(p=>({texture:p.dot.texture.key,tint:p.dot.tintTopLeft,x:p.dot.x,y:p.dot.y,size:p.dot.displayWidth,glow:p.glow.visible}));};
   const snapshots=[];
   for(const tick of [5,15,25]){
    while(battle.tick<tick){battle.step();control.step();}
@@ -50,20 +50,23 @@ try {
   return {snapshots,equal:JSON.stringify(snapshot(battle))===JSON.stringify(snapshot(control))};
  });
  assert.equal(trace.equal,true,'rendering on/off does not change combat');
- for(const f of trace.snapshots){assert.equal(f.normal.length,2);assert.equal(f.reduced.length,2);assert.deepEqual(f.normal.map(p=>p.x),f.reduced.map(p=>p.x));assert.deepEqual(f.normal.map(p=>p.size),[5,9]);assert.ok(f.reduced.every(p=>!p.glow));}
+ for(const f of trace.snapshots){assert.equal(f.normal.length,3);assert.equal(f.reduced.length,3);assert.deepEqual(f.normal.map(p=>p.x),f.reduced.map(p=>p.x));assert.deepEqual(f.normal.map(p=>p.texture),['attack-arrow','attack-slash','attack-spell']);assert.deepEqual(f.normal.map(p=>p.tint),[0xa9c7a3,0xd69682,0xacc6a1]);assert.ok(f.reduced.every(p=>!p.glow));}
  assert.notEqual(trace.snapshots[0].reduced[0].x,trace.snapshots[2].reduced[0].x,'basic projectile travels');
- assert.notEqual(trace.snapshots[0].reduced[1].x,trace.snapshots[2].reduced[1].x,'skill projectile travels');
+ assert.notEqual(trace.snapshots[0].reduced[2].x,trace.snapshots[2].reduced[2].x,'skill projectile travels');
+ assert.equal(trace.snapshots[0].reduced[1].x,trace.snapshots[2].reduced[1].x,'melee windup remains at source');
  await page.screenshot({path:'test-results/attack-animation/reduced-mid-flight.png'});
  const ending=await page.evaluate(()=>{
-  const {battle:b,control:c,renderer:r,frame}=window.__attackAnimation;
+  const {battle:b,control:c,renderer:r,frame}=window.__attackAnimation;const scene=r.game.scene.getScene('battle');const earlyStrikes=scene.strikes.filter(s=>s.image.visible).length;
   // Replace the exact target slot. The old shot must not be drawn toward the new unit.
   const old=b.enemies[1].id;b.enemies[1]=b.spawn(1);const newId=b.enemies[1].id;const visible=frame().length;
   // Separate unchanged control completes both real shots on their scheduled impact tick.
   const beforeHp=c.enemies[2].hp;while(c.tick<49)c.step();const beforeImpact=c.enemies[2].hp;c.step();const afterImpact=c.enemies[2].hp;
-  r.destroy();return {old,newId,visible,beforeHp,beforeImpact,afterImpact};
+  while(b.tick<50)b.step();frame();const impactStrikes=scene.strikes.filter(s=>s.image.visible).map(s=>s.image.tintTopLeft);
+  r.destroy();return {old,newId,visible,beforeHp,beforeImpact,afterImpact,earlyStrikes,impactStrikes};
  });
- assert.notEqual(ending.old,ending.newId);assert.equal(ending.visible,1,'same-slot replacement hides the invalid old projectile');
+ assert.notEqual(ending.old,ending.newId);assert.equal(ending.visible,2,'same-slot replacement hides the invalid old projectile');
  assert.equal(ending.beforeImpact,ending.beforeHp);assert.ok(ending.afterImpact<ending.beforeImpact,'skill settles at arrival');
+ assert.equal(ending.earlyStrikes,0);assert.deepEqual(ending.impactStrikes,[0xd69682],'melee slash only appears on real impact, in source color');
  assert.deepEqual(errors,[]);
  await writeFile('test-results/attack-animation/results.json',JSON.stringify({results,trace,ending},null,2));
  console.log('Attack animation checks passed: real app defaults/system/saved reduced motion; basic and skill travel, pause/resume, unchanged combat, impact tick and replacement isolation.');

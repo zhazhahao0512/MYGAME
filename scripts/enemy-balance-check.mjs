@@ -1,5 +1,6 @@
 // Actual Battle calibration, fixed floor curves; never scales enemies to player gear.
-// --legacy reproduces the enemy stat curve and 20-kill level pace at 4639cd4.
+// --legacy restores enemy stats and XP only; spawn/challenge rules are current.
+// For the original R049 comparison (including its timing), check out ee22d2d.
 import {writeFile,mkdir} from 'node:fs/promises';
 import {Battle} from '../src/battle.js';
 import * as M from '../src/model.js';
@@ -18,8 +19,11 @@ function fight(run,{challenge=false}={}){
  const track=u=>{seen.set(u.id,{kind:u.boss?'boss':u.challenge?'challenge':'normal',spawn:b.time,first:null,death:null,impacts:0,hp:u.stats.hp});return u;};b.enemies.forEach(track);
  const spawn=b.spawn.bind(b);b.spawn=(...args)=>track(spawn(...args));
  const damage=b.dealDamage.bind(b);b.dealDamage=(source,target,shot)=>{const hp=target.hp,shield=target.shield;damage(source,target,shot);const r=seen.get(target.id);if(r&&(target.hp<hp||target.shield<shield)){r.first??=b.time;r.impacts++;if(target.hp<=0)r.death=b.time;}};
- if(challenge)for(const [i,type] of CHALLENGE_TYPES.entries())b.pendingChallenges.push({id:`probe-${i}`,type});
- for(let i=0;i<9000&&['combat','cleanup'].includes(b.phase);i++)b.step();
+ const requests=challenge?[...CHALLENGE_TYPES]:[];
+ for(let i=0;i<9000&&['combat','cleanup'].includes(b.phase);i++){
+  if(requests.length&&b.phase==='combat'&&b.living('enemy').length<5){b.challengeOffers[0].type=requests[0];if(b.acceptChallenge(b.challengeOffers[0].id))requests.shift();}
+  b.step();
+ }
  return {floor:run.floor,level:run.level,party:run.party.map(m=>m.hero),gear:run.party.map(m=>m.gear.filter(Boolean).map(g=>g.base)),...b.result(),phase:b.phase,survivors:b.living('hero').length,hpFraction:rounded(b.party.reduce((s,u)=>s+u.hp,0)/b.party.reduce((s,u)=>s+u.stats.hp,0)),enemies:[...seen.values()].map(r=>({...r,spawn:rounded(r.spawn),first:r.first===null?null:rounded(r.first),death:r.death===null?null:rounded(r.death),engagedSeconds:r.death===null?null:rounded(r.death-r.first)}))};
 }
 function equip(run,source,index){const item=M.getOffer(run,source,index);if(!item||source==='shop'&&run.gold<item.price)return false;for(const [i,m] of run.party.entries()){const slot=m.gear.indexOf(null);if(slot>=0){M.acquire(run,source,index,i,slot);return true;}}return false;}

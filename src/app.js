@@ -192,7 +192,7 @@ function renderBattle(){
   if(!battle.party[selectedUnit])selectedUnit=0;
   challengeRevision=-1;
   return `<div class="battle-shell battle-v2" data-mobile-view="${mobileView}">${topbar(`第 ${run.floor} <span class="muted">/ 20 层</span>`,'小队战术',`<span class="battle-clock" id="battle-clock"></span>${gold(run.gold+battle.gold)}${(run.augments||[]).length?btn('强化','augment-info','quiet small'):''}${btn(`${icon('pause')}<span class="pause-label">暂停</span>`,'pause','icon-btn','aria-label="暂停战斗"')}`)}
-  <section class="challenge-strip" aria-label="挑战传送带"><div class="challenge-heading"><span class="eyebrow">可选挑战</span><h2>挑战传送带</h2><small>点击加入后续刷新</small><b id="spawn-countdown"></b></div><div id="challenge-offers" class="challenge-offers"></div><div class="challenge-queue"><header>待入场 <span id="queue-count"></span></header><div id="challenge-queue"></div></div></section>
+  <section class="challenge-strip" aria-label="挑战传送带"><div class="challenge-heading"><span class="eyebrow">可选挑战</span><h2>挑战传送带</h2><small>有空位点击立即入场</small><b id="spawn-countdown"></b></div><div id="challenge-offers" class="challenge-offers"></div><div class="challenge-queue"><header>敌方状态 <span id="queue-count"></span></header><div id="challenge-queue"></div></div></section>
   <span id="battle-pause-note" role="status" hidden></span><div class="portrait-battle"><b>请横屏查看完整战场</b><p>战斗已暂停，横屏后点击继续。</p></div>${orientationPaused?btn('继续战斗','resume-orientation','orientation-resume primary',portraitBattle()?'disabled':''):''}
   <div id="battle-canvas" class="phaser-arena" role="group" aria-label="自动战斗场景"></div>
   <div class="battle-footnote"><span id="battle-event"></span><span><b id="battle-phase"></b> · 击败 <b id="battle-kills"></b></span></div>
@@ -206,11 +206,17 @@ function updateChallenges(){
   if(challengeRevision!==battle.challengeRevision){
     challengeRevision=battle.challengeRevision;
     document.querySelector('#challenge-offers').innerHTML=battle.challengeOffers.map(o=>`<article class="challenge-card"><div class="challenge-mark">${escape(o.type.name)}</div><div><b>${o.type.name}</b><small>${o.type.role} · ${o.type.positions.map(n=>n+1).join('/')} 位</small><span>击杀 +${o.type.reward*GOLD_SCALE} 金币</span></div><button class="btn small" data-act="accept-challenge" data-id="${o.id}" aria-label="加入挑战 ${o.type.name}">加入</button><small data-offer-time="${o.id}"></small></article>`).join('')||'<p class="queue-empty">清场中 · 不再接受挑战</p>';
-    document.querySelector('#challenge-queue').innerHTML=battle.pendingChallenges.map(o=>`<div class="queued-challenge"><span class="queue-mark" aria-hidden="true">${o.type.mark}</span><span><b>${o.type.name}</b><small>${o.type.positions.map(n=>n+1).join('/')} 位 · 等待补怪/空位</small></span>${btn('×','cancel-challenge','quiet small',`data-id="${o.id}" aria-label="取消 ${o.type.name}"`)}</div>`).join('')||'<span class="queue-empty">暂无挑战 · 可自由选择</span>';
+
   }
-  document.querySelector('#queue-count').textContent=`${battle.pendingChallenges.length}/${battle.tuning.queueLimit}`;
+  const live=battle.living('enemy'),challenges=live.filter(u=>u.challenge);
+  document.querySelector('#queue-count').textContent=`${live.length}/5`;
+  const status=document.querySelector('#challenge-queue'),message=challenges.length?challenges.map(u=>`${u.slot+1}号位 · ${u.name}`).join(' / '):!active?'清场中 · 停止入场':live.length===5?'敌方已满 · 等待空位':'有空位 · 可加入挑战';
+  if(status.textContent!==message)status.textContent=message;
   for(const offer of battle.challengeOffers){const label=document.querySelector(`[data-offer-time="${offer.id}"]`);if(label)label.textContent=`${Math.max(0,(offer.expiresAt-battle.tick)*STEP).toFixed(0)}s 后离开`;}
-  for(const button of document.querySelectorAll('[data-act="accept-challenge"]'))button.disabled=!active||battle.pendingChallenges.length>=battle.tuning.queueLimit;
+  for(const button of document.querySelectorAll('[data-act="accept-challenge"]')){
+    button.disabled=!battle.canAcceptChallenge(button.dataset.id);
+    button.title=!active?'清场中，不能入场':live.length===5?'敌方已满，等待空位':'立即入场，击败后获得奖励';
+  }
 }
 function updateEnemyDetail(){
   const unit=battle.enemies[selectedEnemy],alive=unit.hp>0;
@@ -399,7 +405,7 @@ function renderModal(){
     html=modalFrame('旅途强化',`<div class="augment-detail"><span class="badge">${active?'已启用':'示例强化'}</span><h3>${augment.name}</h3><p>${augment.description}</p><small class="muted">作用于本次远征的所有英雄，后招募的同伴同样生效。名称与数值后续可调整。</small></div>`,active?btn('返回','close','primary'):btn('暂不选择','close','quiet')+btn('启用本次远征','choose-augment','primary',`data-id="${augment.id}" ${run.phase==='shop'&&run.floor===1&&run.chest.claimed?'':'disabled'}`));
   }
   if(modal.type==='settings')html=modalFrame('设置',`<p class="muted">偏好设置会保存在当前浏览器。</p><div class="setting-row"><div><b>界面与战斗动效</b><small>关闭后保留基础攻击弹道，减少光晕和过渡动画，结算保持不变。</small></div><button class="switch ${settings.motion?'on':''}" data-act="toggle-motion" role="switch" aria-checked="${settings.motion}" aria-label="界面与战斗动效"><i></i></button></div><div class="setting-info"><b>存档方式</b><p>关卡之间自动保存。若在战斗中退出，继续游戏会从该关开战前恢复。</p><b>显示方式</b><p>电脑与手机横屏战斗；英雄、技能与装备均使用文字占位。手机竖屏请旋转后继续。</p></div>`,btn('完成','close','primary'));
-  if(modal.type==='help')html=modalFrame('远征手册',`<ol class="help-steps"><li><b>组建小队</b><p>选择初始英雄，第 1–4 层开始前各三选一招募一位。队伍最多五人，英雄不能替换。</p></li><li><b>坚守与清场</b><p>限时自动战斗。敌人倒下后 2 秒补位；时间到后停止补位，消灭余敌即可通关。金币来自击杀。</p></li><li><b>领取与搭配</b><p>战后宝箱三选一，允许刷新其中一个选项一次。商店可购买、刷新、出售、转移和合成装备。点击已穿戴装备查看合成路线，消耗材料后只付合成费。没有背包，每人四槽、最多一件橙装。</p></li><li><b>再出发</b><p>通向二十层终点。已加入 12 白、21 蓝、14 紫装备。红装和橙装仍待设计；英雄技能与关卡数值仍在迭代。</p></li></ol>`,btn('准备好了','close','primary'));
+  if(modal.type==='help')html=modalFrame('远征手册',`<ol class="help-steps"><li><b>组建小队</b><p>选择初始英雄，第 1–4 层开始前各三选一招募一位。队伍最多五人，英雄不能替换。</p></li><li><b>坚守与清场</b><p>限时自动战斗。每 2 秒补满敌方空位；时间到后停止补位，消灭余敌即可通关。金币来自击杀。</p></li><li><b>领取与搭配</b><p>战后宝箱三选一，允许刷新其中一个选项一次。商店可购买、刷新、出售、转移和合成装备。点击已穿戴装备查看合成路线，消耗材料后只付合成费。没有背包，每人四槽、最多一件橙装。</p></li><li><b>再出发</b><p>通向二十层终点。已加入 12 白、21 蓝、14 紫装备。红装和橙装仍待设计；英雄技能与关卡数值仍在迭代。</p></li></ol>`,btn('准备好了','close','primary'));
   if(modal.type==='preview-menu')html=modalFrame('浏览界面',`<p class="muted">载入独立演示数据，不会覆盖你的远征存档。</p><div class="preview-grid">${[['recruit','英雄招募','随机候选 · 三选一'],['battle','战斗界面','五对五 · 演示自动战斗'],['shop','战后商店','购买 · 装备 · 站位'],['chest','宝箱奖励','三选一 · 单项刷新'],['result','远征结算','结束记录 · 再次出发']].map(([id,name,desc])=>`<button data-act="preview" data-page="${id}"><b>${name} ${icon('arrow')}</b><small>${desc}</small></button>`).join('')}</div>`);
   if(modal.type==='confirm-new')html=modalFrame('开始新的远征？','<p>当前进行中的远征存档会被替换。</p>',btn('取消','close','quiet')+btn('开始新远征','force-new','primary'));
   if(modal.type==='pause')html=modalFrame('稍作休整',`<div class="pause-message"><b>第 ${run.floor} 层 · ${Math.ceil(battle.remaining)} 秒</b><p>战斗已暂停。可以继续战斗，或返回首页。</p><small class="muted">返回首页后，本关将从开战前重新开始。</small></div>`,btn('返回首页','leave-battle','quiet')+btn(`${icon('play')} 继续战斗`,'close','primary'));
@@ -457,7 +463,6 @@ function act(event){const target=event.target.closest('[data-act]');if(!target||
       case 'target-mode':if(battle.setTactics(selectedUnit,{mode:target.dataset.mode})){save();render();}break;
       case 'clear-target':if(battle.setTactics(selectedUnit,{preferredSlot:null})){save();render();}break;
       case 'accept-challenge':if(battle.acceptChallenge(target.dataset.id))updateBattle();break;
-      case 'cancel-challenge':if(battle.cancelChallenge(target.dataset.id))updateBattle();break;
       case 'enemy-skill':inspection.show(target,true);break;
       case 'skill-mode':{const n=Number(target.dataset.skill),mode=nextSkillMode(normalizeSkillModes(run.party[h].skillModes)[n]);if(screen==='battle')battle.setSkillMode(h,n,mode);else{run.party[h].skillModes=normalizeSkillModes(run.party[h].skillModes);run.party[h].skillModes[n]=mode;}save();updateSkillControls(h);toast(`技能${n+1} · ${CAST_MODE_INFO[mode].name}`);break;}
       case 'skill':case 'passive':case 'inspect-offer':inspection.show(target,true);break;

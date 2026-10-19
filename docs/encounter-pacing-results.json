@@ -1,0 +1,597 @@
+{
+  "baseline": "b2df1e7",
+  "version": "R062 implementation commit",
+  "policy": "first recruits/rewards, recommended skills, affordable empty slots; challenge cases accept one first offer each floor >=4 at first vacancy",
+  "summaries": {
+    "before": {
+      "ordinary": {
+        "campaigns": 8,
+        "victories": 8,
+        "battles": 160,
+        "averageEnemies": 4.267871875,
+        "soloPercent": 0.3309375,
+        "emptyPercent": 0.004375,
+        "seconds": {
+          "n": 160,
+          "p10": 44.82,
+          "median": 47.96,
+          "p90": 54.300000000000004
+        },
+        "hpFraction": {
+          "n": 160,
+          "p10": 0.7940450565245276,
+          "median": 0.943829523608292,
+          "p90": 1
+        },
+        "endLevels": [
+          19,
+          17,
+          19,
+          16,
+          17,
+          18,
+          17,
+          16
+        ],
+        "income": {
+          "n": 8,
+          "p10": 7680,
+          "median": 8310,
+          "p90": 9120
+        },
+        "categories": {
+          "normal": {
+            "n": 2089,
+            "p10": 2.4399999999999977,
+            "median": 4.320000000000001,
+            "p90": 24.6,
+            "censored": 0
+          },
+          "boss": {
+            "n": 32,
+            "p10": 7.24,
+            "median": 9.34,
+            "p90": 13.98,
+            "censored": 0
+          },
+          "challenge": {
+            "n": 0,
+            "p10": null,
+            "median": null,
+            "p90": null,
+            "censored": 0
+          }
+        }
+      },
+      "optionalChallenge": {
+        "campaigns": 2,
+        "victories": 2,
+        "battles": 40,
+        "averageEnemies": 4.259125,
+        "soloPercent": 0.195,
+        "emptyPercent": 0,
+        "seconds": {
+          "n": 40,
+          "p10": 42.32,
+          "median": 48.78,
+          "p90": 54.1
+        },
+        "hpFraction": {
+          "n": 40,
+          "p10": 0.7641133781000757,
+          "median": 0.9496468157093493,
+          "p90": 1
+        },
+        "endLevels": [
+          18,
+          16
+        ],
+        "income": {
+          "n": 2,
+          "p10": 10660,
+          "median": 10660,
+          "p90": 10660
+        },
+        "categories": {
+          "normal": {
+            "n": 489,
+            "p10": 2.34,
+            "median": 4.199999999999999,
+            "p90": 25,
+            "censored": 0
+          },
+          "boss": {
+            "n": 8,
+            "p10": 6.08,
+            "median": 8.02,
+            "p90": 12.9,
+            "censored": 0
+          },
+          "challenge": {
+            "n": 31,
+            "p10": 4.76,
+            "median": 7.2,
+            "p90": 16.64,
+            "censored": 0
+          }
+        }
+      }
+    },
+    "candidate": {
+      "ordinary": {
+        "campaigns": 8,
+        "victories": 8,
+        "battles": 160,
+        "averageEnemies": 4.855465625,
+        "soloPercent": 0,
+        "emptyPercent": 0,
+        "seconds": {
+          "n": 160,
+          "p10": 50.300000000000004,
+          "median": 60.2,
+          "p90": 70.22
+        },
+        "hpFraction": {
+          "n": 160,
+          "p10": 0.603503409074585,
+          "median": 0.7784421849132981,
+          "p90": 0.9603279471990229
+        },
+        "endLevels": [
+          13,
+          13,
+          14,
+          12,
+          13,
+          14,
+          12,
+          12
+        ],
+        "income": {
+          "n": 8,
+          "p10": 5790,
+          "median": 6420,
+          "p90": 6810
+        },
+        "categories": {
+          "normal": {
+            "n": 1546,
+            "p10": 4.0000000000000036,
+            "median": 7.98,
+            "p90": 52.38,
+            "censored": 0
+          },
+          "boss": {
+            "n": 32,
+            "p10": 13.98,
+            "median": 19.74,
+            "p90": 29.62,
+            "censored": 0
+          },
+          "challenge": {
+            "n": 0,
+            "p10": null,
+            "median": null,
+            "p90": null,
+            "censored": 0
+          }
+        }
+      },
+      "optionalChallenge": {
+        "campaigns": 2,
+        "victories": 0,
+        "battles": 40,
+        "averageEnemies": 4.913,
+        "soloPercent": 0,
+        "emptyPercent": 0,
+        "seconds": {
+          "n": 40,
+          "p10": 53.300000000000004,
+          "median": 62.300000000000004,
+          "p90": 76.7
+        },
+        "hpFraction": {
+          "n": 40,
+          "p10": 0.4091459176839966,
+          "median": 0.6531030692339427,
+          "p90": 0.9554125925830266
+        },
+        "endLevels": [
+          11,
+          11
+        ],
+        "income": {
+          "n": 2,
+          "p10": 8420,
+          "median": 8420,
+          "p90": 8420
+        },
+        "categories": {
+          "normal": {
+            "n": 295,
+            "p10": 3.8800000000000003,
+            "median": 8.04,
+            "p90": 55.2,
+            "censored": 5
+          },
+          "boss": {
+            "n": 8,
+            "p10": 14.8,
+            "median": 17.400000000000002,
+            "p90": 28,
+            "censored": 0
+          },
+          "challenge": {
+            "n": 33,
+            "p10": 14.100000000000001,
+            "median": 19.180000000000003,
+            "p90": 30.84,
+            "censored": 1
+          }
+        }
+      }
+    },
+    "final": {
+      "ordinary": {
+        "campaigns": 8,
+        "victories": 8,
+        "battles": 160,
+        "averageEnemies": 4.83311875,
+        "soloPercent": 0,
+        "emptyPercent": 0,
+        "seconds": {
+          "n": 160,
+          "p10": 46.02,
+          "median": 53.300000000000004,
+          "p90": 62.300000000000004
+        },
+        "hpFraction": {
+          "n": 160,
+          "p10": 0.7238866223767304,
+          "median": 0.872670279221642,
+          "p90": 0.9708631145721449
+        },
+        "endLevels": [
+          19,
+          19,
+          20,
+          17,
+          18,
+          20,
+          17,
+          16
+        ],
+        "income": {
+          "n": 8,
+          "p10": 6210,
+          "median": 6900,
+          "p90": 7530
+        },
+        "categories": {
+          "normal": {
+            "n": 1686,
+            "p10": 3.8800000000000026,
+            "median": 7.379999999999999,
+            "p90": 46.32000000000001,
+            "censored": 0
+          },
+          "boss": {
+            "n": 32,
+            "p10": 12.48,
+            "median": 16.56,
+            "p90": 25.64,
+            "censored": 0
+          },
+          "challenge": {
+            "n": 0,
+            "p10": null,
+            "median": null,
+            "p90": null,
+            "censored": 0
+          }
+        }
+      },
+      "optionalChallenge": {
+        "campaigns": 2,
+        "victories": 2,
+        "battles": 40,
+        "averageEnemies": 4.88455,
+        "soloPercent": 0,
+        "emptyPercent": 0,
+        "seconds": {
+          "n": 40,
+          "p10": 47.02,
+          "median": 54.300000000000004,
+          "p90": 63.42
+        },
+        "hpFraction": {
+          "n": 40,
+          "p10": 0.6038725998456018,
+          "median": 0.8446490990955202,
+          "p90": 0.9734126322737681
+        },
+        "endLevels": [
+          17,
+          16
+        ],
+        "income": {
+          "n": 2,
+          "p10": 9310,
+          "median": 9310,
+          "p90": 9310
+        },
+        "categories": {
+          "normal": {
+            "n": 343,
+            "p10": 3.7,
+            "median": 7.919999999999995,
+            "p90": 48,
+            "censored": 0
+          },
+          "boss": {
+            "n": 8,
+            "p10": 13.04,
+            "median": 16.12,
+            "p90": 20.5,
+            "censored": 0
+          },
+          "challenge": {
+            "n": 34,
+            "p10": 12.66,
+            "median": 17.000000000000004,
+            "p90": 23.400000000000002,
+            "censored": 0
+          }
+        }
+      }
+    }
+  },
+  "campaigns": {
+    "before": [
+      {
+        "seed": 1,
+        "challenge": false,
+        "phase": "victory",
+        "level": 19,
+        "kills": 288,
+        "earned": 9120
+      },
+      {
+        "seed": 2,
+        "challenge": false,
+        "phase": "victory",
+        "level": 17,
+        "kills": 261,
+        "earned": 8310
+      },
+      {
+        "seed": 3,
+        "challenge": false,
+        "phase": "victory",
+        "level": 19,
+        "kills": 291,
+        "earned": 9210
+      },
+      {
+        "seed": 4,
+        "challenge": false,
+        "phase": "victory",
+        "level": 16,
+        "kills": 242,
+        "earned": 7740
+      },
+      {
+        "seed": 5,
+        "challenge": false,
+        "phase": "victory",
+        "level": 17,
+        "kills": 264,
+        "earned": 8400
+      },
+      {
+        "seed": 6,
+        "challenge": false,
+        "phase": "victory",
+        "level": 18,
+        "kills": 276,
+        "earned": 8760
+      },
+      {
+        "seed": 7,
+        "challenge": false,
+        "phase": "victory",
+        "level": 17,
+        "kills": 259,
+        "earned": 8250
+      },
+      {
+        "seed": 8,
+        "challenge": false,
+        "phase": "victory",
+        "level": 16,
+        "kills": 240,
+        "earned": 7680
+      },
+      {
+        "seed": 1,
+        "challenge": true,
+        "phase": "victory",
+        "level": 18,
+        "kills": 276,
+        "earned": 11830
+      },
+      {
+        "seed": 2,
+        "challenge": true,
+        "phase": "victory",
+        "level": 16,
+        "kills": 252,
+        "earned": 10660
+      }
+    ],
+    "candidate": [
+      {
+        "seed": 1,
+        "challenge": false,
+        "phase": "victory",
+        "level": 13,
+        "kills": 207,
+        "earned": 6690
+      },
+      {
+        "seed": 2,
+        "challenge": false,
+        "phase": "victory",
+        "level": 13,
+        "kills": 198,
+        "earned": 6420
+      },
+      {
+        "seed": 3,
+        "challenge": false,
+        "phase": "victory",
+        "level": 14,
+        "kills": 211,
+        "earned": 6810
+      },
+      {
+        "seed": 4,
+        "challenge": false,
+        "phase": "victory",
+        "level": 12,
+        "kills": 186,
+        "earned": 6060
+      },
+      {
+        "seed": 5,
+        "challenge": false,
+        "phase": "victory",
+        "level": 13,
+        "kills": 199,
+        "earned": 6450
+      },
+      {
+        "seed": 6,
+        "challenge": false,
+        "phase": "victory",
+        "level": 14,
+        "kills": 214,
+        "earned": 6900
+      },
+      {
+        "seed": 7,
+        "challenge": false,
+        "phase": "victory",
+        "level": 12,
+        "kills": 186,
+        "earned": 6060
+      },
+      {
+        "seed": 8,
+        "challenge": false,
+        "phase": "victory",
+        "level": 12,
+        "kills": 177,
+        "earned": 5790
+      },
+      {
+        "seed": 1,
+        "challenge": true,
+        "phase": "defeat",
+        "level": 11,
+        "kills": 172,
+        "earned": 8710
+      },
+      {
+        "seed": 2,
+        "challenge": true,
+        "phase": "defeat",
+        "level": 11,
+        "kills": 164,
+        "earned": 8420
+      }
+    ],
+    "final": [
+      {
+        "seed": 1,
+        "challenge": false,
+        "phase": "victory",
+        "level": 19,
+        "kills": 226,
+        "earned": 7260
+      },
+      {
+        "seed": 2,
+        "challenge": false,
+        "phase": "victory",
+        "level": 19,
+        "kills": 218,
+        "earned": 7020
+      },
+      {
+        "seed": 3,
+        "challenge": false,
+        "phase": "victory",
+        "level": 20,
+        "kills": 235,
+        "earned": 7530
+      },
+      {
+        "seed": 4,
+        "challenge": false,
+        "phase": "victory",
+        "level": 17,
+        "kills": 196,
+        "earned": 6360
+      },
+      {
+        "seed": 5,
+        "challenge": false,
+        "phase": "victory",
+        "level": 18,
+        "kills": 214,
+        "earned": 6900
+      },
+      {
+        "seed": 6,
+        "challenge": false,
+        "phase": "victory",
+        "level": 20,
+        "kills": 237,
+        "earned": 7590
+      },
+      {
+        "seed": 7,
+        "challenge": false,
+        "phase": "victory",
+        "level": 17,
+        "kills": 201,
+        "earned": 6510
+      },
+      {
+        "seed": 8,
+        "challenge": false,
+        "phase": "victory",
+        "level": 16,
+        "kills": 191,
+        "earned": 6210
+      },
+      {
+        "seed": 1,
+        "challenge": true,
+        "phase": "victory",
+        "level": 17,
+        "kills": 195,
+        "earned": 9470
+      },
+      {
+        "seed": 2,
+        "challenge": true,
+        "phase": "victory",
+        "level": 16,
+        "kills": 190,
+        "earned": 9310
+      }
+    ]
+  }
+}

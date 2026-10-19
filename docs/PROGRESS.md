@@ -91,7 +91,7 @@
 
 | 法系两被动修订：docs/EQUIPMENT-DESIGN.md、ATTACK-EFFECTS-DESIGN.md、equipment/mage-purple-balance.py、D017接续、新D021及索引；公共仅本行/装备交接与状态/R042 | 进行中（设计与独立核算，非游戏实施） | equipment-mage-rework-20261019-r042 | 2026-10-19 | 基线dd1f237；用户否定余韵近常驻法强，要求定时下次技能附伤；导流需加强至关内可感知续航；预留D021/R042，复核价格与短长战，不改英雄/UI/此前其他装备 |
 
-| 三模式施法正式接入：src/app.js、style.css、battle.js、model.js、combat/施法模块与必要content/unit/inspection、相关tests/scripts与截图；COMBAT/UI/施法规范、D022及索引；公共仅本行/施法顶部/相关功能状态/Q012/R043 | 进行中（已获实施授权） | hero-casting-impl-20261019-r043 | 2026-10-19 | 基线4455171；用户要求开始接入并调整对应UI，实施逐技能圆钮、默认托管、点击指令/决策/保存与桌面触屏验证；预留D022/R043，避开装备D021/R042，不迁移岚牙/装备数值或新精准 |
+| 三模式施法正式接入：src/app.js、style.css、battle.js、model.js、combat/施法模块与必要content/unit/inspection、相关tests/scripts与截图、public/art/fonts两份字体子集补字；COMBAT/UI/施法规范、D022及索引；公共仅本行/施法顶部/相关功能状态/Q012/R043 | 进行中（已获实施授权） | hero-casting-impl-20261019-r043 | 2026-10-19 | 基线4455171；用户要求开始接入并调整对应UI，实施逐技能圆钮、默认托管、点击指令/决策/保存与桌面触屏验证；预留D022/R043，避开装备D021/R042，不迁移岚牙/装备数值或新精准 |
 
 认领为共享仓库交接记录，不是自动锁；其他窗口避开“进行中”范围，重叠须先协调。未登记不证明没有窗口工作；中止或接管也须记录。
 

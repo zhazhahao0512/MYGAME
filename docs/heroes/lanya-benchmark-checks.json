@@ -1,0 +1,124 @@
+{
+  "seeds": 32,
+  "checks": [
+    {
+      "case": {
+        "id": "bare",
+        "n": 1
+      },
+      "dt20": {
+        "total_dps": 221.99408229166679,
+        "rmst": 40,
+        "clear_rmst": 40,
+        "survival": 1.0
+      },
+      "dt10": {
+        "total_dps": 224.90309791666678,
+        "rmst": 40,
+        "clear_rmst": 40,
+        "survival": 1.0
+      },
+      "relative_dps_change": 0.01310402329183713
+    },
+    {
+      "case": {
+        "id": "three",
+        "n": 3
+      },
+      "dt20": {
+        "total_dps": 246.87688229166665,
+        "rmst": 40,
+        "clear_rmst": 40,
+        "survival": 1.0
+      },
+      "dt10": {
+        "total_dps": 249.78589791666664,
+        "rmst": 40,
+        "clear_rmst": 40,
+        "survival": 1.0
+      },
+      "relative_dps_change": 0.01178326458920198
+    },
+    {
+      "case": {
+        "id": "geared",
+        "build": "onhit6000"
+      },
+      "dt20": {
+        "total_dps": 419.26578645833285,
+        "rmst": 40,
+        "clear_rmst": 40,
+        "survival": 1.0
+      },
+      "dt10": {
+        "total_dps": 430.6473562499996,
+        "rmst": 40,
+        "clear_rmst": 40,
+        "survival": 1.0
+      },
+      "relative_dps_change": 0.027146431116667813
+    },
+    {
+      "case": {
+        "id": "finite",
+        "mode": "O2",
+        "n": 3
+      },
+      "dt20": {
+        "total_dps": 224.44947916666678,
+        "rmst": 40,
+        "clear_rmst": 37.54875,
+        "survival": 1.0
+      },
+      "dt10": {
+        "total_dps": 224.68177708333343,
+        "rmst": 40,
+        "clear_rmst": 37.01625,
+        "survival": 1.0
+      },
+      "relative_dps_change": 0.0010349675015024484
+    },
+    {
+      "case": {
+        "id": "pressure",
+        "mode": "D1",
+        "attacker": "A6"
+      },
+      "dt20": {
+        "total_dps": 125.81260520833341,
+        "rmst": 16.40625,
+        "clear_rmst": 40,
+        "survival": 0.0
+      },
+      "dt10": {
+        "total_dps": 126.81603229166674,
+        "rmst": 16.40625,
+        "clear_rmst": 40,
+        "survival": 0.0
+      },
+      "relative_dps_change": 0.007975568756976026
+    },
+    {
+      "case": {
+        "id": "combat",
+        "mode": "D2",
+        "attacker": "A6",
+        "n": 5,
+        "build": "def3000"
+      },
+      "dt20": {
+        "total_dps": 267.9803666666665,
+        "rmst": 39.7625,
+        "clear_rmst": 40,
+        "survival": 0.75
+      },
+      "dt10": {
+        "total_dps": 268.8067937499998,
+        "rmst": 39.834375,
+        "clear_rmst": 40,
+        "survival": 0.78125
+      },
+      "relative_dps_change": 0.0030839090699554816
+    }
+  ]
+}

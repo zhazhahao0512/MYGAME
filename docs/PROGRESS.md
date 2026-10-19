@@ -138,6 +138,7 @@
 | 攻击动画恢复排查：src/renderer/、app.js动效设置；必要battle.js只读表现事件；scripts/attack-animation-check.mjs及现有引擎/交互验证；COMBAT/UI-INTERACTION、公共动画补充/R059 | 进行中（复现与表现修复） | attack-animation-20261020-r059 | 2026-10-20 | 基线f32eab4；用户反馈攻击动画消失，核对开关/弹道/事件与连续画面；不改伤害、英雄设计、背景或布局，保留R056/R057范围 |
 
 | 首批红装整批设计：新docs/equipment/RED-EQUIPMENT.md、red-equipment-r060.json、red-equipment-balance.py；EQUIPMENT-DESIGN与ATTACK-EFFECTS仅接续/链接；新D031/索引、Q009独立补充；公共仅本行/装备补充/R060 | 进行中（设计与独立核算，未实施游戏） | equipment-red-20261020-r060 | 2026-10-20 | 起始b35458f；初次认领推送遇并行R058/D030与R059，保留合并96f7caa后改R060/D031；用户要求继续红装计划，19件/26路线为拟定批量；保留既有59件参数、运行47件及动画/英雄范围 |
+| 已确认UI接入：src/app.js仅itemBox/gearButtons/heroPanels/renderShop/offerCard/选择预览渲染，不动R059动效设置/循环；新增src/expedition-ui.css、scripts/ui-theme-check.mjs；UI规范/实图、新D032/索引、公共UI补充/R061 | 进行中（界面实施/浏览器验收） | ui-unification-20261020-r061 | 2026-10-20 | 基线96f7caa；用户要求开始修改代码、装备完整名称、宝箱商店战斗统一R055/R057风格；不改renderer/战斗结算/数值，避开R059动画范围，预留D032/R061；app.js只改上述展示函数与样式导入 |
 
 认领为共享仓库交接记录，不是自动锁；其他窗口避开“进行中”范围，重叠须先协调。未登记不证明没有窗口工作；中止或接管也须记录。
 

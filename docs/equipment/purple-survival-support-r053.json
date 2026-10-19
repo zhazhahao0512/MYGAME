@@ -1,0 +1,263 @@
+{
+  "status": "R053 design proposal; not runtime content",
+  "items": [
+    {
+      "id": "purple_abundant_staff",
+      "name": "丰盈法杖",
+      "group": "法系生存",
+      "stats": {
+        "power": 50,
+        "hp": 300
+      },
+      "price": 1800,
+      "recipe": [
+        "blue_vitality_staff",
+        "white_glimmer_wand"
+      ],
+      "combineFee": 700,
+      "effectId": "spell_self_mend",
+      "passive": "滋养",
+      "effectBudget": 200,
+      "parameters": {
+        "heal": 40,
+        "cooldown": 8
+      }
+    },
+    {
+      "id": "purple_stonegrain_staff",
+      "name": "石纹法杖",
+      "group": "法系生存",
+      "stats": {
+        "power": 45,
+        "armor": 15,
+        "hp": 150
+      },
+      "price": 2000,
+      "recipe": [
+        "blue_guarding_staff",
+        "white_glimmer_wand",
+        "white_vitality_pendant"
+      ],
+      "combineFee": 650,
+      "effectId": "physical_hit_power",
+      "passive": "应战",
+      "effectBudget": 275,
+      "parameters": {
+        "power": 20,
+        "duration": 4
+      }
+    },
+    {
+      "id": "purple_stillmind_staff",
+      "name": "静心法杖",
+      "group": "法系生存",
+      "stats": {
+        "power": 45,
+        "resist": 15
+      },
+      "price": 1650,
+      "recipe": [
+        "blue_warding_staff",
+        "white_glimmer_wand"
+      ],
+      "combineFee": 600,
+      "effectId": "magic_damage_guard",
+      "passive": "隔魔",
+      "effectBudget": 225,
+      "parameters": {
+        "reduction": 0.06
+      }
+    },
+    {
+      "id": "purple_deepearth_amulet",
+      "name": "厚土护符",
+      "group": "防御",
+      "stats": {
+        "hp": 800
+      },
+      "price": 1600,
+      "recipe": [
+        "blue_vitality_amulet",
+        "white_vitality_pendant"
+      ],
+      "combineFee": 500,
+      "effectBudget": 0
+    },
+    {
+      "id": "purple_evergreen_amulet",
+      "name": "长青护符",
+      "group": "防御",
+      "stats": {
+        "hp": 450,
+        "hpRegen": 6
+      },
+      "price": 1700,
+      "recipe": [
+        "blue_regrowth_amulet",
+        "white_regeneration_bead"
+      ],
+      "combineFee": 700,
+      "effectId": "low_health_regeneration",
+      "passive": "回春",
+      "effectBudget": 300,
+      "parameters": {
+        "threshold": 0.5,
+        "hpRegen": 6
+      }
+    },
+    {
+      "id": "purple_bastion_armor",
+      "name": "磐石胸甲",
+      "group": "防御",
+      "stats": {
+        "hp": 400,
+        "armor": 20
+      },
+      "price": 1800,
+      "recipe": [
+        "blue_guardian_armor",
+        "white_iron_armor"
+      ],
+      "combineFee": 700,
+      "effectId": "flat_basic_physical_block",
+      "passive": "坚忍",
+      "effectBudget": 300,
+      "parameters": {
+        "block": 8
+      }
+    },
+    {
+      "id": "purple_spellward_cloak",
+      "name": "镇魔斗篷",
+      "group": "防御",
+      "stats": {
+        "hp": 400,
+        "resist": 20
+      },
+      "price": 1800,
+      "recipe": [
+        "blue_warding_cloak",
+        "white_antimagic_cloak"
+      ],
+      "combineFee": 700,
+      "effectId": "large_magic_hit_guard",
+      "passive": "魔障",
+      "effectBudget": 300,
+      "parameters": {
+        "threshold": 0.08,
+        "reduction": 0.2
+      }
+    },
+    {
+      "id": "purple_equilibrium_sigil",
+      "name": "均衡护印",
+      "group": "防御",
+      "stats": {
+        "hp": 300,
+        "armor": 15,
+        "resist": 15
+      },
+      "price": 1900,
+      "recipe": [
+        "blue_balanced_amulet",
+        "white_vitality_pendant"
+      ],
+      "combineFee": 760,
+      "effectId": "mixed_damage_regeneration",
+      "passive": "均势",
+      "effectBudget": 250,
+      "parameters": {
+        "historyWindow": 6,
+        "hpRegen": 4,
+        "duration": 4
+      }
+    },
+    {
+      "id": "purple_sentinel_hourglass",
+      "name": "守备沙漏",
+      "group": "防御",
+      "stats": {
+        "hp": 400,
+        "haste": 10
+      },
+      "price": 1600,
+      "recipe": [
+        "blue_vitality_hourglass",
+        "white_hourglass"
+      ],
+      "combineFee": 400,
+      "effectBudget": 0
+    },
+    {
+      "id": "purple_relief_codex",
+      "name": "救护法典",
+      "group": "辅助",
+      "stats": {
+        "power": 25,
+        "hp": 250,
+        "haste": 5
+      },
+      "price": 1700,
+      "recipe": [
+        "blue_chanting_tome",
+        "white_vitality_pendant"
+      ],
+      "combineFee": 600,
+      "effectId": "ally_spell_mend",
+      "passive": "援手",
+      "effectBudget": 300,
+      "parameters": {
+        "heal": 35,
+        "cooldown": 8
+      }
+    },
+    {
+      "id": "purple_spiritwell_orb",
+      "name": "灵泉宝珠",
+      "group": "辅助",
+      "stats": {
+        "mana": 200,
+        "manaRegen": 2,
+        "hp": 150
+      },
+      "price": 1750,
+      "recipe": [
+        "blue_mana_orb",
+        "white_meditation_charm",
+        "white_vitality_pendant"
+      ],
+      "combineFee": 500,
+      "effectId": "ally_spell_mana",
+      "passive": "济能",
+      "effectBudget": 350,
+      "parameters": {
+        "mana": 20,
+        "cooldown": 12
+      }
+    },
+    {
+      "id": "purple_shelter_pendant",
+      "name": "庇护挂坠",
+      "group": "辅助",
+      "stats": {
+        "hp": 400,
+        "mana": 150
+      },
+      "price": 1550,
+      "recipe": [
+        "blue_twin_resource_orb",
+        "white_vitality_pendant"
+      ],
+      "combineFee": 400,
+      "effectId": "ally_low_health_shield",
+      "passive": "应援",
+      "effectBudget": 300,
+      "parameters": {
+        "threshold": 0.4,
+        "shield": 100,
+        "duration": 4,
+        "cooldown": 18
+      }
+    }
+  ]
+}

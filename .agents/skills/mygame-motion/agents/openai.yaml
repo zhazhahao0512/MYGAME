@@ -1,0 +1,4 @@
+interface:
+  display_name: "MYGAME 动态与动画"
+  short_description: "交互反馈、战斗节奏与模拟时钟同步"
+  default_prompt: "Use $mygame-motion for this MYGAME task and follow PROJECT.md."

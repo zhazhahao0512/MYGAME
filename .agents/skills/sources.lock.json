@@ -1,0 +1,158 @@
+{
+  "version": 1,
+  "updated": "2026-10-19",
+  "sources": [
+    {
+      "name": "frontend-design",
+      "repository": "https://github.com/anthropics/skills",
+      "commit": "dbd4588f9e1033efb41dad4bef2f7947c8993d44",
+      "path": "skills/frontend-design",
+      "license": "Apache-2.0",
+      "files": {
+        "LICENSE.txt": {
+          "upstream_sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+          "installed_sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+        },
+        "SKILL.md": {
+          "upstream_sha256": "d91970639e9f5c37682ac7ab60094d35f1c7c1f38d731bd56396563aee10c1d3",
+          "installed_sha256": "3d0650d8f6976cdbd949fc8bacc0946d1c2193da9cab4a1c4a06334bf7f497d5"
+        },
+        "agents/openai.yaml": {
+          "origin": "MYGAME addition",
+          "installed_sha256": "e403a59871782e33959847712934fae6cdf7be7ad6e492c79d65440b28cde89b"
+        }
+      },
+      "adaptations": [
+        "Added mandatory MYGAME PROJECT.md entry and source notice.",
+        "Added local agent descriptor."
+      ]
+    },
+    {
+      "name": "phaser-engineer",
+      "repository": "https://github.com/LazyIsEfficient/agentic-os",
+      "commit": "7c297795cbb0817c92ee23cb80276e627c7f5be5",
+      "path": ".claude/skills/phaser-engineer",
+      "license": "MIT",
+      "files": {
+        "SKILL.md": {
+          "upstream_sha256": "92755874379951d05e1a3242823d50088cc263d82620c55d16957571ca4fd663",
+          "installed_sha256": "7dc9408194565de83f141aec492fa09f607b415aecb11b1cd64916c31d99fcec"
+        },
+        "assets/feature-checklist.md": {
+          "upstream_sha256": "c39a09c9202c6300521bc5ffd2ddf0327cf0bbb6632d9c1d88f3495248200e2a",
+          "installed_sha256": "90a83787dcedcbcf5e7c4ca3c05587c97283a107a4a48bf44545153263dd95fd"
+        },
+        "assets/project-structure-template.md": {
+          "upstream_sha256": "b025d391e7dfd8ed4cb468b02c07f1a20260e6ad07d6fe43f670c6dee33074dd",
+          "installed_sha256": "b025d391e7dfd8ed4cb468b02c07f1a20260e6ad07d6fe43f670c6dee33074dd"
+        },
+        "references/phaser-anti-patterns.md": {
+          "upstream_sha256": "84a96e4a0604cdb7225641bf8098a71a74d774b5350287b5d5f814318d41a3c4",
+          "installed_sha256": "84a96e4a0604cdb7225641bf8098a71a74d774b5350287b5d5f814318d41a3c4"
+        },
+        "references/phaser-fundamentals.md": {
+          "upstream_sha256": "fcbac4e0b123802bfc2526f7eeb204ca75c341b6de249552acb85ff02a26dfd5",
+          "installed_sha256": "fcbac4e0b123802bfc2526f7eeb204ca75c341b6de249552acb85ff02a26dfd5"
+        },
+        "references/physics-arcade.md": {
+          "upstream_sha256": "3f366c1ab4257d00e53888e1c106a2c2be3a7f6413162bdb811e641bbf787345",
+          "installed_sha256": "3f366c1ab4257d00e53888e1c106a2c2be3a7f6413162bdb811e641bbf787345"
+        },
+        "references/project-and-vite.md": {
+          "upstream_sha256": "a4d02ac2ce96986b853dabac1c6981635920f4394ab503a319b6708e2cdd7e6c",
+          "installed_sha256": "48f8652cda189d7856168824eabb55881c73e81ebc1b3cd9b88cd82ed6bcc549"
+        },
+        "references/scenes-and-flow.md": {
+          "upstream_sha256": "e2c8bcaea06be4a6b04271a9f3dbf7c809f5e532dee564993ee065f33ae6a157",
+          "installed_sha256": "e2c8bcaea06be4a6b04271a9f3dbf7c809f5e532dee564993ee065f33ae6a157"
+        },
+        "LICENSE.txt": {
+          "upstream_sha256": "cdee6583c80a488a89cfc53757c995f838b173f5dcbfe3bca1092c863b465016",
+          "source_path": "LICENSE",
+          "installed_sha256": "cdee6583c80a488a89cfc53757c995f838b173f5dcbfe3bca1092c863b465016"
+        },
+        "agents/openai.yaml": {
+          "origin": "MYGAME addition",
+          "installed_sha256": "2be2ad9a6e09439ef315ee2d3f3b3672a84da13a381ce1367cd4bf4a6191fb6c"
+        }
+      },
+      "adaptations": [
+        "Added mandatory MYGAME contract; simplified task metadata to installed skills.",
+        "Converted optional sibling skill references to fixed upstream commit URLs.",
+        "Replaced fixed mobile headroom claim with measurement guidance.",
+        "Copied root MIT license and added local agent descriptor."
+      ]
+    },
+    {
+      "name": "playwright",
+      "repository": "https://github.com/openai/skills",
+      "commit": "49f948faa9258a0c61caceaf225e179651397431",
+      "path": "skills/.curated/playwright",
+      "license": "Apache-2.0",
+      "files": {
+        "LICENSE.txt": {
+          "upstream_sha256": "9a7110fc2d2f964038e5dc49128f908f29f47a574c961cba16085914e879cbda",
+          "installed_sha256": "c16f8dcf1a368b83be78d826ea23de4079fe1b4469a0ab9ee20563f37ff3d44b"
+        },
+        "NOTICE.txt": {
+          "upstream_sha256": "417d5d3372914ecfd9fe102ac1d7dc2119253209f9718d6c222f616876c1904b",
+          "installed_sha256": "417d5d3372914ecfd9fe102ac1d7dc2119253209f9718d6c222f616876c1904b"
+        },
+        "SKILL.md": {
+          "upstream_sha256": "0ffaabcc8e0990627c4725f18bf1c7955534a796c1c199e872909de2013ce6a8",
+          "installed_sha256": "75b5e8608cd4612a90642dd5abd4077c81ef617b613891efec8313e284624664"
+        },
+        "agents/openai.yaml": {
+          "upstream_sha256": "ddda43720fc566fffa45264be8f17f7745a3cee28d5245d41d3b963bc9967230",
+          "installed_sha256": "37f466054556b785bbaaf678174f845a62ab6d6f3df30179b57d0a24b3641aef"
+        },
+        "assets/playwright-small.svg": {
+          "upstream_sha256": "f1d213c0f76735d8272c3d3e9fbf71fe7b894e2d1588907044c780f2c33a9732",
+          "installed_sha256": "f1d213c0f76735d8272c3d3e9fbf71fe7b894e2d1588907044c780f2c33a9732"
+        },
+        "assets/playwright.png": {
+          "upstream_sha256": "521669f088c838196c6c852ccc9abdd7234d8f37fc9a8a7a9af7db2d50193381",
+          "installed_sha256": "521669f088c838196c6c852ccc9abdd7234d8f37fc9a8a7a9af7db2d50193381"
+        },
+        "references/cli.md": {
+          "upstream_sha256": "7c069a8206ba20b9ddbdc42436b04de30bb3aa4a825ba98680757ee62e954900",
+          "installed_sha256": "7693b3361b72865fffc5af71040eb7e18d97eb7a667c3a5164354455ba921fae"
+        },
+        "references/workflows.md": {
+          "upstream_sha256": "a2b5835a00ebee3906c146adf7f764f7718ea3f89a8702d86eaa135dfe0fc8c2",
+          "installed_sha256": "9ed21ec3d99cbbaaf03a0d6cd216ea48497eacc7923a7bc30c772bd499d5b0a9"
+        },
+        "scripts/playwright_cli.sh": {
+          "upstream_sha256": "aa3fdff5d0e4556177f4dfd5f04117e772aa54f94b6a2e34b6c0edf629c6b9b5",
+          "installed_sha256": "a83a8968d6a675fd7e7dc8b80fdfc5180d618506d152eb41b6d40e28e517c442"
+        }
+      },
+      "adaptations": [
+        "Added MYGAME contract; changed global CODEX_HOME examples to project path.",
+        "Artifacts use test-results/playwright; headless screenshot guidance.",
+        "Pinned CLI 0.1.22; writable temporary npm cache; explicit local skill prompt.",
+        "Updated reference docs to project paths, requests command and explicit cloud config.",
+        "Default XDG cache uses temporary writable path; existing caller choices are preserved.",
+        "Normalized license CRLF to LF without changing the license text."
+      ]
+    }
+  ],
+  "original_skills": [
+    "mygame-motion",
+    "mygame-balance",
+    "mygame-performance"
+  ],
+  "project_files": {
+    "PROJECT.md": "d85f2dd9338da01a5eeb40669dd91a59667fa77aedf2e8277d6e87a28dd54dbf",
+    "mygame-balance/SKILL.md": "81c68869af06fb62c8f28d28b7adcb1f584dc7928a714b1ad65d64f51d9cfd6f",
+    "mygame-balance/agents/openai.yaml": "2ce1ab55bb00f9add948cc6db4a9e7f6eff72c871bfe2daf4260e72e8ec6a8db",
+    "mygame-motion/SKILL.md": "996c11be12f57d872ff6a87895ae2f3e798697b1d6756d13edefffc1484409fa",
+    "mygame-motion/agents/openai.yaml": "131e4fc8d1feeba8d33236d87babdc9d8bd0d129c0f74338cdd6f6e41d221cc5",
+    "mygame-performance/SKILL.md": "b8f4832aa504e8592dc1e74396346d7b86bdd20680e9bca583b885fd10169b0b",
+    "mygame-performance/agents/openai.yaml": "8cc0d7a2572d24677dac29ef4307f9dd094d3d4c33c63c016da006cc1392b8a8"
+  },
+  "runtime": {
+    "playwright_cli": "0.1.22",
+    "npm_transitive_dependencies_locked": false
+  }
+}

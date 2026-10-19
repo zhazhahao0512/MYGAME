@@ -1,0 +1,4 @@
+interface:
+  display_name: "MYGAME UI"
+  short_description: "UI层级、字体和参考图落实"
+  default_prompt: "Use $frontend-design for this MYGAME task and follow PROJECT.md."

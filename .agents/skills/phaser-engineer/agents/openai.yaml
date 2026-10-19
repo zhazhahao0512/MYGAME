@@ -1,0 +1,4 @@
+interface:
+  display_name: "MYGAME Phaser 3"
+  short_description: "Phaser 3引擎、动画和资源工程"
+  default_prompt: "Use $phaser-engineer for this MYGAME task and follow PROJECT.md."

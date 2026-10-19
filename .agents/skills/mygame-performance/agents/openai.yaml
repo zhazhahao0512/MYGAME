@@ -1,0 +1,4 @@
+interface:
+  display_name: "MYGAME 性能"
+  short_description: "帧耗时、对象池、内存与移动端分析"
+  default_prompt: "Use $mygame-performance for this MYGAME task and follow PROJECT.md."

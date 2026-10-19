@@ -1,0 +1,4 @@
+interface:
+  display_name: "MYGAME 数值平衡"
+  short_description: "复用HB模型、金币估值与资源比较"
+  default_prompt: "Use $mygame-balance for this MYGAME task and follow PROJECT.md."

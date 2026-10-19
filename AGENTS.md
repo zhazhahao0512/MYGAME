@@ -53,6 +53,21 @@
 
 ## 事实来源与边界
 
+### 项目开发 skills
+
+涉及 UI、动态/动画、数值平衡、性能或浏览器验收时，先读 [.agents/skills/PROJECT.md](.agents/skills/PROJECT.md)，再按任务读取下列入口；配套目录与更新方式见 [docs/SKILLS.md](docs/SKILLS.md)。不要求技能菜单自动发现成功，按文件路径读取同样可用。当前用户授权与本仓库明确契约优先于第三方通用建议。
+
+| 任务 | 读取的技能 |
+| --- | --- |
+| UI 排版、字体、视觉层级、参考图 | [.agents/skills/frontend-design/SKILL.md](.agents/skills/frontend-design/SKILL.md) |
+| Phaser 3 场景、资源、引擎实现 | [.agents/skills/phaser-engineer/SKILL.md](.agents/skills/phaser-engineer/SKILL.md) |
+| 动态反馈、战斗动画与暂停同步 | [.agents/skills/mygame-motion/SKILL.md](.agents/skills/mygame-motion/SKILL.md) |
+| 英雄、装备、被动、成长与资源平衡 | [.agents/skills/mygame-balance/SKILL.md](.agents/skills/mygame-balance/SKILL.md) |
+| 卡顿、帧耗时、内存、手机性能 | [.agents/skills/mygame-performance/SKILL.md](.agents/skills/mygame-performance/SKILL.md) |
+| 浏览器操作、截图与交互验收 | [.agents/skills/playwright/SKILL.md](.agents/skills/playwright/SKILL.md) |
+
+技能按需使用，不自动扩展任务范围、重做背景、升级 Phaser 或改动数值。修改技能后运行 `python3 scripts/check-skills.py`；技能安装检查不替代游戏行为测试。新会话须先同步仓库；自动技能发现/热刷新由客户端决定，未验证时不得宣称平台已注册。
+
 - `docs/PROGRESS.md` 是跨轮进度入口；`docs/FRAMEWORK.md` 管页面/流程边界，`docs/COMBAT.md` 管战斗契约，`deploy/automation/SSH_AI_TASK.md` 管服务器交接。
 - 以最新用户指令、实际代码/测试、已核实 Git/部署证据校正记录；不要把旧设计或临时数值当作不可变需求。
 - `test-results/`、`dist/`、`releases/` 是忽略目录。记录可复现命令和用途，不把其中的截图/压缩包当作其他环境必然能取得的长期凭据。

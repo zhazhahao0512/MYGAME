@@ -106,6 +106,7 @@
 | 实际公网地址核验与访问交接：docs/PROGRESS.md、deploy/automation/UPDATE_EXISTING_AI.md | 已释放（诊断/交接完成，上线受访问阻塞） | release-target-20261019-r046 | 2026-10-19 | 认领 61523c0 已发布；目标地址已补齐，代理403；网络草稿已保存待发布，实际服务器和Actions状态未核实，无游戏代码改动 |
 
 | 正式47件装备接入：src/equipment.js、data/model/battle/app/style、combat装备/属性/单位、相关tests/scripts与字体子集；EQUIPMENT/ATTACK-EFFECTS/COMBAT、D021接续、新D024及索引、Q001/Q009局部衔接；公共仅本行/装备交接与状态/R047 | 进行中（用户明确全部47件实施） | equipment-runtime-20261019-r047 | 2026-10-19 | 基线61523c0；用户接受R042并明确全部47件加入游戏，接入固定内容/配方/11被动/商店宝箱、金币单位与旧存档兼容；预留D024/R047，避开R046部署/公网范围，不接入岚牙或全局精准迁移 |
+| 英雄独立模块与后续接入：新增src/heroes/、tests/heroes.test.js、scripts/hero-runtime-check.mjs、docs/heroes/RUNTIME.md；公共仅本行/英雄状态/D025/R048；data/model/battle/app/style/combat及字体暂不编辑，等待装备R047释放再接入 | 进行中（独立模块先行；共享文件待协调） | hero-content-20261019-r048 | 2026-10-19 | 基线61523c0，发现装备af9dfc3先发布重叠认领，主动让开共同文件；用户要求此前英雄设计更新代码；岚牙V0.2、成长/加点/属性选择及必要精准依赖，动画后置；预留D025/R048，装备窗口请在完成时保留本行并释放共同文件 |
 
 认领为共享仓库交接记录，不是自动锁；其他窗口避开“进行中”范围，重叠须先协调。未登记不证明没有窗口工作；中止或接管也须记录。
 

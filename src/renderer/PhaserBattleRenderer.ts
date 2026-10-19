@@ -19,6 +19,7 @@ type Actor = {
   hp: Phaser.GameObjects.Text;
   mana: Phaser.GameObjects.Text;
   shield: Phaser.GameObjects.Text;
+  target: Phaser.GameObjects.Text;
   side: Side;
   index: number;
   width: number;
@@ -92,6 +93,7 @@ class BattleScene extends Phaser.Scene {
     this.hoverLabel = this.label('', 11, '#c6d2b8').setDepth(10);
     this.scale.on(Phaser.Scale.Events.RESIZE, this.layout, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scale.off(Phaser.Scale.Events.RESIZE, this.layout, this));
+    this.input.on('pointerdown', (_pointer: Phaser.Input.Pointer, objects: Phaser.GameObjects.GameObject[]) => {if(!objects.length)this.owner.options.cancelCommand?.();});
     this.layout();
     this.refreshActors();
     this.owner.markReady();
@@ -110,13 +112,14 @@ class BattleScene extends Phaser.Scene {
       mark: this.label('', 42, '#b4c49f'), name: this.label('', 17),
       role: this.label('', 10, COLORS.muted), subtitle: this.label('', 9, COLORS.muted),
       slot: this.label(String(index + 1), 12, '#acb697'), bars: this.add.graphics(),
-      hp: this.label('', 10), mana: this.label('', 10), shield: this.label('', 9, '#c4d8e0'),
+      hp: this.label('', 10), mana: this.label('', 10), shield: this.label('', 9, '#c4d8e0'), target:this.label('',11,'#efd397'),
     };
-    root.add([box, border, actor.mark, actor.role, actor.name, actor.subtitle, actor.slot, actor.bars, actor.hp, actor.mana, actor.shield]);
-    box.setInteractive({ useHandCursor: side === 'hero' });
+    root.add([box, border, actor.mark, actor.role, actor.name, actor.subtitle, actor.slot, actor.bars, actor.hp, actor.mana, actor.shield, actor.target]);
+    box.setInteractive({ useHandCursor: true });
     box.on('pointerover', () => { actor.hovered = true; this.refreshActors(); });
     box.on('pointerout', () => { actor.hovered = false; this.refreshActors(); });
     box.on('pointerdown', () => {
+      if (side === 'enemy' && !this.owner.options.paused()) this.owner.options.selectEnemy?.(index);
       if (side === 'hero' && this.owner.battle.party[index] && !this.owner.options.paused()) this.owner.options.select(index);
     });
     return actor;
@@ -127,9 +130,9 @@ class BattleScene extends Phaser.Scene {
     const teamWidth = width * (this.compact ? .47 : .435);
     const cell = teamWidth / 5;
     const cardWidth = this.compact ? cell - 5 : Math.max(50, cell - Math.max(10, width * .009));
-    const cardHeight = this.compact ? Math.max(55,height - 91) : Phaser.Math.Clamp(height * .57, 140, 310);
+    const cardHeight = this.compact ? Math.max(44,height - 90) : Math.max(130,Math.min(height * .68,520,height-150));
     // Keep resource bars close to the squad panel instead of reserving a large floor gap.
-    const y = this.compact ? cardHeight / 2 + 23 : Math.max(cardHeight / 2 + 60, height - cardHeight / 2 - 100);
+    const y = this.compact ? cardHeight / 2 + 17 : Math.max(cardHeight / 2 + 40, (height-85)/2);
     for (const actor of this.actors) {
       const position = actor.side === 'hero' ? 4 - actor.index : actor.index;
       const x = actor.side === 'hero' ? cell * (position + .5) + (this.compact?2:10) : width - teamWidth - (this.compact?2:10) + cell * (position + .5);
@@ -144,9 +147,10 @@ class BattleScene extends Phaser.Scene {
       actor.mark.setPosition(0, this.compact?-9:-14).setFontSize(this.compact?22:Math.max(26, cardWidth * .35));
       actor.name.setPosition(0, cardHeight * .22).setFontSize(this.compact?11:cardWidth < 90 ? 13 : 17);
       actor.subtitle.setPosition(0, cardHeight / 2 - 17).setVisible(!this.compact);
-      actor.hp.setPosition(0, cardHeight / 2 + 16).setFontSize(this.compact ? 10 : cardWidth < 110 ? 8 : 10);
-      actor.mana.setPosition(0, cardHeight / 2 + 36).setFontSize(this.compact ? 10 : cardWidth < 110 ? 8 : 10);
-      actor.shield.setPosition(0, cardHeight / 2 + (this.compact?58:64)).setFontSize(this.compact?10:9);
+      actor.hp.setPosition(0, cardHeight / 2 + (this.compact?11:16)).setFontSize(this.compact ? 10 : cardWidth < 110 ? 8 : 10);
+      actor.mana.setPosition(0, cardHeight / 2 + (this.compact?26:36)).setFontSize(this.compact ? 10 : cardWidth < 110 ? 8 : 10);
+      actor.target.setPosition(0,(this.compact?height-7-y:cardHeight/2+81)).setFontSize(this.compact?9:12);
+      actor.shield.setPosition(0, (this.compact?height-7-y:cardHeight/2+62)).setFontSize(this.compact?10:9);
     }
     const ground = this.compact?height-3:y + cardHeight / 2 + 79;
     const g = this.background.clear();
@@ -179,7 +183,7 @@ class BattleScene extends Phaser.Scene {
     for (const actor of this.actors) {
       const unit = this.unit(actor), dead = !unit || unit.hp <= 0;
       const color = unit?.def?.color ? Phaser.Display.Color.HexStringToColor(unit.def.color).color : 0xbc8777;
-      const selected = actor.side === 'hero' && !!unit && actor.index === this.owner.options.selected();
+      const selected = !!unit && actor.index === (actor.side==='hero'?this.owner.options.selected():this.owner.options.selectedEnemy?.());
       actor.box.setFillStyle(dead ? 0x1b211a : selected ? 0x393925 : 0x252c22, dead ? .55 : 1);
       actor.box.setStrokeStyle(selected || actor.hovered ? 2 : 1, selected ? COLORS.gold : actor.hovered ? 0xc8d4b5 : color, dead ? .3 : .65);
       const flash=unit&&this.flashes.get(unit.id);
@@ -187,26 +191,28 @@ class BattleScene extends Phaser.Scene {
       actor.border.setStrokeStyle(1, selected ? COLORS.gold : color, .15);
       actor.mark.setText(!unit ? '+' : dead ? '·' : unit.def?.mark || (unit.boss ? '王' : '怪')).setColor(Phaser.Display.Color.IntegerToColor(color).rgba).setAlpha(dead ? .35 : 1);
       actor.role.setText(unit ? unit.def?.role || (unit.boss ? '首领' : '敌方单位') : '队伍空位');
-      const name = !unit ? '等待同伴' : !dead ? unit.name : actor.side === 'hero' ? '已阵亡' : this.owner.battle.phase === 'cleanup' ? '已清除' : '补位中';
+      const name = !unit ? '等待同伴' : !dead ? unit.name : actor.side === 'hero' ? '已阵亡' : this.owner.battle.phase === 'cleanup' ? '已清除' : '空位';
       actor.name.setText(name).setAlpha(dead ? .5 : 1);
-      const subtitle = !unit ? '前四层招募' : dead && actor.side === 'enemy' ? this.owner.battle.phase === 'cleanup' ? '停止补位' : `${Math.max(0, ((unit.respawnAt || 0) - this.owner.battle.tick) * .02).toFixed(1)}s` : actor.side === 'hero' ? `Lv.${this.owner.battle.run.level}` : unit.boss ? '只出现一次' : '击败后 2s 补位';
+      const subtitle = !unit ? '前四层招募' : dead && actor.side === 'enemy' ? this.owner.battle.phase === 'cleanup' ? '停止补位' : `${Math.max(0, ((this.owner.battle.nextSpawn || 0) - this.owner.battle.tick) * .02).toFixed(1)}s` : actor.side === 'hero' ? `Lv.${this.owner.battle.run.level}` : unit.boss ? '只出现一次' : unit.challenge?'额外挑战':'按推荐位置补怪';
       const activeStatuses = [...(unit?.statuses?.values() || [])];
       const stateText = unit?.casting ? `${unit.casting.skill.name} · ${Math.max(0, (unit.casting.end - this.owner.battle.tick) * .02).toFixed(1)}s` : activeStatuses.slice(0, 2).map(s => `${s.definition.name}${s.stacks > 1 ? `×${s.stacks}` : ''}`).join(' · ');
       actor.subtitle.setText(!dead && stateText ? stateText : subtitle);
-      const g = actor.bars.clear(), left = -actor.width / 2, top = actor.height / 2 + 8;
-      actor.hp.setVisible(!!unit && !dead); actor.mana.setVisible(!!unit && !dead); actor.shield.setVisible(!!unit && !dead);
+      const g = actor.bars.clear(), left = -actor.width / 2, top = actor.height / 2 + (this.compact?5:8), barHeight=this.compact?12:16, rowStep=this.compact?15:20;
+      const target=unit?.targetId?[...this.owner.battle.party,...this.owner.battle.enemies].find(u=>u.id===unit.targetId&&u.hp>0):null;
+      actor.target.setText(actor.side==='hero'&&!dead?`目标 ${target?target.slot+1:'—'}`:'');
+      actor.hp.setVisible(!!unit && !dead); actor.mana.setVisible(!!unit && !dead); actor.shield.setVisible(!!unit && !dead && (!this.compact||actor.side==='enemy'));
       if (!unit || dead) continue;
-      g.fillStyle(0x151d13).fillRoundedRect(left, top, actor.width, 16, 2).fillRoundedRect(left, top + 20, actor.width, 16, 2);
-      g.fillStyle(0x668a4e).fillRect(left, top, actor.width * Phaser.Math.Clamp(unit.hp / unit.stats.hp, 0, 1), 16);
+      g.fillStyle(0x151d13).fillRoundedRect(left, top, actor.width, barHeight, 2).fillRoundedRect(left, top + rowStep, actor.width, barHeight, 2);
+      g.fillStyle(0x668a4e).fillRect(left, top, actor.width * Phaser.Math.Clamp(unit.hp / unit.stats.hp, 0, 1), barHeight);
       if (unit.shield > 0) g.fillStyle(0xb7c7d3, .45).fillRect(left, top, actor.width * Math.min(1, unit.shield / unit.stats.hp), 4);
-      g.fillStyle(0x3f7892).fillRect(left, top + 20, actor.width * Phaser.Math.Clamp(unit.mana / Math.max(1, unit.stats.mana), 0, 1), 16);
-      g.fillStyle(0x39432a).fillRect(left, top + 42, actor.width, 4);
+      g.fillStyle(0x3f7892).fillRect(left, top + rowStep, actor.width * Phaser.Math.Clamp(unit.mana / Math.max(1, unit.stats.mana), 0, 1), barHeight);
+      g.fillStyle(0x39432a).fillRect(left, top + rowStep*2 + (this.compact?0:2), actor.width, 4);
       const progress = unit.attack ? Phaser.Math.Clamp((this.owner.battle.tick - unit.attack.start) / (unit.attack.end - unit.attack.start), 0, 1) : 0;
-      g.fillStyle(COLORS.gold).fillRect(left, top + 42, actor.width * progress, 4);
+      g.fillStyle(COLORS.gold).fillRect(left, top + rowStep*2 + (this.compact?0:2), actor.width * progress, 4);
       if (unit.casting) {
         const castProgress = Phaser.Math.Clamp((this.owner.battle.tick - unit.casting.start) / (unit.casting.end - unit.casting.start), 0, 1);
-        g.fillStyle(0x39432a).fillRect(left, top + 49, actor.width, 3);
-        g.fillStyle(COLORS.blue).fillRect(left, top + 49, actor.width * castProgress, 3);
+        g.fillStyle(0x39432a).fillRect(left, top + rowStep*2 + (this.compact?5:9), actor.width, 3);
+        g.fillStyle(COLORS.blue).fillRect(left, top + rowStep*2 + (this.compact?5:9), actor.width * castProgress, 3);
       }
       this.setText(actor.hp, this.compact?`${this.shortNumber(unit.hp)}/${this.shortNumber(unit.stats.hp)}`:`${Math.ceil(unit.hp)}/${Math.round(unit.stats.hp)}  +${Number(unit.stats.hpRegen.toFixed(1))}/s`);
       this.setText(actor.mana, this.compact?`${this.shortNumber(unit.mana)}/${this.shortNumber(unit.stats.mana)}`:`${Math.floor(unit.mana)}/${Math.round(unit.stats.mana)}  +${Number(unit.stats.manaRegen.toFixed(1))}/s`);
@@ -225,7 +231,13 @@ class BattleScene extends Phaser.Scene {
   private refreshProjectiles(motion: boolean) {
     this.trails.clear();
     const battle = this.owner.battle;
-    const selected=battle.party[this.owner.options.selected()]?.id;
+    const selectedUnit=battle.party[this.owner.options.selected()];
+    const selected=selectedUnit?.id;
+    const target=battle.enemies.find(u=>u.id===selectedUnit?.targetId&&u.hp>0);
+    if(target&&selectedUnit&&selectedUnit.hp>0){
+      const from=this.actors[selectedUnit.slot],to=this.actors[5+target.slot];
+      this.trails.lineStyle(1,COLORS.gold,.28).lineBetween(from.root.x,from.root.y-from.height/2-8,to.root.x,to.root.y-to.height/2-8);
+    }
     for(const shot of battle.shots){if(shot.id>this.launched&&shot.start>=battle.tick-5)this.flashes.set(shot.source,{tick:shot.start,color:shot.skill?COLORS.blue:0xe6dfca});this.launched=Math.max(this.launched,shot.id);}
     const shots = motion ? [...battle.shots].sort((a,b)=>Number(b.source===selected)-Number(a.source===selected)||b.id-a.id).slice(0,LIMITS.projectiles) : [];
     for (let n = 0; n < this.projectiles.length; n++) {

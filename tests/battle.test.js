@@ -26,7 +26,7 @@ test('a 0.1 second attack settles exactly at its fifth fixed step and cannot set
   b.settle(shot);b.step();assert.equal(target.hp,hp-10);
 });
 test('timer expiry wins a same-tick race against scheduled respawn',()=>{
-  const b=battle({duration:.1});b.enemies[0].hp=0;b.enemies[0].respawnAt=5;const id=b.enemies[0].id;
+  const b=battle({duration:.1});b.enemies[0].hp=0;b.nextSpawn=5;const id=b.enemies[0].id;
   for(let i=0;i<5;i++)b.step();assert.equal(b.phase,'cleanup');assert.equal(b.enemies[0].id,id);assert.equal(b.enemies[0].hp,0);
 });
 test('dead enemies grant kill rewards only once',()=>{

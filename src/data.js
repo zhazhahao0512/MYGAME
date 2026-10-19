@@ -1,5 +1,5 @@
 // All content in this file is provisional. It exercises the interface, not final balance.
-export const RULES = Object.freeze({ floors: 20, slots: 4, party: 5, roundSeconds: 25, respawnSeconds: 2 });
+export const RULES = Object.freeze({ floors: 20, slots: 4, party: 5, roundSeconds: 40 });
 export const BASE = Object.freeze({ hp: 340, mana: 100, hpRegen: 2, manaRegen: 5, attack: 28, power: 12,
   attackSpeed: 1, haste: 0, crit: .05, critDamage: 1.5, armor: 12, resist: 10, omni: 0,
   lifeSteal: 0, move: 100, focus: 100, tenacity: 0, armorPen: 0, magicPen: 0,

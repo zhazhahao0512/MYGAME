@@ -1,6 +1,6 @@
 import { resolveStats, resolveRules } from './attributes.js';
 export function createUnit({id,side,slot,name,def,baseStats,modifiers=[],rules=[],skills=[],triggers=[],auto=true,tick=0,step=.02,boss=false}) {
-  const unit={id,side,slot,name,def,boss,baseStats:{...baseStats},sources:new Map(),statuses:new Map(),
+  const unit={id,side,slot,name,def,boss,tactics:null,targetId:null,targetRule:null,reward:0,challenge:false,enemyType:null,baseStats:{...baseStats},sources:new Map(),statuses:new Map(),
     baseRules:{attackTarget:def?.attackRule||'front'},rules:{},stats:{},skills:structuredClone(skills),triggers:structuredClone(triggers),
     triggerReady:new Map(),auto,hp:0,mana:0,shield:0,attack:null,casting:null,nextAttack:tick,
     ready:skills.map((s,i)=>tick+Math.ceil((s.initialCooldown??(2+i))/step)),lastEvent:null};

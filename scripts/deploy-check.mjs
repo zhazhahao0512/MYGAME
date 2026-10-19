@@ -71,7 +71,7 @@ try {
   page.on('pageerror',e=>errors.push(e.message));page.on('request',req=>{if(/^https?:/.test(req.url())&&new URL(req.url()).origin!==base)remote.push(req.url());});
   await page.goto(base);await page.locator('[data-act="preview-menu"]').click();await page.locator('[data-page="battle"]').click();
   await page.waitForFunction(()=>Number(document.querySelector('#battle-canvas')?.dataset.tick)>125);
-  assert.equal(await page.locator('canvas').count(),1);assert.equal(await page.locator('.unit-statuses').count(),5);
+  assert.equal(await page.locator('canvas').count(),1);assert.equal(await page.locator('.unit-statuses').count(),1);
   await page.locator('[data-act="pause"]').click();const tick=await page.locator('#battle-canvas').getAttribute('data-tick');
   await page.waitForTimeout(250);assert.equal(await page.locator('#battle-canvas').getAttribute('data-tick'),tick);
   assert.deepEqual(errors,[]);assert.deepEqual(remote,[],'packaged game must not request a CDN or hosted backend');

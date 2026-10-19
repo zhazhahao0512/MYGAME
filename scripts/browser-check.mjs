@@ -36,7 +36,7 @@ try{
   const canvas=await page.locator('#battle-canvas canvas').elementHandle();
   await click('attributes');assert.equal(await canvas.evaluate(el=>el.isConnected),true,'switching attributes must preserve the Phaser instance');await click('attributes');
   await click('pause');const time=await page.locator('#battle-clock').textContent(),tick=await page.locator('#battle-canvas').getAttribute('data-tick');await page.clock.runFor(1000);assert.equal(await page.locator('#battle-clock').textContent(),time);assert.equal(await page.locator('#battle-canvas').getAttribute('data-tick'),tick);await click('close');
-  await page.clock.runFor(32000);assert.equal(await page.locator('.shop-shell').count(),1,'battle should finish into shop');
+  await page.clock.runFor(52000);assert.equal(await page.locator('.shop-shell').count(),1,'battle should finish into shop');
   assert.equal(await page.locator('.chest-choices').count(),1,'victory shows inline chest and party');
   assert.equal(await page.locator('[role="dialog"]').count(),0);await shot('chest-inline-2k');
   await noOverflow();assert.equal(await page.locator('[data-act="next"]').isDisabled(),true);
@@ -72,7 +72,7 @@ try{
   assert.equal(await page.locator('.stat-grid.secondary').count(),5);assert.equal(await page.locator('.hero-panels').evaluate(el=>el.getBoundingClientRect().height),panelHeight,'attribute pages must keep panel height');await shot('secondary-stats-2k');
   await page.setViewportSize({width:1440,height:900});await noOverflow();await shot('shop-1440');
   await click('home');await shot('home-1440');await click('preview-menu');await click('preview','[data-page="result"]');await shot('result-1440');
-  await click('home');await click('preview-menu');await click('preview','[data-page="battle"]');await engineReady();await noOverflow();await page.clock.runFor(3300);assert.equal(await page.locator('.unit-statuses').count(),5);assert.ok((await page.locator('.unit-statuses').allTextContents()).some(text=>text.includes('共鸣')));await shot('battle-1440');
+  await click('home');await click('preview-menu');await click('preview','[data-page="battle"]');await engineReady();await noOverflow();await page.clock.runFor(3300);assert.equal(await page.locator('.unit-statuses').count(),1);assert.ok((await page.locator('.unit-statuses').allTextContents()).some(text=>text.includes('共鸣')));await shot('battle-1440');
   assert.deepEqual(errors,[],'no browser runtime or console errors');
   console.log('Browser checks passed: home, new run, recruitment, actual combat, pause, rewards, persistence, purchase/sale/transfer, formation, next floor, independent previews, 2K/1440 layouts.');
 }finally{if(browser)await browser.close();server.kill('SIGTERM');}

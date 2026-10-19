@@ -11,7 +11,8 @@ export interface UnitView {
   readonly mana: number;
   readonly shield: number;
   readonly boss?: boolean;
-  readonly respawnAt?: number;
+  readonly targetId?: string;
+  readonly challenge?: boolean;
   readonly attack: { readonly start: number; readonly end: number } | null;
   readonly casting?: { readonly start: number; readonly end: number; readonly skill: { readonly name: string } } | null;
   readonly statuses?: ReadonlyMap<string, { readonly stacks: number; readonly expiresAt: number; readonly definition: { readonly name: string } }>;
@@ -51,6 +52,7 @@ export interface EffectEvent {
 }
 
 export interface BattleView {
+  readonly nextSpawn?: number;
   readonly tick: number;
   readonly phase: string;
   readonly party: readonly UnitView[];
@@ -65,6 +67,9 @@ export interface RendererOptions {
   advance: (deltaMs: number) => void;
   selected: () => number;
   select: (slot: number) => void;
+  selectEnemy?: (slot: number) => void;
+  selectedEnemy?: () => number;
+  cancelCommand?: () => void;
   motion: () => boolean;
   paused: () => boolean;
   compact?: () => boolean;

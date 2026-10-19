@@ -12,7 +12,7 @@ const commonSkills=SKILLS.map((s,i)=>({...s,id:`common-${s.key}`,priority:[10,30
     [{type:'damage',damageType:'magic',attack:s.type==='ultimate'?1.8:1.3,power:.8,travel:.3}],
 }));
 const stoneSkills=[
-  {...commonSkills[0],id:'stone-Q',name:'盾击',castTime:.25,effects:[{type:'damage',damageType:'physical',attack:1.4,power:0,travel:.2,onHit:[{type:'status',status:'stun'}]}],description:'吟唱 0.25 秒后盾击前方敌人，造成物理伤害并眩晕 0.5 秒。目标死亡时重新选敌。'},
+  {...commonSkills[0],id:'stone-Q',name:'盾击',castTime:.25,effects:[{type:'damage',damageType:'physical',attack:1.4,power:0,travel:.2,onHit:[{type:'status',status:'stun'}]}],description:'吟唱 0.25 秒后盾击当前选定敌人，造成物理伤害并眩晕 0.5 秒。目标死亡时重新选敌。'},
   {...commonSkills[1],id:'stone-W',name:'回息',description:'治疗生命比例最低的友军，治疗量为 30 + 法强。'},
   {...commonSkills[2],id:'stone-E',name:'坚守',effects:[{type:'shield',amount:30,power:1},{type:'status',status:'fortify'}],description:'获得 30 + 法强的护盾，物抗和魔抗提高 8，持续 3 秒。'},
   {...commonSkills[3],id:'stone-R',name:'壁垒冲击',castTime:.6,description:'吟唱 0.6 秒后冲击全部敌人，造成魔法伤害。可以手动释放。'},

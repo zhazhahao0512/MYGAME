@@ -1,4 +1,5 @@
 import { BASE, HEROES, heroById, ITEMS, RARITIES, RULES } from './data.js';
+import { normalizeTactics } from './combat/tactics.js';
 import { resolveStats } from './combat/attributes.js';
 import { loadoutModifiers, AUGMENTS, EQUIPMENT_EFFECTS } from './combat/content.js';
 export const SAVE_KEY = 'squad-expedition.save.v1';
@@ -22,7 +23,7 @@ export function chooseAugment(run,id) {
 export function recruit(run,id) {
   if(!['initial','recruit'].includes(run.phase)||!run.candidates.includes(id)) fail('这个英雄不在当前候选中');
   if(run.party.length>=RULES.party||run.party.some(h=>h.hero===id)) fail('无法招募重复英雄');
-  const initial=run.phase==='initial'; run.party.push({hero:id,gear:[null,null,null,null],auto:true});
+  const initial=run.phase==='initial'; run.party.push({hero:id,gear:[null,null,null,null],auto:true,tactics:normalizeTactics()});
   if(initial){run.phase='recruit';run.candidates=sample(run,HEROES.map(h=>h.id).filter(id=>!run.party.some(h=>h.hero===id)),3);}
   else {run.phase='ready';run.candidates=[];}
 }
@@ -141,6 +142,7 @@ export function parseSave(raw) {
     if(['initial','recruit'].includes(run.phase)&&(run.candidates.length!==3||new Set(run.candidates).size!==3||run.candidates.some(id=>run.party.some(h=>h.hero===id))))return null;
     if(run.phase!=='initial'&&run.party.length===0)return null;
     if(run.phase==='shop'&&(run.shop.length!==4||!run.chest||!Array.isArray(run.chest.options)||run.chest.options.length!==3||!run.chest.options.every(i=>i&&validItem(i))||typeof run.chest.claimed!=='boolean'||typeof run.chest.refreshUsed!=='boolean'))return null;
+    for(const member of run.party)member.tactics=normalizeTactics(member.tactics);
     if(run.phase==='battle')run.phase='ready';return run;
   } catch{return null;}
 }

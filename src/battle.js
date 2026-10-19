@@ -4,20 +4,25 @@ import { baseStatsFor, random } from './model.js';
 import { createUnit, applyStatus, expireStatuses, isControlled } from './combat/unit.js';
 import { skillsFor, enemySkills, loadoutModifiers, triggersFor, STATUSES } from './combat/content.js';
 import { TriggerQueue } from './combat/events.js';
+import { BATTLE_V2, ENEMY_TYPES, CHALLENGE_TYPES, TARGET_MODES, normalizeTactics, rankTargets } from './combat/tactics.js';
 export const STEP=.02;
 export const hitChance=(focus,move)=>Math.max(0,Math.min(1,focus/Math.max(1,move)));
 export const cooldown=(seconds,haste)=>seconds/(1+Math.max(0,haste)/100);
 const ticks=seconds=>Math.max(1,Math.ceil(seconds/STEP));
 export class Battle {
-  constructor(run,{duration=RULES.roundSeconds}={}) {
+  constructor(run,{duration=RULES.roundSeconds,tuning={}}={}) {
     this.run=run;this.rng={seed:run.seed};this.tick=0;this.durationTicks=Math.round(duration/STEP);
     this.phase='combat';this.serial=0;this.shotSerial=0;this.shots=[];this.feed=[];this.kills=0;this.gold=0;this.bossKilled=false;
+    this.tuning={...BATTLE_V2,...tuning};this.nextSpawn=ticks(this.tuning.spawnSeconds);
+    this.challengeSerial=0;this.offerRng={seed:(run.seed^0x42cafe)>>>0};this.pendingChallenges=[];this.challengeOffers=[];this.challengeRevision=0;
     this.effects=[];this.effectSerial=0;this.regenTotals=new Map();this.events=new TriggerQueue();
     this.party=run.party.map((member,slot)=>this.makeUnit({side:'hero',slot,name:heroById(member.hero).name,def:heroById(member.hero),
       baseStats:baseStatsFor(member,run.level),modifiers:loadoutModifiers(member,run.augments),
       skills:skillsFor(member.hero),triggers:triggersFor(member,run.augments),auto:member.auto}));
+    for(const [index,unit] of this.party.entries()){unit.tactics=normalizeTactics(run.party[index].tactics);unit.targetId=null;unit.targetRule=null;}
     this.enemies=Array.from({length:5},(_,slot)=>this.spawn(slot));
-    this.addFeed('战斗开始。磐石与部分橙装已接入示例机制。');
+    this.challengeOffers=Array.from({length:3},(_,i)=>this.makeOffer(this.tuning.offerSeconds+i*this.tuning.offerStagger));
+    this.addFeed('战斗开始 · 点英雄再点敌人，保存优先位置。');
   }
   makeUnit(config) {return createUnit({...config,id:`${config.side}-${++this.serial}`,tick:this.tick,step:STEP});}
   get time(){return this.tick*STEP;}
@@ -25,13 +30,57 @@ export class Battle {
   units(){return [...this.party,...this.enemies];}
   living(side){return (side==='hero'?this.party:this.enemies).filter(u=>u&&u.hp>0);}
   find(id){return this.units().find(u=>u?.id===id);}
-  spawn(slot) {
-    const floor=this.run.floor,boss=floor%5===0&&slot===0&&!this.bossKilled;
-    const baseStats={...BASE,hp:boss?180+floor*30:45+floor*7,attack:boss?12+floor*2:4+floor*1.25,power:0,
-      attackSpeed:boss?.65:.55+(slot%3)*.1,armor:floor*1.5,resist:floor*1.5,hpRegen:0,mana:30,manaRegen:1,crit:0};
-    const unit=this.makeUnit({side:'enemy',slot,name:boss?'守门人':['灰爪','苔刺','雾灵','铁卫','灰爪'][slot],baseStats,skills:enemySkills(boss),boss});
+  spawn(slot,template=null) {
+    const floor=this.run.floor,boss=!template&&floor%5===0&&slot===0&&!this.bossKilled;
+    const type=template||ENEMY_TYPES.find(t=>t.positions[0]===slot)||ENEMY_TYPES.find(t=>t.positions.includes(slot));
+    const baseStats={...BASE,hp:boss?260+floor*35:(100+floor*10)*type.health,attack:boss?12+floor*2:(4+floor*1.1)*type.damage,power:0,
+      attackSpeed:boss?.65:.55+(slot%3)*.1,armor:floor*1.5,resist:floor*1.5,hpRegen:0,mana:30,manaRegen:1,crit:0,move:type.move};
+    const unit=this.makeUnit({side:'enemy',slot,name:boss?'守门人':type.name,def:{...type,color:template?'#d6ad67':'#bd897d'},baseStats,skills:enemySkills(boss||type.caster),boss});
+    unit.reward=template?template.reward:boss?15:3;unit.challenge=!!template;unit.enemyType=type.id;
     unit.nextAttack=this.tick+ticks(.8);return unit;
   }
+  makeOffer(seconds=this.tuning.offerSeconds) {
+    const type=CHALLENGE_TYPES[Math.floor(random(this.offerRng)*CHALLENGE_TYPES.length)];
+    return {id:`challenge-${++this.challengeSerial}`,type,expiresAt:this.tick+ticks(seconds)};
+  }
+  acceptChallenge(id) {
+    if(this.phase!=='combat'||this.pendingChallenges.length>=this.tuning.queueLimit)return false;
+    const index=this.challengeOffers.findIndex(o=>o.id===id&&o.expiresAt>this.tick);if(index<0)return false;
+    this.pendingChallenges.push(this.challengeOffers[index]);
+    this.challengeOffers[index]=this.makeOffer();this.challengeRevision++;
+    this.addFeed('挑战已加入队列 · 到补怪时刻且推荐位置空闲后入场。');return true;
+  }
+  cancelChallenge(id) {
+    const index=this.pendingChallenges.findIndex(o=>o.id===id);
+    if(this.phase!=='combat'||index<0)return false;
+    this.pendingChallenges.splice(index,1);this.challengeRevision++;return true;
+  }
+  refreshSpawns() {
+    for(let i=0;i<this.challengeOffers.length;i++)if(this.challengeOffers[i].expiresAt<=this.tick){this.challengeOffers[i]=this.makeOffer();this.challengeRevision++;}
+    if(this.tick<this.nextSpawn)return;
+    this.nextSpawn=this.tick+ticks(this.tuning.spawnSeconds);
+    let budget=this.tuning.batchSize;
+    const place=(slot,type)=>{this.regenTotals.delete(this.enemies[slot].id);this.enemies[slot]=this.spawn(slot,type);this.emitEffect('spawn',this.enemies[slot]);budget--;};
+    // Compatible challenges have priority; a full front row cannot block rear requests.
+    for(const offer of [...this.pendingChallenges]){
+      if(!budget)break;
+      const slot=offer.type.positions.find(n=>this.enemies[n].hp<=0);
+      if(slot===undefined)continue;
+      place(slot,offer.type);this.pendingChallenges.splice(this.pendingChallenges.indexOf(offer),1);this.challengeRevision++;
+    }
+    for(let slot=0;slot<5&&budget;slot++)if(this.enemies[slot].hp<=0)place(slot,null);
+  }
+  attackChance(source,target){return hitChance(source.stats.focus,target.stats.move);}
+  setTactics(index,patch,targetId=null) {
+    const unit=this.party[index];if(!unit||unit.hp<=0||!['combat','cleanup'].includes(this.phase))return false;
+    if(patch.mode!==undefined&&!TARGET_MODES.some(m=>m.id===patch.mode))return false;
+    if(patch.preferredSlot!==undefined&&patch.preferredSlot!==null&&(!Number.isInteger(patch.preferredSlot)||patch.preferredSlot<0||patch.preferredSlot>4))return false;
+    const target=targetId?this.living('enemy').find(u=>u.id===targetId):null;
+    if(targetId&&!target)return false;
+    unit.tactics=normalizeTactics({...unit.tactics,...patch});this.run.party[index].tactics={...unit.tactics};
+    unit.targetId=target?.id||null;unit.targetRule=unit.rules.attackTarget===unit.baseRules.attackTarget?'player':unit.rules.attackTarget;return true;
+  }
+  commandTarget(index,id){const target=this.living('enemy').find(u=>u.id===id);return !!target&&this.setTactics(index,{preferredSlot:target.slot},id);}
   addFeed(text){this.feed.unshift({time:this.time,text});this.feed.length=Math.min(this.feed.length,6);}
   emitEffect(type,unit,amount=0,crit=false,details={}) {
     this.effects.push({id:++this.effectSerial,tick:this.tick,type,target:unit.id,side:unit.side,slot:unit.slot,amount,crit,...details});
@@ -57,11 +106,17 @@ export class Battle {
     });
   }
   target(source,rule=source.rules.attackTarget) {
-    const units=this.living(source.side==='hero'?'enemy':'hero');if(!units.length)return null;
-    if(rule==='random')return units[Math.floor(random(this.rng)*units.length)];
-    if(rule==='slot3')return units.find(u=>u.slot===2)||units[0];
-    if(rule==='weakest')return units.reduce((a,b)=>a.hp<b.hp?a:b);
-    return units[0];
+    const units=this.living(source.side==='hero'?'enemy':'hero');if(!units.length){source.targetId=null;return null;}
+    // Source overrides stay compatible with special content; defaults use player intent.
+    const override=rule!==source.baseRules.attackTarget;
+    const key=override?rule:'player';
+    if(source.side==='hero'&&source.tactics){
+      if(source.targetRule!==key){source.targetId=null;source.targetRule=key;}
+      const locked=units.find(u=>u.id===source.targetId);if(locked)return locked;
+      if(!override){const chosen=rankTargets(source,units,source.tactics,(a,b)=>this.attackChance(a,b),this.tuning.neighborRadius)[0];source.targetId=chosen.id;return chosen;}
+    }
+    const chosen=rule==='random'?units[Math.floor(random(this.rng)*units.length)]:rule==='slot3'?units.find(u=>u.slot===2)||units[0]:rule==='weakest'?units.reduce((a,b)=>a.hp<b.hp?a:b):units[0];
+    source.targetId=chosen.id;return chosen;
   }
   getSkill(unit,index) {
     const skill=unit?.skills[index];if(!skill)return null;
@@ -125,9 +180,9 @@ export class Battle {
       this.emitEffect('death',target);this.emit('kill',source,target);this.emit('death',source,target);
       target.shield=0;target.attack=null;target.casting=null;
       if(target.side==='enemy') {
-        this.kills++;const gold=target.boss?15:3;this.gold+=gold;
+        this.kills++;const gold=target.reward??(target.boss?15:3);this.gold+=gold;
         if(target.boss)this.bossKilled=true;
-        target.respawnAt=this.tick+ticks(RULES.respawnSeconds);
+        // The slot stays empty until the shared spawn scheduler can fill it.
         this.addFeed(`${target.name}被击败 · +${gold} 金币`);
       }else this.addFeed(`${target.name}暂时倒下了。`);
     }
@@ -195,15 +250,13 @@ export class Battle {
   step() {
     if(!['combat','cleanup'].includes(this.phase))return;
     this.tick++;
-    if(this.tick>=this.durationTicks&&this.phase==='combat'){this.phase='cleanup';this.addFeed('时间到，停止补位。清理剩余敌人！');}
+    if(this.tick>=this.durationTicks&&this.phase==='combat'){this.phase='cleanup';this.pendingChallenges=[];this.challengeOffers=[];this.challengeRevision++;this.addFeed('时间到，停止补位。清理剩余敌人！');}
     for(const unit of this.units())expireStatuses(unit,this.tick);
     const due=this.shots.filter(s=>s.end<=this.tick);this.shots=this.shots.filter(s=>s.end>this.tick);
     for(const shot of due)this.settle(shot);
     if(!this.living('hero').length){this.phase='lost';this.shots=[];return;}
     if(this.phase==='cleanup'&&!this.living('enemy').length){this.phase='won';this.shots=[];return;}
-    if(this.phase==='combat')for(let slot=0;slot<5;slot++) {
-      const old=this.enemies[slot];if(old.hp<=0&&old.respawnAt<=this.tick){this.regenTotals.delete(old.id);this.enemies[slot]=this.spawn(slot);this.emitEffect('spawn',this.enemies[slot]);}
-    }
+    if(this.phase==='combat')this.refreshSpawns();
     for(const unit of this.units()) {
       if(unit.hp<=0)continue;
       const hpBefore=unit.hp;

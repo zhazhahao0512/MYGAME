@@ -61,8 +61,8 @@ try{
     paused=await tick();await click('close');assert.match(await page.locator('#modal-title').textContent(),/稍作休整/);await page.clock.runFor(200);assert.equal(await tick(),paused,'closing an unrelated modal cannot release background pause');await click('close');
     await page.mouse.move(1,1);await page.clock.runFor(5400);
     const cast=page.locator('[data-act="cast-ultimate"][data-hero="2"]');
-    // All enemies can be temporarily dead; wait for a real valid target/finished cast.
-    for(let n=0;n<40&&await cast.isDisabled();n++)await page.clock.runFor(100);
+    // A six-second spawn gap can be followed by a 0.25s Q cast; wait through both, without fabricating targets.
+    for(let n=0;n<80&&await cast.isDisabled();n++)await page.clock.runFor(100);
     assert.equal(await cast.isDisabled(),false,'manual R becomes available with a live target');
     await click('skill','[data-hero="2"][data-skill="3"]');assert.equal(await cast.isDisabled(),false,'viewing R never spends it');paused=await tick();await page.clock.runFor(300);assert.equal(await tick(),paused);
     await click('cast-ultimate','[data-hero="2"]');assert.equal(await page.locator('.inspection-card').count(),0);assert.equal(await cast.isDisabled(),true,'manual R spends cooldown once');
@@ -71,8 +71,8 @@ try{
     if(touch){
       assert.equal(await page.locator('.hero-panel:visible').count(),1);assert.equal(await page.locator('.hero-selector button').count(),5);
       const hitSizes=await page.locator('.hero-panel.selected .skill,.hero-panel.selected .gear-slot,.hero-selector button').evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return [r.width,r.height];}));assert.ok(hitSizes.every(([w,h])=>w>=44&&h>=44));
-      await click('detail-stats');await click('attributes');await screenshot('attributes');await click('detail-loadout');
-      await page.setViewportSize({width:740,height:360});await page.clock.runFor(100);await noOverflow();await screenshot('740');
+      await click('detail-stats');await click('detail-stats');await screenshot('attributes');await click('detail-loadout');
+      await page.setViewportSize({width:740,height:360});await page.clock.runFor(100);await noOverflow();assert.ok(await page.locator('.hero-panel.selected .skill,.hero-panel.selected .gear-slot').evaluateAll(els=>els.every(el=>{const r=el.getBoundingClientRect();return r.bottom<=innerHeight&&r.top>=0;})),'all skill and gear controls fit short landscape');await screenshot('740');
       await click('skill','[data-hero="2"][data-skill="0"]');
       await page.setViewportSize({width:390,height:844});await page.clock.runFor(100);assert.equal(await page.locator('.portrait-battle').isVisible(),true);assert.equal(await page.locator('.inspection-card').count(),0);paused=await tick();await page.clock.runFor(500);assert.equal(await tick(),paused);await screenshot('portrait');
       await page.setViewportSize({width:844,height:390});await page.clock.runFor(100);assert.equal(await tick(),paused,'rotation back needs explicit continue');await click('resume-orientation');await page.clock.runFor(500);assert.notEqual(await tick(),paused);
@@ -106,3 +106,6 @@ try{
   await page.screenshot({path:'test-results/battle-interaction/shield-vamp-feedback.png'});await page.evaluate(()=>window.feedbackRenderer.destroy());
   assert.deepEqual(errors,[]);console.log('Battle interaction checks passed, including actual shield/vamp renderer colors.');
 }catch(error){if(activePage&&!activePage.isClosed())await activePage.screenshot({path:'test-results/battle-interaction/failure.png'}).catch(()=>{});throw error;}finally{if(browser)await browser.close();server.kill('SIGTERM');}
+
+// Keep V2 commands and queue coverage in the existing CI battle check.
+await import('./battle-v2-check.mjs');

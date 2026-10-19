@@ -137,7 +137,7 @@
 
 | 攻击动画恢复排查：src/renderer/、app.js动效设置；必要battle.js只读表现事件；scripts/attack-animation-check.mjs及现有引擎/交互验证；COMBAT/UI-INTERACTION、公共动画补充/R059 | 进行中（复现与表现修复） | attack-animation-20261020-r059 | 2026-10-20 | 基线f32eab4；用户反馈攻击动画消失，核对开关/弹道/事件与连续画面；不改伤害、英雄设计、背景或布局，保留R056/R057范围 |
 
-| 首批红装整批设计：新docs/equipment/RED-EQUIPMENT.md、red-equipment-r058.json、red-equipment-balance.py；EQUIPMENT-DESIGN与ATTACK-EFFECTS仅接续/链接；新D030/索引、Q009独立补充；公共仅本行/装备补充/R058 | 进行中（设计与独立核算，未实施游戏） | equipment-red-20261020-r058 | 2026-10-20 | 基线b35458f；用户要求继续上一轮红装计划，19件/26路线为拟定批量；保留既有59件参数、运行47件及R057 UI范围 |
+| 首批红装整批设计：新docs/equipment/RED-EQUIPMENT.md、red-equipment-r060.json、red-equipment-balance.py；EQUIPMENT-DESIGN与ATTACK-EFFECTS仅接续/链接；新D031/索引、Q009独立补充；公共仅本行/装备补充/R060 | 进行中（设计与独立核算，未实施游戏） | equipment-red-20261020-r060 | 2026-10-20 | 起始b35458f；初次认领推送遇并行R058/D030与R059，保留合并96f7caa后改R060/D031；用户要求继续红装计划，19件/26路线为拟定批量；保留既有59件参数、运行47件及动画/英雄范围 |
 
 认领为共享仓库交接记录，不是自动锁；其他窗口避开“进行中”范围，重叠须先协调。未登记不证明没有窗口工作；中止或接管也须记录。
 

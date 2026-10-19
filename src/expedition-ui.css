@@ -1,0 +1,248 @@
+/* Shared expedition HUD. Keep simulation, renderer and transaction rules independent. */
+.expedition-shop {
+  --line:#43565e; --muted:#acb9be; --text:#ece7da; --green:#94d8af;
+  --accent:#ebc36e; --accent-light:#ffe3a5;
+  --hud-serif:'Expedition Serif','Noto Serif CJK SC','Songti SC',serif;
+  --hud-panel:linear-gradient(120deg,#0d202be8,#07121bef);
+  color:var(--text); background:url('/art/iron-grain.svg'),#06121b;
+  width:100%; max-width:none; min-width:0; min-height:100dvh;
+  padding:12px 16px; gap:10px;
+}
+.expedition-shop .topbar,.expedition-shop .shop-stock,.expedition-shop .shop-party,
+.expedition-shop .selection-toolbar,.expedition-shop .shop-footer {
+  background:var(--hud-panel); border:1px solid #9e8554; border-radius:0;
+  box-shadow:inset 0 0 0 2px #02090f,inset 0 0 0 3px #9e855422;
+}
+.expedition-shop .topbar {min-height:58px;padding:8px 16px;gap:18px}
+.expedition-shop .brand-mini {font:700 clamp(20px,1.7vw,32px) var(--hud-serif);color:#ffe9b8}
+.expedition-shop .brand-symbol {display:none}
+.expedition-shop .topbar-title {border-left:1px solid #9e8554;padding-left:18px;gap:16px}
+.expedition-shop .topbar-title h1 {font:700 clamp(20px,1.6vw,30px) var(--hud-serif)}
+.expedition-shop .topbar-title>span {font-size:12px;color:var(--muted)}
+.expedition-shop .topbar-actions {gap:16px}
+.expedition-shop .gold {color:#f9d48a;font-variant-numeric:tabular-nums}
+.expedition-shop .topbar .gold {font-size:22px}
+.expedition-shop .journey-strip {padding:6px 4px;margin:0;min-height:0;border:0}
+.expedition-shop .journey-strip ol {gap:20px}
+.expedition-shop .journey-strip li {font-size:11px}
+.expedition-shop .journey-strip p {font-size:11px}
+.expedition-shop .shop-summary {padding:0 8px 5px;gap:24px;font-size:12px;flex-wrap:wrap}
+.expedition-shop .shop-summary .gold {font-size:13px}
+.expedition-shop .shop-stock,.expedition-shop .shop-party {padding:12px 16px;margin:0}
+.expedition-shop .section-heading {min-height:34px;margin-bottom:10px;gap:12px}
+.expedition-shop .section-heading h2 {font:700 clamp(21px,1.6vw,30px) var(--hud-serif);color:#f7e4bd;white-space:nowrap}
+.expedition-shop .section-heading>div>span {font-size:12px;color:var(--muted)}
+.expedition-shop .section-heading>div {gap:12px}
+.expedition-shop .btn {color:#eee7d8;background:linear-gradient(#152732,#08141d);border-color:#81939a;border-radius:2px;box-shadow:inset 0 0 0 2px #030b10;min-height:36px}
+.expedition-shop .btn.primary {background:linear-gradient(#ffe6a4,#efc369);border-color:#fff0be;color:#30230d;box-shadow:inset 0 0 0 2px #e4b958}
+.expedition-shop .btn:hover:not(:disabled) {border-color:#edcc84;filter:brightness(1.12)}
+.expedition-shop .btn:focus-visible,.expedition-shop .gear-slot:focus-visible {outline:2px solid #f7d58e;outline-offset:3px}
+.expedition-shop .offer-grid {gap:12px;grid-template-columns:repeat(4,minmax(0,1fr))}
+.expedition-shop .offer-grid.chest-choices {grid-template-columns:repeat(3,minmax(0,1fr))}
+.expedition-shop .offer {min-height:170px;padding:12px;gap:14px;background:linear-gradient(130deg,#12232e,#07131c);border:1px solid #6f838b;border-top:2px solid var(--rarity);border-radius:0}
+.expedition-shop .offer.chosen {border-color:#edc66e;box-shadow:inset 0 0 0 1px #f8dc8a,0 0 12px #e1b95622;background:linear-gradient(130deg,#21333a,#0a1921)}
+.expedition-shop .offer.chosen:after {background:#f3ce79;color:#2d210e;font-size:11px}
+.expedition-shop .offer.sold {border-style:dashed;color:var(--muted);background:#081720}
+.expedition-shop .offer-select {min-width:0}
+.expedition-shop .item-details {gap:12px}
+.expedition-shop .item-details>div {min-width:0}
+.expedition-shop .item-details h3 {font:700 clamp(16px,1.2vw,22px)/1.4 var(--hud-serif);overflow-wrap:anywhere;margin:2px 0 7px}
+.expedition-shop .item-stats {color:#c4d0d4;font-size:12px;line-height:1.5;gap:2px}
+.expedition-shop .item-stats b {color:#f2eee4}
+.item-box:has(.equipment-name) {width:72px;min-height:72px;height:auto;padding:8px 5px}
+.item-box>.equipment-name {font:600 13px/1.45 system-ui,sans-serif;letter-spacing:0;white-space:normal;overflow-wrap:anywhere;text-align:center}
+.expedition-shop .item-box {background:#07121d;border-radius:0;width:74px;min-height:76px;max-width:none}
+.expedition-shop .item-box>small {font-size:10px;letter-spacing:1px}
+.expedition-shop .rarity {font-size:11px}
+.expedition-shop .item-passive {font-size:11px;color:#bdc9cd;line-height:1.5;margin-top:6px}
+.expedition-shop .offer-bottom {gap:8px;flex-wrap:wrap}
+.expedition-shop .offer-bottom>.gold {font-size:20px}
+.expedition-shop .offer-bottom>.muted {font-size:10px;margin-left:auto;color:#aebfc4}
+.expedition-shop .offer-info {min-width:36px}
+.expedition-shop .badge {border-color:#79856c;color:#e2d2a6}
+.expedition-shop[data-reward-phase='chest'] .shop-stock {border-color:#e2bb67}
+.expedition-shop[data-reward-phase='chest'] .offer-bottom>.badge {color:#ffe2a1;border-color:#ac8f51;background:#735a2426}
+.expedition-shop .selection-toolbar {margin:0;min-height:60px;padding:10px 16px;gap:18px;align-items:center}
+.expedition-shop .selection-copy {display:flex;flex-direction:column;gap:6px;min-width:0;flex:1}
+.expedition-shop .selection-copy strong {color:#f7d792;font:700 17px var(--hud-serif)}
+.expedition-shop .selection-copy p {font-size:12px;line-height:1.6;color:#b9c9d0;overflow-wrap:anywhere}
+.expedition-shop .selection-actions {display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end;max-width:45%}
+.expedition-shop .selection-actions .selection-cost {font-size:12px;color:#f0d28e;line-height:1.6;max-width:280px;font-variant-numeric:tabular-nums}
+.expedition-shop .hero-panels {gap:10px}
+.expedition-shop .hero-panel {padding:12px;gap:10px;border:1px solid #507581;border-radius:0;background:linear-gradient(130deg,#0e222b,#08151d);box-shadow:none}
+.expedition-shop .hero-panel.selected {border-color:#b6a371}
+.expedition-shop .hero-panel:has(.gear-slot:hover),.expedition-shop .hero-panel:has(.gear-slot:focus-visible) {border-color:#efcc7c;background:linear-gradient(130deg,#233238,#0c1a22)}
+.expedition-shop .hero-panel-heading {flex-wrap:wrap;align-items:center;min-height:44px;gap:5px}
+.expedition-shop .hero-name>b {font:700 clamp(18px,1.3vw,26px) var(--hud-serif);color:#f5e8cb}
+.expedition-shop .hero-name>small {font-size:11px;color:#b0c4cb}
+.expedition-shop .orange-count {font-size:10px;color:#b8c7cb;white-space:normal}
+.expedition-shop .hero-name:before {color:#9fb7bc}
+.expedition-shop .skills {gap:5px}
+.expedition-shop .skill {height:42px;border-color:#6a818a;background:linear-gradient(#112732,#06141d);border-radius:0}
+.expedition-shop .skill b {color:#e2e5de}
+.expedition-shop .skill small {font-size:9px;color:#c4d0d0;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.expedition-shop .skill.ultimate {border-color:#b89a59}
+.expedition-shop .gear-row {grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;align-items:stretch}
+.expedition-shop .gear-row>span {grid-column:1/-1;font-size:11px;line-height:1.2;color:#c6d2d6}
+.expedition-shop .gear-slot {height:auto;min-height:60px;padding:6px 3px;border-radius:0;background:#081720;font-size:20px}
+.gear-slot .equipment-name {display:block;width:100%;white-space:normal;word-break:normal;overflow-wrap:anywhere;font:500 12px/1.45 system-ui,sans-serif;letter-spacing:0;text-align:center}
+.expedition-shop .gear-slot.filled {border-color:var(--rarity);color:var(--rarity);background:linear-gradient(#11232e,#07131d)}
+.expedition-shop .gear-slot.can-receive {border-color:#77b5b9;box-shadow:inset 0 0 0 1px #6dbdc422}
+.expedition-shop .gear-slot.can-receive:hover,.expedition-shop .gear-slot.drop-hover {border-color:#ffdc85;box-shadow:inset 0 0 0 1px #f4ce77;background:#3b3726}
+.expedition-shop .gear-slot.cannot-receive {border-color:#8d5b60;opacity:.7}
+.expedition-shop .stat-grid {min-height:88px;border-color:#52707966;gap:5px 10px;padding-top:9px}
+.expedition-shop .stat-grid>div {font-size:11px;line-height:1.4}
+.expedition-shop .stat-grid>div>span {color:#afc1c8}
+.expedition-shop .stat-grid b {font-size:12px;color:#f4efe4}
+.expedition-shop .stat-grid.secondary {min-height:88px}
+.expedition-shop .stat-grid.secondary>div {font-size:10px}
+.expedition-shop .stat-grid.secondary b {font-size:12px}
+.expedition-shop .gear-preview:empty {display:none}
+.expedition-shop .gear-preview {font-size:11px;color:#b8c8cc;line-height:1.5}
+.expedition-shop .gear-preview .stat-changes {display:flex;flex-direction:column;margin:4px 0 0;padding:0;border:0;gap:3px}
+.expedition-shop .gear-preview .stat-changes>div {font-size:11px;gap:6px;padding:2px 0;flex-wrap:nowrap;background:none;color:inherit}
+.expedition-shop .gear-preview .stat-changes>div>span:last-child {white-space:nowrap}
+.expedition-shop .preview-blocked {color:#f1a8a0}
+.expedition-shop .increase {color:#8bdeb0}
+.expedition-shop .decrease {color:#efaaa1}
+.expedition-shop .hero-growth-button {margin:0;align-self:flex-start;font-size:12px}
+.expedition-shop .gear-hint {font-size:9px;color:#a1b2b8}
+.expedition-shop .shop-footer {padding:12px 16px;min-height:70px;margin-top:auto;gap:16px}
+.expedition-shop .chest-entry {gap:12px}
+.expedition-shop .chest-symbol {width:40px;height:40px;border-color:#758e7b}
+.expedition-shop .chest-entry b {font-size:14px}
+.expedition-shop .chest-entry small {font-size:11px;color:#afc1c8}
+.expedition-shop .shop-footer>.btn {min-height:44px;padding:10px 24px;font-size:16px}
+.expedition-shop .augment-strip {margin:0;border-color:#586b70;background:#10242e;padding:8px 14px}
+/* Local dialogs keep the same material while preserving the existing focus/transaction behavior. */
+body:has(.expedition-shop) :is(.shop-popover,.inspection-card,.modal) {--muted:#aebfc5;--line:#49606b;color:#eee6d8;background:#0b1c27;border-color:#af955f}
+body:has(.expedition-shop) :is(.shop-popover,.inspection-card,.modal) .item-box {background:#10232e}
+body:has(.expedition-shop) .upgrade-route {background:#102530;border-color:#526c78;color:#e9e3d8}
+body:has(.expedition-shop) .shop-popover .btn {background:#152b36;border-color:#85969a;color:#eee5d4}
+body:has(.expedition-shop) .shop-popover .btn.primary {background:#edc575;color:#211a0d}
+@media(min-width:1800px) {
+ .expedition-shop {padding:18px 24px;gap:14px}
+ .expedition-shop .topbar {min-height:72px}
+ .expedition-shop .shop-stock,.expedition-shop .shop-party {padding:18px 22px}
+ .expedition-shop .offer {min-height:205px;padding:20px}
+ .expedition-shop .hero-panel {padding:20px;gap:16px}
+ .expedition-shop .item-stats,.expedition-shop .selection-copy p {font-size:15px}
+ .expedition-shop .stat-grid>div {font-size:15px}
+ .expedition-shop .stat-grid b {font-size:16px}
+ .expedition-shop .stat-grid {min-height:110px}
+ .expedition-shop .gear-slot {min-height:72px}
+ .expedition-shop .gear-slot .equipment-name {font-size:16px}
+ .expedition-shop .skill {height:54px}
+ .expedition-shop .skill small {font-size:12px}
+}
+@media(max-width:1100px) {
+ .expedition-shop .hero-panels {grid-template-columns:repeat(3,minmax(0,1fr))}
+ .expedition-shop .offer-grid {grid-template-columns:repeat(2,minmax(0,1fr))}
+ .expedition-shop .topbar-title>span {display:none}
+}
+@media(max-width:600px) {
+ .expedition-shop {padding:10px;gap:10px}
+ .expedition-shop .topbar {padding:10px;gap:8px;flex-wrap:wrap}
+ .expedition-shop .brand-mini {font-size:20px}
+ .expedition-shop .topbar-title {border:0;padding:0;width:100%;order:3}
+ .expedition-shop .topbar-actions {gap:8px;margin-left:auto}
+ .expedition-shop .topbar .gold {font-size:18px}
+ .expedition-shop .preview-badge {display:none}
+ .expedition-shop .journey-strip {display:none}
+ .expedition-shop .shop-summary {gap:8px 14px;font-size:11px}
+ .expedition-shop .shop-summary>span:first-child {padding-right:10px}
+ .expedition-shop .shop-stock,.expedition-shop .shop-party {padding:12px}
+ .expedition-shop .section-heading {align-items:flex-start;flex-wrap:wrap}
+ .expedition-shop .section-heading>div {flex-wrap:wrap;gap:8px}
+ .expedition-shop .section-heading>div>span {border:0;padding:0;font-size:11px}
+ .expedition-shop .section-heading h2 {font-size:22px}
+ .expedition-shop .offer-grid,.expedition-shop .offer-grid.chest-choices {grid-template-columns:minmax(0,1fr);gap:10px}
+ .expedition-shop .offer {padding:12px;gap:12px;min-height:145px}
+ .expedition-shop .item-details {flex-direction:row;gap:12px}
+ .expedition-shop .item-box {width:70px;min-height:72px}
+ .expedition-shop .item-details h3 {font-size:17px}
+ .expedition-shop .offer-bottom {flex-wrap:wrap}
+ .expedition-shop .offer-bottom>.muted {display:none}
+ .expedition-shop .btn.small,.expedition-shop .offer-info {min-height:44px}
+ .expedition-shop .selection-toolbar {position:sticky;top:0;z-index:8;display:flex;flex-direction:column;align-items:stretch;padding:10px;gap:8px;background:#0a1b25;box-shadow:0 5px 16px #0008}
+ .expedition-shop .selection-copy p {font-size:11px;max-height:3.2em;overflow:auto}
+ .expedition-shop .selection-actions {max-width:none;justify-content:flex-start;gap:8px}
+ .expedition-shop .selection-actions .selection-cost {flex:1;max-width:none;font-size:11px}
+ .expedition-shop .hero-panels {grid-template-columns:minmax(0,1fr);gap:12px}
+ .expedition-shop .hero-panel {padding:12px;gap:10px}
+ .expedition-shop .hero-panel-heading {min-height:32px}
+ .expedition-shop .hero-name>b {font-size:21px}
+ .expedition-shop .skills {gap:6px}
+ .expedition-shop .skill {height:44px}
+ .expedition-shop .gear-row {grid-template-columns:repeat(4,minmax(0,1fr))}
+ .expedition-shop .gear-slot {min-height:60px}
+ .expedition-shop .gear-slot .equipment-name {font-size:13px}
+ .expedition-shop .stat-grid>div {font-size:12px}
+ .expedition-shop .stat-grid b {font-size:13px}
+ .expedition-shop .stat-grid.secondary {grid-template-columns:repeat(3,minmax(0,1fr))}
+ .expedition-shop .gear-hint {font-size:10px}
+ .expedition-shop .shop-footer {padding:12px;flex-wrap:wrap;min-height:0}
+ .expedition-shop .shop-footer>.btn {width:100%}
+}
+/* Desktop battle: keep Phaser art and behavior; give skills and full equipment names room. */
+@media(min-width:1101px),(min-width:601px) and (min-height:601px) {
+ .battle-v2 {--ui:clamp(1px,.075vw,1.65px)}
+ .battle-v2 .challenge-strip {min-height:calc(100 * var(--ui));padding:calc(8 * var(--ui)) calc(14 * var(--ui));grid-template-columns:calc(170 * var(--ui)) minmax(0,1fr) 17%;gap:calc(15 * var(--ui));background:url('/art/iron-grain.svg'),linear-gradient(110deg,#10212b,#07121b)}
+ .battle-v2 .challenge-offers {gap:calc(12 * var(--ui))}
+ .battle-v2 .challenge-card {box-shadow:none;grid-template-columns:calc(48 * var(--ui)) minmax(0,1fr) auto;gap:calc(8 * var(--ui));padding:calc(7 * var(--ui));background:linear-gradient(130deg,#15212a,#080f16)}
+ .battle-v2 .challenge-card:not(:last-child):after {display:none}
+ .battle-v2 .challenge-mark {height:calc(54 * var(--ui));font-size:calc(13 * var(--ui))}
+ .battle-v2 .challenge-card b {font-size:calc(15 * var(--ui))}
+ .battle-v2 .challenge-card>small {bottom:3px;right:6px}
+ .battle-v2 .battle-details {grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);gap:8px}
+ .battle-v2 .squad-section,.battle-v2 .enemy-detail {padding:calc(9 * var(--ui)) calc(14 * var(--ui));background:url('/art/iron-grain.svg'),linear-gradient(120deg,#0d202b,#07121b);box-shadow:inset 0 0 0 2px #030a10}
+ .battle-v2 .squad-section:after,.battle-v2 .enemy-detail:after {border-width:14px;border-image-width:14px;opacity:.65}
+ .battle-v2 .hero-selector {height:calc(23 * var(--ui));margin-bottom:calc(7 * var(--ui))}
+ .battle-v2 .hero-selector button {font-size:calc(12 * var(--ui))}
+ .battle-v2 .hero-panel {grid-template-columns:minmax(0,.75fr) minmax(0,1.25fr) minmax(0,1.2fr);grid-template-rows:calc(94 * var(--ui)) calc(56 * var(--ui)) auto;gap:calc(7 * var(--ui)) calc(12 * var(--ui))}
+ .battle-v2 .hero-panel-heading {padding-left:0;gap:4px}
+ .battle-v2 .detail-portrait {display:none}
+ .battle-v2 .hero-name>b {font-size:calc(24 * var(--ui))}
+ .battle-v2 .manual-skills {gap:4px}
+ .battle-v2 .cast-skill {font-size:calc(12 * var(--ui));padding:4px 8px;background:linear-gradient(#fce3a1,#deb565);color:#2b200e;border-color:#f2d389;min-height:calc(30 * var(--ui))}
+ .battle-v2 .gear-row {height:calc(78 * var(--ui));padding-top:calc(18 * var(--ui));gap:calc(5 * var(--ui))}
+ .battle-v2 .gear-slot {height:calc(60 * var(--ui));padding:4px;min-width:0}
+ .battle-v2 .gear-slot .equipment-name {font-size:calc(13 * var(--ui));line-height:1.4}
+ .battle-v2 .stat-grid.grouped {grid-column:1/-1;padding-right:calc(130 * var(--ui));position:relative}
+ .battle-v2 .attribute-control {grid-column:3;justify-content:flex-end;z-index:1;pointer-events:none}
+ .battle-v2 .attribute-toggle {pointer-events:auto;padding:5px 9px;min-width:0}
+ .battle-v2 .stat-grid.grouped>.stat-group {font-size:calc(12 * var(--ui));column-gap:calc(7 * var(--ui));padding:0 calc(9 * var(--ui))}
+ .battle-v2 .stat-grid.grouped b {font-size:calc(16 * var(--ui))}
+ .battle-v2 .stat-grid.grouped.secondary>.stat-group {font-size:calc(10 * var(--ui));column-gap:calc(5 * var(--ui));padding:0 calc(6 * var(--ui))}
+ .battle-v2 .stat-grid.grouped.secondary b {font-size:calc(13 * var(--ui))}
+ .battle-v2 .enemy-detail header {min-height:calc(66 * var(--ui));gap:calc(10 * var(--ui))}
+ .battle-v2 .enemy-detail header .enemy-portrait {width:calc(48 * var(--ui));height:calc(62 * var(--ui))}
+ .battle-v2 .enemy-detail h2 {font-size:calc(21 * var(--ui))}
+ .battle-v2 .enemy-selector {left:calc(72 * var(--ui));top:calc(55 * var(--ui))}
+ .battle-v2 .enemy-detail #enemy-stats {grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+ .battle-v2 .enemy-bottom {min-height:calc(48 * var(--ui));padding-top:calc(6 * var(--ui))}
+ .battle-v2 .enemy-reward {min-width:calc(90 * var(--ui));padding-left:calc(10 * var(--ui))}
+}
+@media(max-width:1100px) and (max-height:600px),(max-width:600px) {
+ .battle-v2 .gear-slot {padding:2px;min-width:44px}
+ .battle-v2 .gear-slot .equipment-name {font-size:10px;line-height:1.25}
+}
+/* Keep the common desktop loop in one viewport; long descriptions may still grow naturally. */
+@media(min-width:1101px) and (max-height:1000px) {
+ .expedition-shop {gap:8px;padding:10px 14px}
+ .expedition-shop .journey-strip {display:none}
+ .expedition-shop .shop-summary {padding:3px 8px;font-size:12px}
+ .expedition-shop .shop-stock,.expedition-shop .shop-party {padding:10px 14px}
+ .expedition-shop .offer {min-height:142px;padding:10px;gap:10px}
+ .expedition-shop .section-heading {min-height:30px;margin-bottom:8px}
+ .expedition-shop .hero-panel {padding:10px;gap:7px}
+ .expedition-shop .hero-panel-heading {min-height:32px}
+ .expedition-shop .gear-hint {display:none}
+ .expedition-shop .selection-toolbar {min-height:52px;padding:8px 14px}
+ .expedition-shop .shop-footer {min-height:60px;padding:8px 14px}
+ .expedition-shop .gear-preview {max-height:100px;overflow:auto}
+ .battle-v2 .squad-section,.battle-v2 .enemy-detail {padding-top:calc(7 * var(--ui));padding-bottom:calc(7 * var(--ui))}
+ .battle-v2 .hero-panel {grid-template-rows:calc(90 * var(--ui)) calc(56 * var(--ui)) auto;row-gap:calc(6 * var(--ui))}
+}
+
+.shop-popover .item-box>.equipment-name,.inspection-card .item-box>.equipment-name {font:600 13px/1.45 system-ui,sans-serif;white-space:normal;overflow-wrap:anywhere}

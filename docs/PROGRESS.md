@@ -53,6 +53,7 @@
 | 战斗 V2 设计与示意图：docs/BATTLE-TACTICS-V2.md、docs/design/battle-v2/、docs/LOCKING-DESIGN.md、docs/TARGET-SELECTION.md、docs/FOUNDATION-NEXT.md；公共回写 R018、D004 索引、Q002 与 Q005–Q008、当前交接 | 已释放（设计与示意图完成；未实施游戏） | battle-v2-design-20261019-root | 2026-10-19 | 认领 3f729a4 已推送；同步基线 9b13dd1，保留英雄和装备窗口内容；结果 D004/R018，下一步审阅图与边界；无游戏代码改动 |
 | 装备设计交接：docs/EQUIPMENT-DESIGN.md、docs/decisions/D005-equipment-foundation.md；公共回写仅 D005 索引、Q001、R019 与本行，Page 只标注镜像边界 | 已释放（装备设计归档完成） | equipment-handoff-20261019-0720 | 2026-10-19 | 基线 3f729a4；认领 7a5bc96 已推送，合入英雄 9b13dd1；结果见 R019 / D005 / Q001，12 白＋21 蓝迭代基线、6 紫草案未编码；保留战斗 D004/R018 与顶部交接认领；下一步以仓库工作稿接续装备与 Q004 预算 |
 | 英雄设计顺序：docs/decisions/D006-hero-design-order.md、D003 的顺序补充；公共回写仅 D006 索引、R020、本行及英雄状态条目，不改其它窗口预留编号或公共顶部 | 已释放（顺序记录完成） | hero-order-01a1441f-20261019 | 2026-10-19 | 基线 9b13dd1；认领 ea2192e 已推送；合入装备 0bf3ae4；先基础/成长、再技能与分类，动画等基础玩法流畅后设计；结果 D006/R020 |
+| 紫装确认与命名攻击特效：docs/EQUIPMENT-DESIGN.md、docs/ATTACK-EFFECTS-DESIGN.md、docs/decisions/D007-purple-effects.md；公共回写仅 D007 索引、R021、Q001/Q009、本窗口行与顶部装备交接 | 进行中（设计/文档，非游戏实施） | equipment-effects-20261019-r021 | 2026-10-19 | 基线 3a0a445；确认上一批 6 紫装及三条规则，为 5 个被动命名、研究 LoL 攻击特效；保留 D003/D004/D006 及英雄/战斗专项规范，新增通用机制只列建议 |
 
 认领为共享仓库交接记录，不是自动锁；其他窗口避开“进行中”范围，重叠须先协调。未登记不证明没有窗口工作；中止或接管也须记录。
 

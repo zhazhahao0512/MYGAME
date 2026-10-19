@@ -61,6 +61,7 @@
 | 战斗 V2 实施：src/app.js、src/style.css、src/battle.js、src/data.js、src/model.js、src/combat/、src/renderer/、src/inspection.js、相关 tests/ 与 scripts/ 检查；战斗规范/FRAMEWORK/README 及共享回写仅 D009/R024、Q005–Q008、战斗状态；顶部待英雄窗口释放后协调 | 已释放（代码与本地验证完成） | battle-v2-impl-20261019-root | 2026-10-19 | 认领 affe30e 已推送核验；合入英雄 d2a1350 与装备 9095d29，D009/R024 完成双详情、五策略/持久指令、补怪与挑战；保留他方全部记录。下一步试玩调参及另行认领新命中/正式内容；线上待核实 |
 | 岚牙加点与三技能调整：docs/heroes/LANYA.md、docs/heroes/lanya-balance.py、docs/decisions/D008-hero-skills.md、docs/decisions/D011-hero-skill-rank-rules.md；公共回写 D011 索引、R026、Q010、英雄状态与顶部交接 | 已释放（设计与算式完成，未实施游戏） | hero-lanya-rank-20261019-r026 | 2026-10-19 | 基线 8a0ec2e；认领 5a24895 已推送核验；结果 D011/R026；二级不同技能、6 级前最多三级、6 级起可四级；用户确认大招仍 5/10/15；3 技能去法强并评估伤害；不改游戏及装备 |
 | 战斗视觉偏差复盘：仅 docs/PROGRESS.md 本窗口认领、UI-05 与 R027；不占英雄 D011/R026/Q010 或公共顶部 | 已释放（复盘记录完成，无游戏代码） | battle-visual-review-20261019-r027 | 2026-10-19 | 认领 76563f1 已推送核验；R027 对照实图确认视觉还原不足，精准接入暂停，等待用户后续指向；保留英雄 D011/R026/Q010 与顶部范围 |
+| 战斗视觉还原：src/app.js、src/style.css、src/renderer/PhaserBattleRenderer.ts、public/ 战斗素材、相关 scripts/ 截图与交互检查；docs/design/battle-v2/、战斗界面规范与共享顶部/UI-05/D012/R028 | 进行中（视觉实现） | battle-visual-impl-20261019-r028 | 2026-10-19 | 基线 b5474f1；用户批准 R027 修正，保留战斗机制；精准迁移暂停。还原角色卡比例、青红阵营/金色选中、传送带与地牢层次，以实际截图验收；保留英雄装备记录 |
 
 认领为共享仓库交接记录，不是自动锁；其他窗口避开“进行中”范围，重叠须先协调。未登记不证明没有窗口工作；中止或接管也须记录。
 

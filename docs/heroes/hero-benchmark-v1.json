@@ -1,0 +1,62 @@
+{
+  "standard_id": "HB-1.0-draft",
+  "status": "design_only_not_engine_implemented",
+  "anchor_level": 15,
+  "level_samples": [1, 2, 3, 5, 6, 10, 15, 16, 20, 25, 30],
+  "windows_seconds": [5, 10, 40, 180],
+  "step_seconds": 0.02,
+  "seeds": {"first": 0, "count": 256, "extended_count": 1024},
+  "hero_slots": {"common": 3, "distance_sensitivity": [1, 3, 5]},
+  "layouts": {"1": [3], "3": [2, 3, 4], "5": [1, 2, 3, 4, 5]},
+  "focus_slot": 3,
+  "target_scaling": {"hp_intercept": 600, "hp_per_level": 160, "resist_intercept": 20, "resist_per_level": 2},
+  "pressure_scaling": {"raw_dps_intercept": 80, "raw_dps_per_level": 8},
+  "pressure_tiers": [0.5, 1.0, 2.0],
+  "pressure_count_modes": ["fixed_total", "fixed_per_source"],
+  "pressure_phase_modes": ["staggered", "synchronized"],
+  "targets": [
+    {"id": "T0", "name": "零抗测算", "hp_factor": 1, "armor_factor": 0, "mr_factor": 0, "evasion": 0, "reduction": 0},
+    {"id": "T1", "name": "均衡标准", "hp_factor": 1, "armor_factor": 1, "mr_factor": 1, "evasion": 0, "reduction": 0},
+    {"id": "T2", "name": "高生命", "hp_factor": 2, "armor_factor": 1, "mr_factor": 1, "evasion": 0, "reduction": 0},
+    {"id": "T3", "name": "高护甲", "hp_factor": 1, "armor_factor": 3, "mr_factor": 0.6, "evasion": 0, "reduction": 0},
+    {"id": "T4", "name": "高魔抗", "hp_factor": 1, "armor_factor": 0.6, "mr_factor": 3, "evasion": 0, "reduction": 0},
+    {"id": "T5", "name": "双抗", "hp_factor": 1, "armor_factor": 3, "mr_factor": 3, "evasion": 0, "reduction": 0},
+    {"id": "T6", "name": "直接减伤", "hp_factor": 1, "armor_factor": 1, "mr_factor": 1, "evasion": 0, "reduction": 0.2},
+    {"id": "T7", "name": "周期护盾", "hp_factor": 1, "armor_factor": 1, "mr_factor": 1, "evasion": 0, "reduction": 0, "shield_hp_factor": 0.3, "shield_period_seconds": 10, "shield_duration_seconds": 10, "shield_mode": "replace_remaining_no_stack"},
+    {"id": "T8", "name": "闪避", "hp_factor": 1, "armor_factor": 1, "mr_factor": 1, "evasion": 20, "reduction": 0},
+    {"id": "T9", "name": "回复", "hp_factor": 1, "armor_factor": 1, "mr_factor": 1, "evasion": 0, "reduction": 0, "regen_hp_fraction_per_second": 0.02, "finite_hp_only": true}
+  ],
+  "mixed_targets": {"3": ["T2", "T3", "T4"], "5": ["T2", "T3", "T4", "T7", "T8"]},
+  "attackers": [
+    {"id": "A1", "name": "常规物理普攻", "period_seconds": 1, "components": [{"type": "physical", "action": "basic", "share": 1}]},
+    {"id": "A2", "name": "高频小额普攻", "period_seconds": 0.25, "components": [{"type": "physical", "action": "basic", "share": 1}]},
+    {"id": "A3", "name": "低频重击普攻", "period_seconds": 2, "components": [{"type": "physical", "action": "basic", "share": 1}]},
+    {"id": "A4", "name": "持续魔法技能", "period_seconds": 1, "components": [{"type": "magic", "action": "skill", "share": 1}]},
+    {"id": "A5", "name": "魔法爆发", "period_seconds": 4, "components": [{"type": "magic", "action": "skill", "share": 1}]},
+    {"id": "A6", "name": "物魔混合", "period_seconds": 1, "components": [{"type": "physical", "action": "basic", "share": 0.5}, {"type": "magic", "action": "skill", "share": 0.5}]},
+    {"id": "A7", "name": "真实技能", "period_seconds": 1, "components": [{"type": "true", "action": "skill", "share": 1}]},
+    {"id": "A8", "name": "破魔技能", "period_seconds": 1, "components": [{"type": "shield_piercing_magic", "action": "skill", "share": 1}]}
+  ],
+  "attacker_defaults": {"accuracy": 95, "distance_penalty_per_slot": 2, "crit_chance": 0, "hit_delay_seconds": 0, "control_resistance": 0, "mana_limit": false, "on_hit_effects": false},
+  "pressure_overlays": [
+    {"id": "C1", "name": "周期控制", "stun_seconds": 1, "period_seconds": 8, "first_impact_seconds": 4, "dodgable": true, "damage": 0},
+    {"id": "C2", "name": "回复抑制", "healing_received_multiplier": 0.6, "includes": ["healing", "lifesteal", "regeneration"], "affects_shields": false}
+  ],
+  "gear_budgets": [0, 1500, 3000, 6000],
+  "gear_slots": 4,
+  "max_orange_items": 1,
+  "budget_gap_review_fraction": 0.05,
+  "growth_tracks": ["base_only", "base_plus_fixed_upgrade_choices", "campaign_equal_budget"],
+  "output_modes": ["potential_fixed_hp", "finite_cohort", "finite_replacement", "mixed_combat"],
+  "defense_modes": ["static_stats", "active_fixed_pressure", "finite_combat"],
+  "potential_hp_fractions": [1.0, 0.5, 0.2],
+  "replacement_delay_seconds": 1,
+  "hex_probes": [
+    {"id": "X1", "name": "攻速扰动", "extra_attack_speed_pp": 50},
+    {"id": "X2", "name": "急速扰动", "skill_haste": 30},
+    {"id": "X3", "name": "附伤扰动", "eligible_on_hit_damage_multiplier": 1.5}
+  ],
+  "core_output_targets": ["T1", "T3", "T4"],
+  "core_defense_attackers": ["A1", "A2", "A4", "A6", "A7", "A8"],
+  "report_required": ["standard_version", "engine_version", "content_version", "seed", "hero_id", "hero_level", "skill_ranks", "skill_order_id", "build_id", "items", "spent_gold", "unspent_gold", "upgrade_choices", "hex_ids", "mode", "profile_id", "hero_slot", "target_slots", "target_scaling_mode", "target_level", "pressure_mode", "pressure_tier", "pressure_phase", "resource_policy", "action_timing_policy", "trigger_rules_version", "window_seconds", "damage_by_target_and_type", "effective_hp_damage", "shield_damage", "potential_damage", "overkill", "effective_healing", "shield_absorbed", "mana_end", "casts", "ttk", "death_time", "right_censored", "survival", "not_supported"]
+}

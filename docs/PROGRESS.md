@@ -103,6 +103,8 @@
 
 | 实际公网地址核验与访问交接：docs/PROGRESS.md 部署补充/R046、deploy/automation/UPDATE_EXISTING_AI.md | 进行中（诊断/配置交接） | release-target-20261019-r046 | 2026-10-19 | 基线 8c91924；用户已给出实际 8080 地址；平台代理 Domain forbidden，保存必要网络目标草稿，补齐 SSH AI 交接；不改游戏或假称部署 |
 
+| 正式47件装备接入：src/equipment.js、data/model/battle/app/style、combat装备/属性/单位、相关tests/scripts与字体子集；EQUIPMENT/ATTACK-EFFECTS/COMBAT、D021接续、新D024及索引、Q001/Q009局部衔接；公共仅本行/装备交接与状态/R047 | 进行中（用户明确全部47件实施） | equipment-runtime-20261019-r047 | 2026-10-19 | 基线61523c0；用户接受R042并明确全部47件加入游戏，接入固定内容/配方/11被动/商店宝箱、金币单位与旧存档兼容；预留D024/R047，避开R046部署/公网范围，不接入岚牙或全局精准迁移 |
+
 认领为共享仓库交接记录，不是自动锁；其他窗口避开“进行中”范围，重叠须先协调。未登记不证明没有窗口工作；中止或接管也须记录。
 
 ### 分层状态快照

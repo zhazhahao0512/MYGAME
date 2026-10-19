@@ -31,7 +31,17 @@ try{
   if(!touch){assert.ok(layout.details.height/height<.36,'bottom details stay compact');assert.ok(layout.actors.every(a=>a.height/a.width<=2),'no tall empty portrait rectangles');assert.ok(parseFloat(layout.titleSize)>=24,'desktop headings remain legible');}
   else assert.ok(await page.locator('.hero-panel.selected .skill,.hero-panel.selected .gear-slot').evaluateAll(els=>els.every(el=>{const r=el.getBoundingClientRect();return r.height>=44&&r.bottom<=innerHeight;})),'touch controls fit');
   await page.screenshot({path:`test-results/battle-visual/${width}x${height}.png`});
-  if(!touch){await click('attributes');assert.match(await page.locator('.attribute-toggle').textContent(),/次要/);await page.screenshot({path:`test-results/battle-visual/${width}x${height}-secondary.png`});}
+  if(!touch){
+   await page.locator('.squad-section').screenshot({path:`test-results/battle-visual/${width}x${height}-hero-stats.png`});
+   await click('attributes');assert.match(await page.locator('.attribute-toggle').textContent(),/次要/);
+   assert.equal((await page.locator('.battle-details').boundingBox()).height,layout.details.height,'attribute pages keep the same bottom-panel height');
+   assert.ok(await page.locator('.hero-panel .stat-grid>div').evaluateAll(cells=>cells.every(cell=>{
+    const label=cell.querySelector('span'),value=cell.querySelector('b'),l=label.getBoundingClientRect(),v=value.getBoundingClientRect(),c=cell.getBoundingClientRect();
+    return label.scrollWidth<=label.clientWidth&&l.right<=v.left&&v.right<=c.right&&v.bottom<=c.bottom;
+   })),'secondary attribute labels and values remain readable without overlap');
+   await page.screenshot({path:`test-results/battle-visual/${width}x${height}-secondary.png`});
+   await page.locator('.squad-section').screenshot({path:`test-results/battle-visual/${width}x${height}-hero-stats-secondary.png`});
+  }
   metrics.push(layout);await context.close();
  }
  assert.deepEqual(errors,[]);await writeFile('test-results/battle-visual/layout.json',JSON.stringify(metrics,null,2));

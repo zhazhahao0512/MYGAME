@@ -1,0 +1,602 @@
+{
+  "status": "R060 design proposal; not accepted parameters or runtime content",
+  "items": [
+    {
+      "id": "red_storm_blades",
+      "name": "风暴双刃",
+      "group": "物理",
+      "stats": {
+        "attack": 28,
+        "attackSpeed": 0.48
+      },
+      "price": 3400,
+      "effectBudget": 550,
+      "effectId": "focused_haste",
+      "passive": "穷追",
+      "effectRank": 2,
+      "parameters": {
+        "perStack": 0.06,
+        "maxStacks": 3,
+        "duration": 3
+      },
+      "recipes": [
+        {
+          "materials": [
+            "purple_battle_spear",
+            "blue_swift_blades"
+          ],
+          "fee": 700
+        },
+        {
+          "materials": [
+            "purple_gale_blades",
+            "blue_tempered_sword"
+          ],
+          "fee": 1150
+        }
+      ],
+      "description": "穷追：连续命中同一主目标，每层＋6%攻速，最多3层，持续3秒；换目标清空。"
+    },
+    {
+      "id": "red_decisive_crossbow",
+      "name": "决胜连弩",
+      "group": "物理",
+      "stats": {
+        "attack": 28,
+        "attackSpeed": 0.4
+      },
+      "price": 3300,
+      "effectBudget": 750,
+      "effectId": "triple_hit_damage",
+      "passive": "三重打击",
+      "effectRank": 2,
+      "parameters": {
+        "every": 3,
+        "attackRatio": 0.45
+      },
+      "recipes": [
+        {
+          "materials": [
+            "purple_combo_bow",
+            "blue_duelist_blade"
+          ],
+          "fee": 850
+        }
+      ],
+      "description": "三重打击：每第3次普攻命中，附加45%总攻击力物理伤害；不暴击、不吸血、不递归。"
+    },
+    {
+      "id": "red_riftwind_bow",
+      "name": "裂风战弓",
+      "group": "物理",
+      "stats": {
+        "attackSpeed": 0.44,
+        "crit": 0.2
+      },
+      "price": 3400,
+      "effectBudget": 750,
+      "effectId": "critical_haste",
+      "passive": "乘风",
+      "effectRank": 2,
+      "parameters": {
+        "attackSpeed": 0.24,
+        "duration": 3
+      },
+      "recipes": [
+        {
+          "materials": [
+            "purple_hunting_wind_bow",
+            "blue_hunter_bow"
+          ],
+          "fee": 750
+        }
+      ],
+      "description": "乘风：普攻暴击命中后，额外攻速＋24%，持续3秒，只刷新。"
+    },
+    {
+      "id": "red_judgment_blade",
+      "name": "裁决战刃",
+      "group": "物理",
+      "stats": {
+        "attack": 48,
+        "crit": 0.16
+      },
+      "price": 3100,
+      "effectBudget": 500,
+      "effectId": "basic_crit_multiplier",
+      "passive": "狠厉",
+      "effectRank": 2,
+      "parameters": {
+        "critMultiplierBonus": 0.3
+      },
+      "recipes": [
+        {
+          "materials": [
+            "purple_keen_warblade",
+            "blue_tempered_sword"
+          ],
+          "fee": 650
+        },
+        {
+          "materials": [
+            "purple_steel_greatsword",
+            "white_spiked_blade",
+            "white_spiked_blade"
+          ],
+          "fee": 800
+        }
+      ],
+      "description": "狠厉：普攻暴击伤害倍率＋0.30，基础150%变180%。"
+    },
+    {
+      "id": "red_crimson_tide_blade",
+      "name": "赤潮战刃",
+      "group": "物理",
+      "stats": {
+        "attack": 32,
+        "attackSpeed": 0.2,
+        "lifeSteal": 0.06
+      },
+      "price": 3400,
+      "effectBudget": 550,
+      "effectId": "low_health_lifesteal",
+      "passive": "血性",
+      "effectRank": 2,
+      "parameters": {
+        "threshold": 0.5,
+        "lifeSteal": 0.06
+      },
+      "recipes": [
+        {
+          "materials": [
+            "purple_bloodtide_blades",
+            "blue_blood_blade"
+          ],
+          "fee": 550
+        },
+        {
+          "materials": [
+            "purple_bloodpact_blade",
+            "blue_swift_blades"
+          ],
+          "fee": 600,
+          "replacesPassive": "回流"
+        }
+      ],
+      "description": "血性：生命低于50%时，普攻吸血额外＋6个百分点。"
+    },
+    {
+      "id": "red_crimson_edge_axe",
+      "name": "赤锋重斧",
+      "group": "物理",
+      "stats": {
+        "attack": 40,
+        "hp": 500,
+        "armor": 15
+      },
+      "price": 3600,
+      "effectBudget": 575,
+      "effectId": "low_health_attack",
+      "passive": "背水",
+      "effectRank": 2,
+      "parameters": {
+        "threshold": 0.5,
+        "attack": 20
+      },
+      "recipes": [
+        {
+          "materials": [
+            "purple_campaign_axe",
+            "blue_ironward_sword"
+          ],
+          "fee": 1000
+        },
+        {
+          "materials": [
+            "purple_ironward_blade",
+            "blue_campaign_sword"
+          ],
+          "fee": 900,
+          "replacesPassive": "卸力"
+        }
+      ],
+      "description": "背水：生命低于50%时，攻击力＋20。"
+    },
+    {
+      "id": "red_watch_halberd",
+      "name": "守望战戟",
+      "group": "物理",
+      "stats": {
+        "attack": 16,
+        "attackSpeed": 0.32,
+        "hp": 650
+      },
+      "price": 3600,
+      "effectBudget": 500,
+      "effectId": "four_hit_shield",
+      "passive": "战意护盾",
+      "effectRank": 2,
+      "parameters": {
+        "every": 4,
+        "shield": 50,
+        "duration": 3
+      },
+      "recipes": [
+        {
+          "materials": [
+            "purple_watch_blades",
+            "blue_duelist_blade"
+          ],
+          "fee": 850
+        }
+      ],
+      "description": "战意护盾：每第4次普攻命中，护盾补到50，持续3秒，不累加。"
+    },
+    {
+      "id": "red_morningstar_staff",
+      "name": "晨星法杖",
+      "group": "法系",
+      "stats": {
+        "power": 160
+      },
+      "price": 3200,
+      "effectBudget": 0,
+      "recipes": [
+        {
+          "materials": [
+            "purple_radiant_staff",
+            "blue_apprentice_staff"
+          ],
+          "fee": 800
+        }
+      ],
+      "description": "无，纯高法强。"
+    },
+    {
+      "id": "red_echo_codex",
+      "name": "回响法典",
+      "group": "法系",
+      "stats": {
+        "power": 80,
+        "haste": 15
+      },
+      "price": 3300,
+      "effectBudget": 500,
+      "effectId": "charged_spell_damage",
+      "passive": "余韵",
+      "effectRank": 2,
+      "parameters": {
+        "baseDamage": 45,
+        "powerRatio": 0.08,
+        "cooldown": 12
+      },
+      "recipes": [
+        {
+          "materials": [
+            "purple_flowing_codex",
+            "blue_chanting_tome"
+          ],
+          "fee": 700
+        }
+      ],
+      "description": "余韵：每12秒就绪，下一次伤害型主动在主目标首段附加45＋8%法强魔伤。"
+    },
+    {
+      "id": "red_tidal_staff",
+      "name": "潮汐法杖",
+      "group": "法系",
+      "stats": {
+        "power": 55,
+        "mana": 350,
+        "manaRegen": 2
+      },
+      "price": 3300,
+      "effectBudget": 650,
+      "effectId": "takedown_mana_restore",
+      "passive": "导流",
+      "effectRank": 2,
+      "parameters": {
+        "mana": 20,
+        "participationWindow": 6
+      },
+      "recipes": [
+        {
+          "materials": [
+            "purple_clearwell_staff",
+            "blue_mana_staff"
+          ],
+          "fee": 400
+        }
+      ],
+      "description": "导流：每参与击杀一个怪物回复20法力，沿用6秒伤害参与窗口，无冷却。"
+    },
+    {
+      "id": "red_lifebloom_scepter",
+      "name": "生息权杖",
+      "group": "法系",
+      "stats": {
+        "power": 80,
+        "hp": 600
+      },
+      "price": 3200,
+      "effectBudget": 400,
+      "effectId": "spell_self_mend",
+      "passive": "滋养",
+      "effectRank": 2,
+      "parameters": {
+        "heal": 65,
+        "cooldown": 8
+      },
+      "recipes": [
+        {
+          "materials": [
+            "purple_abundant_staff",
+            "blue_vitality_staff"
+          ],
+          "fee": 600
+        }
+      ],
+      "description": "滋养：成功释放伤害型主动技能回复自身65生命，冷却8秒。"
+    },
+    {
+      "id": "red_battleweave_robe",
+      "name": "破阵法衣",
+      "group": "法系",
+      "stats": {
+        "power": 65,
+        "hp": 300,
+        "armor": 15,
+        "resist": 15
+      },
+      "price": 3500,
+      "effectBudget": 550,
+      "effectId": "physical_hit_power",
+      "passive": "应战",
+      "effectRank": 2,
+      "parameters": {
+        "power": 35,
+        "duration": 4,
+        "damageTypes": [
+          "physical",
+          "magic"
+        ]
+      },
+      "recipes": [
+        {
+          "materials": [
+            "purple_stonegrain_staff",
+            "blue_warding_staff"
+          ],
+          "fee": 750
+        },
+        {
+          "materials": [
+            "purple_stillmind_staff",
+            "blue_guarding_staff"
+          ],
+          "fee": 1100,
+          "replacesPassive": "隔魔"
+        }
+      ],
+      "description": "应战：实际承受物理或魔法伤害后，法强＋35，持续4秒，只刷新。"
+    },
+    {
+      "id": "red_mountain_heart",
+      "name": "山岳之心",
+      "group": "防御",
+      "stats": {
+        "hp": 1200,
+        "hpRegen": 6
+      },
+      "price": 3300,
+      "effectBudget": 400,
+      "effectId": "low_health_regeneration",
+      "passive": "回春",
+      "effectRank": 2,
+      "parameters": {
+        "threshold": 0.5,
+        "hpRegen": 8
+      },
+      "recipes": [
+        {
+          "materials": [
+            "purple_deepearth_amulet",
+            "blue_regrowth_amulet"
+          ],
+          "fee": 950
+        },
+        {
+          "materials": [
+            "purple_evergreen_amulet",
+            "blue_vitality_amulet"
+          ],
+          "fee": 800
+        }
+      ],
+      "description": "回春：生命低于50%时，额外回复＋8/秒；含面板共14/秒。"
+    },
+    {
+      "id": "red_ironwall_armor",
+      "name": "铁壁重铠",
+      "group": "防御",
+      "stats": {
+        "hp": 750,
+        "armor": 30
+      },
+      "price": 3100,
+      "effectBudget": 550,
+      "effectId": "flat_basic_physical_block",
+      "passive": "坚忍",
+      "effectRank": 2,
+      "parameters": {
+        "block": 12
+      },
+      "recipes": [
+        {
+          "materials": [
+            "purple_bastion_armor",
+            "blue_guardian_armor"
+          ],
+          "fee": 550
+        }
+      ],
+      "description": "坚忍：护甲和比例减伤后，每次物理普攻本体再抵消12点，最低0。"
+    },
+    {
+      "id": "red_spellward_mantle",
+      "name": "镇魔法袍",
+      "group": "防御",
+      "stats": {
+        "hp": 750,
+        "resist": 30
+      },
+      "price": 3100,
+      "effectBudget": 550,
+      "effectId": "large_magic_hit_guard",
+      "passive": "魔障",
+      "effectRank": 2,
+      "parameters": {
+        "threshold": 0.08,
+        "reduction": 0.25
+      },
+      "recipes": [
+        {
+          "materials": [
+            "purple_spellward_cloak",
+            "blue_warding_cloak"
+          ],
+          "fee": 550
+        }
+      ],
+      "description": "魔障：每段魔伤超过最大生命8%的部分降低25%，不影响破魔。"
+    },
+    {
+      "id": "red_equilibrium_bulwark",
+      "name": "均衡壁垒",
+      "group": "防御",
+      "stats": {
+        "hp": 500,
+        "armor": 15,
+        "resist": 15,
+        "haste": 10
+      },
+      "price": 3300,
+      "effectBudget": 450,
+      "effectId": "mixed_damage_regeneration",
+      "passive": "均势",
+      "effectRank": 2,
+      "parameters": {
+        "historyWindow": 6,
+        "hpRegen": 7,
+        "duration": 4
+      },
+      "recipes": [
+        {
+          "materials": [
+            "purple_equilibrium_sigil",
+            "blue_vitality_hourglass"
+          ],
+          "fee": 600
+        },
+        {
+          "materials": [
+            "purple_sentinel_hourglass",
+            "blue_balanced_amulet"
+          ],
+          "fee": 860
+        }
+      ],
+      "description": "均势：6秒内兼有物理、魔法实际承伤时，受击获得/刷新回复＋7/秒，持续4秒。"
+    },
+    {
+      "id": "red_redemption_codex",
+      "name": "救赎法典",
+      "group": "辅助",
+      "stats": {
+        "power": 40,
+        "hp": 450,
+        "haste": 10
+      },
+      "price": 3000,
+      "effectBudget": 500,
+      "effectId": "ally_spell_mend",
+      "passive": "援手",
+      "effectRank": 2,
+      "parameters": {
+        "heal": 65,
+        "cooldown": 8
+      },
+      "recipes": [
+        {
+          "materials": [
+            "purple_relief_codex",
+            "blue_vitality_hourglass"
+          ],
+          "fee": 500
+        }
+      ],
+      "description": "援手：主动有效治疗/加盾其他友军后，为其中生命比例最低的一人额外治疗65，冷却8秒。"
+    },
+    {
+      "id": "red_wellspring_chalice",
+      "name": "源流圣杯",
+      "group": "辅助",
+      "stats": {
+        "hp": 350,
+        "mana": 300,
+        "manaRegen": 3,
+        "haste": 5
+      },
+      "price": 3300,
+      "effectBudget": 550,
+      "effectId": "ally_spell_mana",
+      "passive": "济能",
+      "effectRank": 2,
+      "parameters": {
+        "mana": 30,
+        "cooldown": 12
+      },
+      "recipes": [
+        {
+          "materials": [
+            "purple_spiritwell_orb",
+            "blue_vitality_hourglass"
+          ],
+          "fee": 750
+        }
+      ],
+      "description": "济能：主动有效治疗/加盾其他友军后，为其中缺蓝最多的一人回复30法力，冷却12秒。"
+    },
+    {
+      "id": "red_oath_emblem",
+      "name": "守誓徽章",
+      "group": "辅助",
+      "stats": {
+        "hp": 700,
+        "mana": 200,
+        "haste": 5
+      },
+      "price": 3000,
+      "effectBudget": 600,
+      "effectId": "ally_low_health_shield",
+      "passive": "应援",
+      "effectRank": 2,
+      "parameters": {
+        "threshold": 0.4,
+        "shield": 180,
+        "duration": 4,
+        "cooldown": 18
+      },
+      "recipes": [
+        {
+          "materials": [
+            "purple_shelter_pendant",
+            "blue_vitality_hourglass"
+          ],
+          "fee": 650
+        }
+      ],
+      "description": "应援：其他友军受伤后仍存活且生命低于40%，给予180护盾、持续4秒，冷却18秒。"
+    }
+  ]
+}

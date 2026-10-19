@@ -59,6 +59,7 @@
 | 第二批物理紫装：docs/EQUIPMENT-DESIGN.md、docs/ATTACK-EFFECTS-DESIGN.md、docs/equipment/physical-purple-balance.py、docs/decisions/D010-physical-purple-scope.md；公共仅 D010 索引、R025、本窗口及装备状态，必要 Q009 衔接 | 已释放（五件设计/核算完成，未接入游戏） | equipment-physical-20261019-r025 | 2026-10-19 | 认领 407a22e 已推送；合入英雄 d2a1350；D010/R025 完成五件新方案与四被动，下一步审阅、继续法系；保留英雄 D008/R022、战斗 D009/R024 及顶部范围，首批六件值不变 |
 | 首个攻击特效英雄与技能成长：docs/heroes/LANYA.md、docs/heroes/lanya-balance.py、docs/decisions/D008-hero-skills.md；公共回写 D008 索引、R022、Q004/Q010、英雄状态与顶部交接 | 已释放（设计/算式核验完成，未实施游戏） | hero-lanya-01a1441f-20261019 | 2026-10-19 | 基线 dd996e8；认领 bff1d83 已推送；合入装备 R023 与战斗实施认领 affe30e；结果 D008/R022/Q010，固定成长持续；公共顶部已释放，保留战斗 D009/R024 范围 |
 | 战斗 V2 实施：src/app.js、src/style.css、src/battle.js、src/data.js、src/model.js、src/combat/、src/renderer/、src/inspection.js、相关 tests/ 与 scripts/ 检查；战斗规范/FRAMEWORK/README 及共享回写仅 D009/R024、Q005–Q008、战斗状态；顶部待英雄窗口释放后协调 | 已释放（代码与本地验证完成） | battle-v2-impl-20261019-root | 2026-10-19 | 认领 affe30e 已推送核验；合入英雄 d2a1350 与装备 9095d29，D009/R024 完成双详情、五策略/持久指令、补怪与挑战；保留他方全部记录。下一步试玩调参及另行认领新命中/正式内容；线上待核实 |
+| 岚牙加点与三技能调整：docs/heroes/LANYA.md、docs/heroes/lanya-balance.py、docs/decisions/D008-hero-skills.md、docs/decisions/D011-hero-skill-rank-rules.md；公共回写 D011 索引、R026、Q010、英雄状态与顶部交接 | 进行中（设计与算式核验，非游戏实施） | hero-lanya-rank-20261019-r026 | 2026-10-19 | 基线 8a0ec2e；二级不同技能、6 级前最多三级、6 级起可四级；用户确认大招仍 5/10/15；3 技能去法强并评估伤害；不改游戏及装备 |
 
 认领为共享仓库交接记录，不是自动锁；其他窗口避开“进行中”范围，重叠须先协调。未登记不证明没有窗口工作；中止或接管也须记录。
 

@@ -50,9 +50,9 @@ try{
    })),'secondary attribute labels and values remain readable without overlap');
    await page.screenshot({path:`test-results/battle-visual/${width}x${height}-secondary.png`});
    await page.locator('.squad-section').screenshot({path:`test-results/battle-visual/${width}x${height}-hero-stats-secondary.png`});
-   await click('auto','[data-hero="2"]');
-   const cast=await page.locator('.cast-ultimate').boundingBox(),automatic=await page.locator('.auto-toggle').boundingBox();
-   assert.ok(cast&&automatic&&cast.x>=automatic.x+automatic.width,'manual ultimate does not cover the auto toggle');
+   await click('skill-mode','[data-hero="2"][data-skill="3"]');await click('skill-mode','[data-hero="2"][data-skill="3"]');
+   const cast=await page.locator('[data-act="cast-skill"][data-skill="3"]').boundingBox();
+   assert.ok(cast&&cast.y+cast.height<=height,'manual release stays in view');
    const name=await page.locator('.hero-panel .hero-name').boundingBox(),role=await page.locator('.detail-position').boundingBox();
    assert.ok(name.y+name.height<=role.y+.5,'hero name and role do not overlap');
   }

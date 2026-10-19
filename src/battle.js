@@ -3,6 +3,7 @@ import { heroById, RULES, BASE } from './data.js';
 import { baseStatsFor, random } from './model.js';
 import { createUnit, applyStatus, expireStatuses, isControlled } from './combat/unit.js';
 import { skillsFor, enemySkills, loadoutModifiers, triggersFor, STATUSES } from './combat/content.js';
+import { CAST_MODES, normalizeSkillModes, chooseManagedSkill } from './combat/casting.js';
 import { TriggerQueue } from './combat/events.js';
 import { BATTLE_V2, ENEMY_TYPES, CHALLENGE_TYPES, TARGET_MODES, normalizeTactics, rankTargets } from './combat/tactics.js';
 export const STEP=.02;
@@ -11,14 +12,14 @@ export const cooldown=(seconds,haste)=>seconds/(1+Math.max(0,haste)/100);
 const ticks=seconds=>Math.max(1,Math.ceil(seconds/STEP));
 export class Battle {
   constructor(run,{duration=RULES.roundSeconds,tuning={}}={}) {
-    this.run=run;this.rng={seed:run.seed};this.tick=0;this.durationTicks=Math.round(duration/STEP);
+    this.stepSeconds=STEP;this.run=run;this.rng={seed:run.seed};this.tick=0;this.durationTicks=Math.round(duration/STEP);
     this.phase='combat';this.serial=0;this.shotSerial=0;this.shots=[];this.feed=[];this.kills=0;this.gold=0;this.bossKilled=false;
     this.tuning={...BATTLE_V2,...tuning};this.nextSpawn=ticks(this.tuning.spawnSeconds);
     this.challengeSerial=0;this.offerRng={seed:(run.seed^0x42cafe)>>>0};this.pendingChallenges=[];this.challengeOffers=[];this.challengeRevision=0;
     this.effects=[];this.effectSerial=0;this.regenTotals=new Map();this.events=new TriggerQueue();
     this.party=run.party.map((member,slot)=>this.makeUnit({side:'hero',slot,name:heroById(member.hero).name,def:heroById(member.hero),
       baseStats:baseStatsFor(member,run.level),modifiers:loadoutModifiers(member,run.augments),
-      skills:skillsFor(member.hero),triggers:triggersFor(member,run.augments),auto:member.auto}));
+      skills:skillsFor(member.hero),triggers:triggersFor(member,run.augments),skillModes:member.skillModes}));
     for(const [index,unit] of this.party.entries()){unit.tactics=normalizeTactics(run.party[index].tactics);unit.targetId=null;unit.targetRule=null;}
     this.enemies=Array.from({length:5},(_,slot)=>this.spawn(slot));
     this.challengeOffers=Array.from({length:3},(_,i)=>this.makeOffer(this.tuning.offerSeconds+i*this.tuning.offerStagger));
@@ -120,7 +121,8 @@ export class Battle {
   }
   getSkill(unit,index) {
     const skill=unit?.skills[index];if(!skill)return null;
-    const resolved={...skill};
+    const rank=skill.rank??1;
+    const resolved={...skill,...(skill.ranks?.[rank-1]||{}),rank};
     for(const key of ['cost','cooldown','castTime','priority','target']) {
       const value=unit.rules[`skill.${skill.key}.${key}`];if(value!==undefined)resolved[key]=value;
     }
@@ -137,6 +139,14 @@ export class Battle {
     return enemies;
   }
   skillTargets(unit,skill) {return skill.target==='enemy'?[this.target(unit)].filter(Boolean):this.candidates(unit,skill);}
+  statusDefinition(status){return typeof status==='string'?STATUSES[status]:status;}
+  previewSkillTargets(unit,skill) {
+    const candidates=this.candidates(unit,skill);if(skill.target!=='enemy')return candidates;
+    const locked=candidates.find(u=>u.id===unit.targetId);if(locked)return [locked];
+    if(unit.tactics&&unit.rules.attackTarget===unit.baseRules.attackTarget)return rankTargets(unit,candidates,unit.tactics,(a,b)=>this.attackChance(a,b),this.tuning.neighborRadius).slice(0,1);
+    const rule=unit.rules.attackTarget;
+    return (rule==='weakest'?[...candidates].sort((a,b)=>a.hp-b.hp):rule==='slot3'?[...candidates].sort((a,b)=>(b.slot===2)-(a.slot===2)):candidates).slice(0,1);
+  }
   snapshot(source,target,multiplier=1,skill=false,options={}) {
     const s=source.stats,t=target.stats,magic=(options.damageType||(skill?'magic':'physical'))==='magic';
     const hit=options.canMiss===false||(options.canMiss!==true&&skill)||random(this.rng)<hitChance(s.focus,t.move);
@@ -168,6 +178,7 @@ export class Battle {
   visualSource(source,context={}) {return {source:source?.id||context.source,origin:context.origin||(context.skill?'skill':'attack'),originId:context.originId||'attack',skillKey:context.skillKey||''};}
   dealDamage(source,target,snapshot) {
     if(target.hp<=0)return;
+    if(snapshot.damage>0)target.lastDamagedTick=this.tick;
     const absorbed=Math.min(target.shield,snapshot.damage);target.shield-=absorbed;
     const lost=Math.min(target.hp,snapshot.damage-absorbed);target.hp=Math.max(0,target.hp-lost);
     target.lastEvent={text:lost>0?`${snapshot.crit?'暴击 ':''}−${Math.round(lost)}`:`护盾 −${Math.round(absorbed)}`,tick:this.tick,type:'damage'};
@@ -178,7 +189,7 @@ export class Battle {
     if(source?.hp>0&&lost>0&&snapshot.vamp>0)this.heal(source,source,lost*snapshot.vamp*(1+snapshot.healing),{...this.visualSource(source,snapshot),healingKind:snapshot.lifeSteal>0?(snapshot.omni>0?'vamp':'lifesteal'):'omni'});
     if(target.hp===0) {
       this.emitEffect('death',target);this.emit('kill',source,target);this.emit('death',source,target);
-      target.shield=0;target.attack=null;target.casting=null;
+      target.shield=0;target.attack=null;target.casting=null;target.pendingCast=null;target.castPlan=null;
       if(target.side==='enemy') {
         this.kills++;const gold=target.reward??(target.boss?15:3);this.gold+=gold;
         if(target.boss)this.bossKilled=true;
@@ -197,7 +208,7 @@ export class Battle {
     if(!definition)throw new Error(`Unknown status ${statusId}`);
     const interrupted=target.casting;
     const status=applyStatus(target,definition,source.id,this.tick,STEP);
-    if(status){this.emit('status',source,target,status.stacks,{status:definition.id});if(interrupted&&!target.casting)this.emit('interrupt',source,target);}
+    if(status){if(definition.control==='stun')target.pendingCast=null;this.emit('status',source,target,status.stacks,{status:definition.id});if(interrupted&&!target.casting)this.emit('interrupt',source,target);}
     return status;
   }
   applyEffect(source,target,effect,context={origin:'trigger',originId:'effect'}) {
@@ -213,15 +224,47 @@ export class Battle {
       else {this.emitEffect('dodge',target,0,false,this.visualSource(source,context));this.emit('dodge',source,target);}
     }else throw new Error(`Unknown effect ${effect.type}`);
   }
-  skillReason(unit,index) {
+  skillReason(unit,index,{ignoreCasting=false}={}) {
     if(!unit||unit.hp<=0)return '已阵亡';
     const skill=this.getSkill(unit,index);if(!skill)return '无技能';
     if(isControlled(unit))return '被控制';
-    if(unit.casting)return '施法中';
+    if(skill.rank===0)return '未学习';
+    if(unit.casting&&!ignoreCasting)return '施法中';
     if(unit.ready[index]>this.tick)return `${((unit.ready[index]-this.tick)*STEP).toFixed(1)}s`;
     if(unit.mana<skill.cost)return '法力不足';
     if(!this.candidates(unit,skill).length)return skill.target==='allyWeakest'?'等待受伤':'等待目标';
     return '就绪';
+  }
+  setSkillMode(heroIndex,index,mode) {
+    const unit=this.party[heroIndex];
+    if(!unit?.skills[index]||!CAST_MODES.includes(mode))return false;
+    unit.skillModes=normalizeSkillModes(unit.skillModes,unit.skills.length);unit.skillModes[index]=mode;
+    this.run.party[heroIndex].skillModes=[...unit.skillModes];
+    unit.castPlan=null;unit.castReason='';unit.pendingCast=null;return true;
+  }
+  requestCast(unit,index) {
+    if(!['combat','cleanup'].includes(this.phase))return false;
+    const reason=this.skillReason(unit,index,{ignoreCasting:true});
+    if(reason!=='就绪'){if(unit)unit.lastCommandReason=reason;return false;}
+    if(unit.casting){unit.pendingCast={index,expiresAt:this.tick+ticks(1.5)};unit.lastCommandReason='等待当前动作';return true;}
+    unit.pendingCast=null;const ok=this.cast(unit,index);unit.lastCommandReason=ok?'已释放':this.skillReason(unit,index);return ok;
+  }
+  runCasting(unit) {
+    if(unit.pendingCast){
+      const command=unit.pendingCast;unit.pendingCast=null;
+      if(command.expiresAt>=this.tick){if(!this.cast(unit,command.index))unit.lastCommandReason=this.skillReason(unit,command.index);}
+      else unit.lastCommandReason='指令已过期';
+      if(unit.casting)return;
+    }
+    const priorities=unit.skills.map((_,index)=>index).sort((a,b)=>(this.getSkill(unit,b).priority||0)-(this.getSkill(unit,a).priority||0)||a-b);
+    for(const index of priorities){
+      if(unit.side==='hero'&&unit.skillModes[index]!=='auto')continue;
+      this.cast(unit,index);if(unit.casting||unit.hp<=0||isControlled(unit))return;
+    }
+    if(unit.side==='hero')for(let n=0;n<unit.skills.length;n++){
+      const index=chooseManagedSkill(this,unit);if(index===null||!this.cast(unit,index))break;
+      unit.castPlan=null;if(unit.casting||unit.hp<=0||isControlled(unit))break;
+    }
   }
   cast(unit,index) {
     if(!['combat','cleanup'].includes(this.phase)||this.skillReason(unit,index)!=='就绪')return false;
@@ -240,8 +283,8 @@ export class Battle {
     if(!targets.length){this.emit('fizzle',unit,unit,0,{skill:skill.id});this.flushTriggers();return;}
     this.events.root(()=>{
       for(const target of targets)for(const effect of skill.effects) {
-        if(effect.type==='damage')this.fire(unit,target,{skill:true,duration:effect.travel??.3,...effect,originId:skill.id,skillKey:skill.key});
-        else this.applyEffect(unit,target,effect,{origin:'skill',originId:skill.id,skillKey:skill.key});
+        if(effect.type==='damage')this.fire(unit,target,{skill:true,duration:effect.travel??.3,...effect,originId:skill.id,skillKey:unit.side==='hero'?String(action.index+1):skill.key});
+        else this.applyEffect(unit,target,effect,{origin:'skill',originId:skill.id,skillKey:unit.side==='hero'?String(action.index+1):skill.key});
       }
       this.emit('cast',unit,unit,0,{skill:skill.id});
     });
@@ -254,8 +297,8 @@ export class Battle {
     for(const unit of this.units())expireStatuses(unit,this.tick);
     const due=this.shots.filter(s=>s.end<=this.tick);this.shots=this.shots.filter(s=>s.end>this.tick);
     for(const shot of due)this.settle(shot);
-    if(!this.living('hero').length){this.phase='lost';this.shots=[];return;}
-    if(this.phase==='cleanup'&&!this.living('enemy').length){this.phase='won';this.shots=[];return;}
+    if(!this.living('hero').length){this.phase='lost';this.shots=[];for(const u of this.units())u.pendingCast=null;return;}
+    if(this.phase==='cleanup'&&!this.living('enemy').length){this.phase='won';this.shots=[];for(const u of this.units())u.pendingCast=null;return;}
     if(this.phase==='combat')this.refreshSpawns();
     for(const unit of this.units()) {
       if(unit.hp<=0)continue;
@@ -265,16 +308,13 @@ export class Battle {
       this.regenTotals.set(unit.id,(this.regenTotals.get(unit.id)||0)+unit.hp-hpBefore);
       if(this.tick%50===0){const actual=this.regenTotals.get(unit.id);if(actual>0)this.emitEffect('heal',unit,actual,false,{source:unit.id,origin:'regen',originId:'regen',healingKind:'regen'});this.regenTotals.delete(unit.id);}
       unit.mana=Math.min(unit.stats.mana,unit.mana+unit.stats.manaRegen*STEP);
-      if(isControlled(unit))continue;
+      if(unit.pendingCast&&unit.pendingCast.expiresAt<this.tick){unit.pendingCast=null;unit.lastCommandReason='指令已过期';}
+      if(isControlled(unit)){unit.pendingCast=null;continue;}
       if(unit.casting) {
         if(unit.casting.end>this.tick)continue;
         const action=unit.casting;unit.casting=null;this.release(unit,action);
       }
-      const priorities=unit.skills.map((_,index)=>index).sort((a,b)=>(this.getSkill(unit,b).priority||0)-(this.getSkill(unit,a).priority||0)||a-b);
-      for(const index of priorities) {
-        if(unit.skills[index].key==='R'&&!unit.auto)continue;
-        this.cast(unit,index);if(unit.casting||unit.hp<=0||isControlled(unit))break;
-      }
+      this.runCasting(unit);
       if(unit.hp>0&&!unit.casting&&!isControlled(unit)&&unit.nextAttack<=this.tick) {
         const target=this.target(unit);if(target){const shot=this.fire(unit,target);unit.nextAttack=shot.end;}
       }

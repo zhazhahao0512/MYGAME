@@ -17,7 +17,7 @@ const stoneSkills=[
   {...commonSkills[2],id:'stone-E',name:'坚守',effects:[{type:'shield',amount:30,power:1},{type:'status',status:'fortify'}],description:'获得 30 + 法强的护盾，物抗和魔抗提高 8，持续 3 秒。'},
   {...commonSkills[3],id:'stone-R',name:'壁垒冲击',castTime:.6,description:'吟唱 0.6 秒后冲击全部敌人，造成魔法伤害。可以手动释放。'},
 ];
-export const STONE_PASSIVE={name:'不屈',description:'受到生命伤害后，获得 3 秒坚守（物抗、魔抗 +8），冷却 4 秒。与自身 E 的坚守刷新，不重复叠加。'};
+export const STONE_PASSIVE={name:'不屈',description:'受到生命伤害后，获得 3 秒坚守（物抗、魔抗 +8），冷却 4 秒。与自身 3 技能的坚守刷新，不重复叠加。'};
 export const AUGMENTS=[{id:'resonant-guard',name:'坚韧共鸣',description:'全队生命上限 +40。每次完成施法获得 4 秒共鸣：物抗、魔抗 +4，最多 3 层，重复获得刷新持续时间。',stats:{hp:40},
   trigger:{id:'resonant-guard',event:'cast',relation:'source',effects:[{type:'status',target:'self',status:'resonance'}]}}];
 export const EQUIPMENT_EFFECTS={

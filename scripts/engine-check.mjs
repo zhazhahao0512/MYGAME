@@ -34,7 +34,7 @@ try {
       const bounds = await page.locator('canvas').boundingBox();
       await page.mouse.click(bounds.x + bounds.width * .435 / 10 + 10, bounds.y + bounds.height * .5);
       assert.equal(await page.locator('.hero-panel.selected .hero-name').getAttribute('data-hero'), '4');
-      await click('auto', '[data-hero="4"]'); await click('attributes');
+      await click('skill-mode', '[data-hero="4"][data-skill="3"]'); await click('attributes');
       assert.equal(await canvas.evaluate(el => el.isConnected), true, 'controls retain the same game');
       await page.waitForTimeout(1300);
       await click('pause');

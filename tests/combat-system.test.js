@@ -55,7 +55,7 @@ test('same-name statuses from independent sources remove independently; equal-pr
 });
 test('simultaneous instant skills use priority and recheck mana; they do not reset attack timing',()=>{
   const b=arena('tide');quiet(b);const u=b.party[0];u.mana=25;u.nextAttack=5;
-  u.skills=[10,30,20].map((priority,i)=>({id:`s${i}`,key:`S${i}`,name:'护盾',priority,cost:10,cooldown:1,castTime:0,target:'self',effects:[{type:'shield',amount:1}]}));u.ready=[0,0,0];
+  u.skills=[10,30,20].map((priority,i)=>({id:`s${i}`,key:`S${i}`,name:'护盾',priority,cost:10,cooldown:1,castTime:0,target:'self',effects:[{type:'shield',amount:1}]}));u.ready=[0,0,0];u.skillModes=['auto','auto','auto'];
   b.step();assert.equal(u.mana,5);assert.equal(u.shield,2);assert.equal(u.nextAttack,5);
   assert.deepEqual(b.events.history.filter(e=>e.type==='castStart').map(e=>e.skill),['s1','s2']);
   assert.equal(u.ready[0],0);

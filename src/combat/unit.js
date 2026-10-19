@@ -1,11 +1,12 @@
+import { normalizeSkillModes } from './casting.js';
 import { resolveStats, resolveRules } from './attributes.js';
-export function createUnit({id,side,slot,name,def,baseStats,modifiers=[],rules=[],skills=[],triggers=[],auto=true,tick=0,step=.02,boss=false}) {
+export function createUnit({id,side,slot,name,def,baseStats,modifiers=[],rules=[],skills=[],triggers=[],auto=true,skillModes,tick=0,step=.02,boss=false}) {
   const unit={id,side,slot,name,def,boss,tactics:null,targetId:null,targetRule:null,reward:0,challenge:false,enemyType:null,baseStats:{...baseStats},sources:new Map(),statuses:new Map(),
     baseRules:{attackTarget:def?.attackRule||'front'},rules:{},stats:{},skills:structuredClone(skills),triggers:structuredClone(triggers),
-    triggerReady:new Map(),auto,hp:0,mana:0,shield:0,attack:null,casting:null,nextAttack:tick,
+    triggerReady:new Map(),auto,skillModes:normalizeSkillModes(skillModes,skills.length),castPlan:null,castReason:'',pendingCast:null,lastCommandReason:'',lastDamagedTick:null,guaranteedManaRegen:0,hp:0,mana:0,shield:0,attack:null,casting:null,nextAttack:tick,
     ready:skills.map((s,i)=>tick+Math.ceil((s.initialCooldown??(2+i))/step)),lastEvent:null};
   unit.sources.set('loadout',{modifiers,rules});recalculate(unit);
-  unit.hp=unit.stats.hp;unit.mana=unit.stats.mana;
+  unit.hp=unit.stats.hp;unit.mana=unit.stats.mana;unit.guaranteedManaRegen=unit.stats.manaRegen;
   return unit;
 }
 export function recalculate(unit) {

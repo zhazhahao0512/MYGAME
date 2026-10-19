@@ -32,6 +32,7 @@ export function installInspection({contentFor, changed, allowed=()=>true}) {
   }
   document.addEventListener('pointerdown',event=>{
     keyboard=false;
+    if(event.target.closest('[data-act="skill-mode"]'))return;
     if(!root.contains(event.target)&&!candidate(event.target))close();
   },true);
   document.addEventListener('keydown',event=>{

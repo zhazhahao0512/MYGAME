@@ -1,6 +1,7 @@
 import { HEROES, heroById, BASE, RULES, RARITIES, PRIMARY, SECONDARY, STAT_LABELS, statText } from './data.js';
 import * as M from './model.js';
 import { installInspection } from './inspection.js';
+import { CAST_MODE_INFO, normalizeSkillModes, nextSkillMode } from './combat/casting.js';
 import { TARGET_MODES } from './combat/tactics.js';
 import { Battle, STEP, cooldown } from './battle.js';
 import { installPointerDrag } from './pointer-drag.js';
@@ -54,7 +55,7 @@ function inspectionContent(anchor){
   if(!definition)return null;
   const stats=unit?.stats||M.statsFor(member,run.level,run.augments);
   const targets={self:'自身',enemy:unit?.tactics?'敌方 · 沿用当前锁定 / 英雄选敌策略':`敌方 · ${roleName[heroById(member.hero).attackRule]||'最前方'}`,allEnemies:'所有存活敌人',allAllies:'所有存活友军',allyWeakest:'生命比例最低的受伤友军'};
-  return `<h3>${definition.key} · ${escape(definition.name)}</h3><p>${escape(definition.description)}</p><dl><div><dt>目标</dt><dd>${targets[definition.target]}</dd></div><div><dt>法力消耗</dt><dd>${definition.cost}</dd></div><div><dt>当前冷却</dt><dd>${cooldown(definition.cooldown,stats.haste).toFixed(2)} 秒</dd></div><div><dt>施法时间</dt><dd>${definition.castTime||0} 秒</dd></div>${unit?`<div><dt>当前状态</dt><dd>${battle.skillReason(unit,n)}</dd></div>`:''}</dl><p>吸血 ${statText('lifeSteal',stats.lifeSteal)} · 全能吸血 ${statText('omni',stats.omni)}。吸血按实际生命伤害恢复，不计护盾吸收；伤害技能仅触发全能吸血。</p><small>${member.hero==='stone'?'示例技能已生效，数值待调整。':'通用演示技能，专属技能待设计。'}</small>${pauseNote}`;
+  return `<h3>${n+1} · ${escape(definition.name)}</h3><p>${escape(definition.description)}</p><dl><div><dt>目标</dt><dd>${targets[definition.target]}</dd></div><div><dt>法力消耗</dt><dd>${definition.cost}</dd></div><div><dt>当前冷却</dt><dd>${cooldown(definition.cooldown,stats.haste).toFixed(2)} 秒</dd></div><div><dt>施法时间</dt><dd>${definition.castTime||0} 秒</dd></div>${unit?`<div><dt>当前状态</dt><dd>${battle.skillReason(unit,n)}</dd></div>`:''}</dl><p>吸血 ${statText('lifeSteal',stats.lifeSteal)} · 全能吸血 ${statText('omni',stats.omni)}。吸血按实际生命伤害恢复，不计护盾吸收；伤害技能仅触发全能吸血。</p><small>${member.hero==='stone'?'示例技能已生效，数值待调整。':'通用演示技能，专属技能待设计。'}</small>${pauseNote}`;
 }
 function topbar(title,subtitle='',right=''){
   return `<header class="topbar"><button class="brand-mini" data-act="home" aria-label="返回首页"><span class="brand-symbol">远</span><span>小队远征</span></button><div class="topbar-title"><h1>${title}</h1>${subtitle?`<span>${subtitle}</span>`:''}</div><div class="topbar-actions">${preview?'<span class="badge preview-badge">界面预览</span>':''}${right}${btn(icon('settings'),'settings','icon-btn','aria-label="设置"')}</div></header>`;
@@ -101,14 +102,41 @@ function renderHome(){
       <div class="home-art" aria-label="五名英雄的文字占位卡片"><div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div><span class="art-cross cross-a">＋</span><span class="art-cross cross-b">＋</span><div class="art-caption"><span>YOUR NEXT PARTY</span><b>五种可能，一支队伍。</b></div><div class="hero-fan">${members.map((h,i)=>`<div class="fan-card fan-${i}" style="--hero:${h.color};--i:${i}"><span class="fan-number">0${i+1}</span>${portrait(h)}<div class="fan-bottom"><span>${h.role}</span><b>${h.name}</b><i></i></div></div>`).join('')}</div><div class="art-ground"></div><div class="route-track"><span>01</span>${Array.from({length:20},(_,i)=>`<i class="${i<4?'lit':''}"></i>`).join('')}<span>20</span></div><div class="art-note"><span class="tiny-diamond"></span>招募 · 装备 · 再出发</div></div></section>
     <footer class="home-footer"><span><i class="status-dot"></i> 全程本地运行 · 自动保存关卡进度</span><span>头像 / 技能 / 装备采用文字占位 <span class="footer-divider">/</span> 电脑横屏优先</span></footer></div>`;
 }
-function recruitCards(){return run.candidates.map((id,i)=>{const h=heroById(id),active=(selectedHero||run.candidates[0])===id;return `<button class="recruit-card ${active?'selected':''}" data-act="choose-hero" data-id="${id}" style="--hero:${h.color}"><div class="recruit-card-top"><span>候选 0${i+1}</span><span class="choice-check">${active?icon('check'):'＋'}</span></div>${portrait(h,'large')}<span class="hero-role">${h.role}</span><h2>${h.name}</h2><p>${h.description}</p><div class="tags">${h.tags.map(t=>`<span>${t}</span>`).join('')}</div><div class="candidate-stats"><span>攻击 <b>${h.stats.attack||BASE.attack}</b></span><span>法强 <b>${h.stats.power||BASE.power}</b></span><span>生命 <b>${h.stats.hp||BASE.hp}</b></span></div><div class="placeholder-skills">被动 <span>Q</span><span>W</span><span>E</span><span>R</span></div><small class="muted">${h.id==='stone'?'示例角色 · 被动与四个技能已生效':'演示角色 · 专属技能待正式设计'}</small></button>`;}).join('');}
+function recruitCards(){return run.candidates.map((id,i)=>{const h=heroById(id),active=(selectedHero||run.candidates[0])===id;return `<button class="recruit-card ${active?'selected':''}" data-act="choose-hero" data-id="${id}" style="--hero:${h.color}"><div class="recruit-card-top"><span>候选 0${i+1}</span><span class="choice-check">${active?icon('check'):'＋'}</span></div>${portrait(h,'large')}<span class="hero-role">${h.role}</span><h2>${h.name}</h2><p>${h.description}</p><div class="tags">${h.tags.map(t=>`<span>${t}</span>`).join('')}</div><div class="candidate-stats"><span>攻击 <b>${h.stats.attack||BASE.attack}</b></span><span>法强 <b>${h.stats.power||BASE.power}</b></span><span>生命 <b>${h.stats.hp||BASE.hp}</b></span></div><div class="placeholder-skills">被动 <span>1</span><span>2</span><span>3</span><span>4</span></div><small class="muted">${h.id==='stone'?'示例角色 · 被动与四个技能已生效':'演示角色 · 专属技能待正式设计'}</small></button>`;}).join('');}
 function renderRecruit(){const initial=run.phase==='initial';return `<div class="page-shell">${topbar(initial?'选择初始英雄':'新的同伴',initial?'远征准备 / 01':`第 ${run.floor} 层准备 · 招募 ${run.floor} / 4`)}<section class="recruit-intro"><span class="eyebrow">${initial?'FIRST COMPANION':'BUILD YOUR PARTY'}</span><h2>${initial?'远征，从一位同伴开始。':'下一段路，一起走。'}</h2><p>${initial?'选择你的初始英雄。进入前四层时，还能各招募一名同伴。':'从三个随机候选中选择一位加入。英雄一旦加入，本次远征不可替换。'}</p></section><div class="recruit-grid">${recruitCards()}</div><footer class="page-bottom"><div class="party-mini"><span>当前队伍 <b>${run.party.length}/5</b></span>${run.party.map(m=>`<span class="mini-name" style="--hero:${heroById(m.hero).color}">${heroById(m.hero).name}</span>`).join('')}${!run.party.length?'<small class="muted">等待第一位同伴</small>':''}</div>${btn(`确认选择 · ${heroById(selectedHero||run.candidates[0]).name} ${icon('arrow')}`,'confirm-hero','primary')}</footer></div>`;}
 function renderReady(){return `<div class="page-shell">${topbar('准备出发',`第 ${run.floor} / 20 层` ,gold(run.gold))}<section class="ready-intro"><span class="eyebrow">EXPEDITION ${String(run.floor).padStart(2,'0')}</span><h2>${run.floor%5===0?'前方，有守门人在等待。':'队伍就位，准备迎战。'}</h2><p>坚守 ${RULES.roundSeconds} 秒，随后清理场上剩余敌人。击败怪物获得金币。</p></section><div class="ready-party">${[...run.party].reverse().map((m,i)=>{const h=heroById(m.hero);return `<div class="ready-hero" style="--hero:${h.color}"><span class="slot-label">${run.party.length-i} 号位</span>${portrait(h,'large')}<h3>${h.name}</h3><span>${h.role} · Lv.${run.level}</span></div>`;}).join('')}</div><div class="ready-direction">后排 <span>──────────────────────</span> 前排 →</div><div class="ready-actions"><span class="muted">装备和站位只能在战后商店调整</span>${btn(`进入第 ${run.floor} 层 ${icon('arrow')}`,'start-battle','primary large-button')}</div><p class="prototype-note">磐石已接入示例技能，其余英雄暂用通用技能，数值后续调整。</p></div>`;}
-function skillButtons(member,index,combat=false){return `<div class="skills"><button class="skill passive" data-inspect="passive" data-act="passive" data-hero="${index}"><b>被</b><small>被动</small></button>${skillsFor(member.hero).map((s,n)=>`<button class="skill ${n===3?'ultimate':''}" data-inspect="skill" data-act="skill" data-hero="${index}" data-skill="${n}" ${combat?`data-cooldown="${index}-${n}"`:''} aria-label="${heroById(member.hero).name} ${s.key} ${s.name}"><b>${s.key}</b><small>${combat?'就绪':s.name}</small><i class="cool-mask"></i></button>`).join('')}</div>`;}
+function skillButtons(member,index,combat=false){
+  const modes=normalizeSkillModes(member.skillModes);
+  return `<div class="skills"><button class="skill passive" data-inspect="passive" data-act="passive" data-hero="${index}"><b>被</b><small>被动</small></button>${skillsFor(member.hero).map((s,n)=>{
+    const mode=modes[n],info=CAST_MODE_INFO[mode],next=CAST_MODE_INFO[nextSkillMode(mode)].name;
+    return `<div class="skill-cell"><button class="skill-mode" data-act="skill-mode" data-hero="${index}" data-skill="${n}" data-mode="${mode}" title="${info.name} · 点击切换至${next}" aria-label="${heroById(member.hero).name} 技能${n+1}：${info.name}，切换至${next}"><span>${info.mark}</span></button><button class="skill ${n===3?'ultimate':''}" data-inspect="skill" data-act="skill" data-hero="${index}" data-skill="${n}" ${combat?`data-cooldown="${index}-${n}"`:''} aria-label="查看${heroById(member.hero).name} 技能${n+1} ${s.name}"><b>${n+1}</b><small>${combat?'就绪':s.name}</small><i class="cool-mask"></i></button></div>`;
+  }).join('')}</div>`;
+}
+function manualSkillButtons(member,index){return `<div class="manual-skills" aria-label="点击释放技能">${normalizeSkillModes(member.skillModes).map((mode,n)=>`<button class="btn cast-skill" data-act="cast-skill" data-hero="${index}" data-skill="${n}" ${mode==='manual'?'':'hidden'} aria-label="释放技能${n+1}">释放${n+1}</button>`).join('')}</div>`;}
+function updateSkillControls(heroIndex){
+  const member=run.party[heroIndex],modes=normalizeSkillModes(member.skillModes),unit=screen==='battle'?battle.party[heroIndex]:null;
+  for(const button of document.querySelectorAll(`[data-act="skill-mode"][data-hero="${heroIndex}"]`)){
+    const n=Number(button.dataset.skill),mode=modes[n],info=CAST_MODE_INFO[mode],next=CAST_MODE_INFO[nextSkillMode(mode)].name;
+    button.dataset.mode=mode;button.querySelector('span').textContent=info.mark;button.title=`${info.name} · 点击切换至${next}`;
+    button.setAttribute('aria-label',`${heroById(member.hero).name} 技能${n+1}：${info.name}，切换至${next}`);
+  }
+  if(unit)for(const button of document.querySelectorAll(`[data-act="cast-skill"][data-hero="${heroIndex}"]`)){
+    const n=Number(button.dataset.skill),reason=battle.skillReason(unit,n,{ignoreCasting:true});
+    button.hidden=modes[n]!=='manual';button.disabled=reason!=='就绪'||unit.pendingCast?.index===n;button.title=reason==='就绪'?`释放技能${n+1}`:reason;
+    button.textContent=unit.pendingCast?.index===n?`${n+1}待放`:`释放${n+1}`;
+  }
+}
+function castFromInput(heroIndex,index){
+  if(screen!=='battle'||!battle)return;
+  inspection.close();
+  if(battlePaused()){toast('战斗已暂停，请先继续');return;}
+  const unit=battle.party[heroIndex];if(!battle.requestCast(unit,index))toast(unit?.lastCommandReason||'无法释放');
+  updateBattle();
+}
 function gearButtons(member,index){return `<div class="gear-row"><span>装备</span>${member.gear.map((item,slot)=>`<button class="gear-slot ${item?'filled':''}" ${screen==='shop'&&item?'data-drag="gear"':''} ${item?'data-inspect="gear"':''} data-act="gear" data-hero="${index}" data-slot="${slot}" ${item?`style="--rarity:${RARITIES.find(r=>r.id===item.rarity).color}"`:''} aria-label="${heroById(member.hero).name} 装备槽 ${slot+1}${item?' '+escape(item.name):' 空'}">${item?escape(item.mark):'＋'}</button>`).join('')}</div>`;}
 function heroPanels(shop=false){return (screen==='battle'?[selectedUnit]:Array.from({length:5},(_,i)=>4-i)).map(index=>{
   const m=run.party[index];if(!m)return `<div class="hero-panel vacant"><span>0${index+1}</span><b>等待同伴</b><small>前四层开始前招募</small></div>`;
-  const h=heroById(m.hero);return `<article data-unit="${index}" class="hero-panel ${selectedUnit===index?'selected':''}" style="--hero:${h.color}"><div class="hero-panel-heading">${screen==='battle'?`<span class="detail-portrait" aria-hidden="true">${escape(h.name)}</span><span class="detail-position">${index+1} 号位 · ${h.role}</span>`:''}<button ${shop?'data-drag="hero"':''} data-act="select-unit" data-hero="${index}" class="hero-name"><b>${h.name}</b><small>Lv.${run.level}</small></button>${screen==='battle'?`<p class="hero-description">${escape(h.description)}</p>`:''}${shop?`<span class="orange-count">${index+1} 号位 · 橙装 ${m.gear.filter(i=>i?.rarity==='orange').length}/1</span>`:`<button class="auto-toggle ${m.auto?'on':''}" data-act="auto" data-hero="${index}" aria-pressed="${m.auto}">R <i></i><span>${m.auto?'自动':'手动'}</span></button>`}${screen==='battle'?`<button class="btn cast-ultimate" data-act="cast-ultimate" data-hero="${index}" ${m.auto?'hidden':''}>释放大招</button>`:''}</div>${screen==='battle'?`<div class="mobile-resources" data-resources="${index}"></div>`:''}${skillButtons(m,index,!shop&&screen==='battle')}${gearButtons(m,index)}${statGrid(screen==='battle'?battle.party[index].stats:M.statsFor(m,run.level,run.augments),attributePage,screen==='battle')}${screen==='battle'?`<div class="attribute-control">${btn(`${attributePage==='primary'?'主要':'次要'}属性 ${icon('swap')}`,'attributes','small quiet attribute-toggle')}</div>`:''}${screen==='battle'?`<div class="unit-statuses" data-statuses="${index}" aria-label="${h.name}当前状态"></div>`:''}${shop?`<small class="gear-hint">拖动名字换位 · 点击装备查看</small>`:''}</article>`;
+  const h=heroById(m.hero);return `<article data-unit="${index}" class="hero-panel ${selectedUnit===index?'selected':''}" style="--hero:${h.color}"><div class="hero-panel-heading">${screen==='battle'?`<span class="detail-portrait" aria-hidden="true">${escape(h.name)}</span><span class="detail-position">${index+1} 号位 · ${h.role}</span>`:''}<button ${shop?'data-drag="hero"':''} data-act="select-unit" data-hero="${index}" class="hero-name"><b>${h.name}</b><small>Lv.${run.level}</small></button>${screen==='battle'?`<p class="hero-description">${escape(h.description)}</p>`:''}${shop?`<span class="orange-count">${index+1} 号位 · 橙装 ${m.gear.filter(i=>i?.rarity==='orange').length}/1</span>`:''}${screen==='battle'?manualSkillButtons(m,index):''}</div>${screen==='battle'?`<div class="mobile-resources" data-resources="${index}"></div>`:''}${skillButtons(m,index,!shop&&screen==='battle')}${gearButtons(m,index)}${statGrid(screen==='battle'?battle.party[index].stats:M.statsFor(m,run.level,run.augments),attributePage,screen==='battle')}${screen==='battle'?`<div class="attribute-control">${btn(`${attributePage==='primary'?'主要':'次要'}属性 ${icon('swap')}`,'attributes','small quiet attribute-toggle')}</div>`:''}${screen==='battle'?`<div class="unit-statuses" data-statuses="${index}" aria-label="${h.name}当前状态"></div>`:''}${shop?`<small class="gear-hint">拖动名字换位 · 点击装备查看</small>`:''}</article>`;
   }).join('');}
 function selectBattleHero(index){
   if(!battle?.party[index])return;
@@ -140,7 +168,7 @@ function renderBattle(){
   <span id="battle-pause-note" role="status" hidden></span><div class="portrait-battle"><b>请横屏查看完整战场</b><p>战斗已暂停，横屏后点击继续。</p></div>${orientationPaused?btn('继续战斗','resume-orientation','orientation-resume primary',portraitBattle()?'disabled':''):''}
   <div id="battle-canvas" class="phaser-arena" role="group" aria-label="自动战斗场景"></div>
   <div class="battle-footnote"><span id="battle-event"></span><span><b id="battle-phase"></b> · 击败 <b id="battle-kills"></b></span></div>
-  <div class="battle-details"><section class="squad-section"><nav class="hero-selector" aria-label="选择英雄">${Array.from({length:5},(_,i)=>4-i).map(i=>run.party[i]?`<button data-act="select-unit" data-hero="${i}" aria-pressed="${i===selectedUnit}">${heroById(run.party[i].hero).name}<small data-r-ready="${i}">R</small></button>`:`<span>等待同伴</span>`).join('')}</nav>
+  <div class="battle-details"><section class="squad-section"><nav class="hero-selector" aria-label="选择英雄">${Array.from({length:5},(_,i)=>4-i).map(i=>run.party[i]?`<button data-act="select-unit" data-hero="${i}" aria-pressed="${i===selectedUnit}">${heroById(run.party[i].hero).name}<small data-r-ready="${i}">4</small></button>`:`<span>等待同伴</span>`).join('')}</nav>
   <div class="detail-tools"><span id="command-hint" role="status">${commandArmed?'请点击敌人指定优先位置 · Esc 取消':'点击英雄，再点击敌人指定优先位置'}</span><div class="mobile-detail-tabs">${btn('技能 / 装备','detail-loadout','small',`aria-pressed="${mobileView==='loadout'}"`)}${btn('属性','detail-stats','small',`aria-pressed="${mobileView==='stats'}"`)}${btn('战术','detail-tactics','small')}${btn('敌人','detail-enemy','small')}</div></div>
   <div class="hero-panels">${heroPanels()}</div>${tacticsPanel()}</section>${enemyDetail()}</div></div>`;
 }
@@ -200,15 +228,14 @@ function updateBattle(){
   document.querySelector('#battle-event').textContent=battle.feed[0]?.text||'';
   for(const [index,unit] of battle.party.entries()) {
     const panel=document.querySelector(`[data-unit="${index}"]`);
-    const r=document.querySelector(`[data-r-ready="${index}"]`);if(r)r.textContent=`R ${battle.skillReason(unit,3)}`;
+    const r=document.querySelector(`[data-r-ready="${index}"]`);if(r)r.textContent=`4 ${battle.skillReason(unit,3)}`;
     if(!panel)continue;
     for(const label of panel.querySelectorAll('[data-stat]')) {
       const value=statText(label.dataset.stat,unit.stats[label.dataset.stat]);if(label.textContent!==value)label.textContent=value;
     }
     const resources=panel.querySelector('[data-resources]');
     if(resources)resources.textContent=`生命 ${Math.ceil(unit.hp)}/${Math.round(unit.stats.hp)} +${Number((unit.stats.hpRegen*(1+unit.stats.healing)).toFixed(1))}/s · 法力 ${Math.floor(unit.mana)}/${Math.round(unit.stats.mana)} +${Number(unit.stats.manaRegen.toFixed(1))}/s · 盾 ${Math.ceil(unit.shield)}`;
-    const cast=panel.querySelector('[data-act="cast-ultimate"]'),reason=battle.skillReason(unit,3);
-    cast.hidden=unit.auto;cast.disabled=reason!=='就绪';cast.textContent=reason==='就绪'?'释放大招':`R · ${reason}`;
+    updateSkillControls(index);
 
     const statusElement=panel.querySelector('[data-statuses]');
     const statuses=[...unit.statuses.values()];
@@ -217,7 +244,7 @@ function updateBattle(){
   }
   for(const [i,unit]of battle.party.entries())for(let n=0;n<4;n++){
     const button=document.querySelector(`[data-cooldown="${i}-${n}"]`);if(!button)continue;
-    const reason=battle.skillReason(unit,n);button.querySelector('small').textContent=reason;button.classList.toggle('ready',reason==='就绪');
+    const reason=battle.skillReason(unit,n);const mode=unit.skillModes[n];button.querySelector('small').textContent=reason!=='就绪'?reason:mode==='manual'?'等待点击':mode==='managed'?(unit.castReason||'托管就绪'):'自动就绪';button.classList.toggle('ready',reason==='就绪');
     const skill=battle.getSkill(unit,n);const total=Math.max(1,Math.ceil(skill.cooldown/(1+unit.stats.haste/100)/STEP));button.querySelector('.cool-mask').style.height=`${Math.max(0,Math.min(100,100*(unit.ready[n]-battle.tick)/total))}%`;
 
   }
@@ -331,7 +358,7 @@ function startBattle(){commandArmed=false;selectedEnemy=0;selectedUnit=0;mobileV
 function previewPage(page){
   clearShopSelection();closeModal();preview=true;run=M.createRun(70891);M.recruit(run,run.candidates[0]);M.recruit(run,run.candidates[0]);
   if(page==='recruit'){run.floor=2;run.phase='recruit';run.candidates=M.sample(run,HEROES.map(h=>h.id).filter(id=>!run.party.some(h=>h.hero===id)),3);selectedHero=null;route();render();return;}
-  for(const h of HEROES)if(run.party.length<5&&!run.party.some(m=>m.hero===h.id))run.party.push({hero:h.id,gear:[null,null,null,null],auto:true});
+  for(const h of HEROES)if(run.party.length<5&&!run.party.some(m=>m.hero===h.id))run.party.push({hero:h.id,gear:[null,null,null,null],skillModes:normalizeSkillModes()});
   run.floor=4;run.level=3;run.party.forEach((h,i)=>{h.gear[0]=M.makeItem(run,i%4);h.gear[1]=M.makeItem(run,1);});
   if(page==='battle'){run.augments=[AUGMENTS[0].id];for(const [hero,base] of [['stone','rune'],['wind','clock'],['shade','armor']]){const member=run.party.find(m=>m.hero===hero);if(member)member.gear[0]=M.makeItem(run,5,base);}startBattle();return;}
   M.finishRound(run,{won:true,gold:128,kills:42,seconds:25});
@@ -373,9 +400,9 @@ function act(event){const target=event.target.closest('[data-act]');if(!target||
       case 'accept-challenge':if(battle.acceptChallenge(target.dataset.id))updateBattle();break;
       case 'cancel-challenge':if(battle.cancelChallenge(target.dataset.id))updateBattle();break;
       case 'enemy-skill':inspection.show(target,true);break;
-      case 'auto':run.party[h].auto=!run.party[h].auto;if(battle)battle.party[h].auto=run.party[h].auto;save();render();break;
+      case 'skill-mode':{const n=Number(target.dataset.skill),mode=nextSkillMode(normalizeSkillModes(run.party[h].skillModes)[n]);if(screen==='battle')battle.setSkillMode(h,n,mode);else{run.party[h].skillModes=normalizeSkillModes(run.party[h].skillModes);run.party[h].skillModes[n]=mode;}save();updateSkillControls(h);toast(`技能${n+1} · ${CAST_MODE_INFO[mode].name}`);break;}
       case 'skill':case 'passive':case 'inspect-offer':inspection.show(target,true);break;
-      case 'cast-ultimate':inspection.close();if(!battlePaused()&&!battle.party[h].auto){if(!battle.cast(battle.party[h],3))toast(battle.skillReason(battle.party[h],3));updateBattle();}break;
+      case 'cast-skill':castFromInput(h,Number(target.dataset.skill));break;
       case 'augment-info':openModal({type:'augment'});break;
       case 'choose-augment':M.chooseAugment(run,target.dataset.id);save();closeModal();render();toast('坚韧共鸣已启用，本次远征持续生效');break;
       case 'refresh-shop':M.refreshShop(run);clearShopSelection();save();render();toast('商店已刷新');break;
@@ -423,6 +450,7 @@ installPointerDrag({
   cancel(){if(screen==='shop'){clearShopSelection();render();}},
 });
 document.addEventListener('keydown',event=>{
+  if(screen==='battle'&&!modal&&!event.repeat&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&!event.target.closest('input,textarea,select,[contenteditable]')&&/^[1-4]$/.test(event.key)){event.preventDefault();castFromInput(selectedUnit,Number(event.key)-1);return;}
   if(event.key==='Escape'){if(modal)closeModal();else if(shopPopover)closeShopPopover(true);else if(shopSelection){clearShopSelection();render();}else if(screen==='battle'&&commandArmed){commandArmed=false;render();}else if(screen==='battle')openModal({type:'pause'});}
   if(event.key==='Tab'&&modal){const items=[...modalRoot.querySelectorAll('button:not(:disabled),[tabindex="0"]')];const first=items[0],last=items.at(-1);if(event.shiftKey&&document.activeElement===first){last.focus();event.preventDefault();}else if(!event.shiftKey&&document.activeElement===last){first.focus();event.preventDefault();}}
 });

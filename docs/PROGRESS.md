@@ -69,6 +69,8 @@
 
 | 参考图美术落地：src/app.js、src/style.css、src/renderer/PhaserBattleRenderer.ts、public/art/与本地字体；相关 scripts/ 截图/交互检查；docs/design/battle-v2/、D015 索引及共享顶部/UI-05/R032 | 进行中（按用户附图重做视觉） | battle-reference-art-20261019-r032 | 2026-10-19 | 基线 817ee35；预留 D015/R032，避开英雄 D014/R031；重做黑铁材质、金属饰框、字体、战斗资源条和紧凑详情，以真实截图验收；不改战斗公式或内容 |
 
+| 岚牙HB首轮模型测试：docs/heroes/lanya-benchmark.py、lanya-benchmark-results.json、LANYA-BENCHMARK.md、lanya-benchmark.svg及专项检查；LANYA.md结果入口；D014/索引接续；公共仅R033、Q004/Q010/Q011、英雄状态与本行，不占D015/R032/战斗顶部 | 进行中（独立模型测试，非游戏实施） | hero-lanya-hb-20261019-r033 | 2026-10-19 | 基线7083b65；用户接受方案并要求测试岚牙；覆盖1/3/5输出、攻防木桩、成长及装备增幅，缺失时序做明确敏感性假设，不修改英雄/装备值或游戏源码 |
+
 认领为共享仓库交接记录，不是自动锁；其他窗口避开“进行中”范围，重叠须先协调。未登记不证明没有窗口工作；中止或接管也须记录。
 
 ### 分层状态快照

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""R038 three mage items: recipe arithmetic and isolated single-spell resource model.
+"""R042 mage passive revision: recipe arithmetic and isolated resource model.
 
 Not the game engine or a hero/HB result. Exact rational event times; zero cast/
 flight time, always hit, no enemy death/control/overkill. Same spell: 150 + AP,
-60 mana, 6s cooldown, MR50. Each cast snapshots before post-cast buffs refresh.
+60 mana, 6s cooldown, MR50 by default. R038 mode retains the rejected passives
+for controlled comparisons at identical base stats, not their historical price.
 """
 
 from fractions import Fraction as F
@@ -47,39 +48,71 @@ def effect(name, pattern):
     return F(re.search(pattern, CATALOG[name]["effect"]).group(1))
 
 
-AP_BUFF = effect("流转法典", r"法强额外 \+([\d.]+)")
-AP_DURATION = effect("流转法典", r"持续 ([\d.]+) 秒")
-MANA_BUFF = effect("澄源法杖", r"回复额外 \+([\d.]+)/秒")
-MANA_DURATION = effect("澄源法杖", r"持续 ([\d.]+) 秒")
+PROC_BASE = effect("流转法典", r"附加 ([\d.]+)＋")
+PROC_RATIO = effect("流转法典", r"＋([\d.]+)% 法强") / 100
+PROC_CD = effect("流转法典", r"独立冷却 ([\d.]+) 秒")
+REFUND = effect("澄源法杖", r"恢复 ([\d.]+) 法力")
 
 
-def simulate(items=(), duration=40, base_regen=5, enable_passives=True, base_damage=150, ap_ratio=1):
+def simulate(items=(), duration=40, base_regen=5, mode="current", base_damage=150,
+             ap_ratio=1, mana_cost=60, base_cooldown=6, extra_ap=0, targets=1,
+             kill_times=(), kill_refund=None):
+    assert mode in ("current", "r038", "off")
+    assert duration > 0 and base_regen >= 0 and mana_cost >= 0 and base_cooldown > 0 and targets >= 1
     stats = {key: sum((CATALOG[name]["stats"].get(key, F(0)) for name in items), F(0)) for key in LABELS}
+    stats["ap"] += F(extra_ap)
     max_mana = F(200) + stats["mana"]
     mana, start_mana = max_mana, max_mana  # Explicit full-mana test start, not a purchase heal.
     base_rate = F(base_regen) + stats["regen"]
-    cost, cooldown, end = F(60), F(6) / (1 + stats["haste"] / 100), F(duration)
+    cost, cooldown, end = F(mana_cost), F(base_cooldown) / (1 + stats["haste"] / 100), F(duration)
     t = ready = ap_until = mana_until = F(0)
+    proc_ready = F(0)  # One ready use at battle start, no charge banking.
+    kills = sorted(F(x) for x in kill_times)
+    assert all(x >= 0 for x in kills)
+    kill_index = 0
+    restore_amount = REFUND if kill_refund is None else F(kill_refund)
+    assert restore_amount >= 0
     casts = buffed_casts = 0
+    proc_times, refund_times = [], []
     damage = recovered = bonus_recovered = spent = F(0)
-    has_ap = enable_passives and "流转法典" in items  # Named passives once, base stats per copy.
-    has_mana = enable_passives and "澄源法杖" in items
+    proc_damage = refunded = F(0)
+    has_proc = mode != "off" and "流转法典" in items  # Named passives once, base stats per copy.
+    has_mana = mode != "off" and "澄源法杖" in items
     while t < end:
+        # Exogenous credited deaths, before the next action. This does not model
+        # kill/assist eligibility or damage-driven clear speed; all modes share timings.
+        while kill_index < len(kills) and kills[kill_index] == t:
+            if mode == "current" and has_mana:
+                actual_refund = min(restore_amount, max_mana - mana)
+                mana += actual_refund
+                refunded += actual_refund
+                refund_times.append(t)
+            kill_index += 1
         if t >= ready and mana >= cost:
-            ap_bonus = AP_BUFF if has_ap and t < ap_until else F(0)
-            damage += (F(base_damage) + F(ap_ratio) * (stats["ap"] + ap_bonus)) * F(2, 3)
+            ap_bonus = F(15) if mode == "r038" and has_proc and t < ap_until else F(0)
+            damage += (F(base_damage) + F(ap_ratio) * (stats["ap"] + ap_bonus)) * F(2, 3) * targets
             casts += 1
             buffed_casts += int(ap_bonus > 0)
             mana -= cost
             spent += cost
             ready = t + cooldown
-            if has_ap:
-                ap_until = t + AP_DURATION
-            if has_mana:  # Fixture pays positive cost and completes release each time.
-                mana_until = t + MANA_DURATION
-        bonus_rate = MANA_BUFF if has_mana and t < mana_until else F(0)
+            if mode == "r038":
+                if has_proc:
+                    ap_until = t + 6
+                if has_mana and cost > 0:
+                    mana_until = t + 6
+            elif mode == "current":
+                if has_proc and t >= proc_ready:
+                    extra_damage = (PROC_BASE + PROC_RATIO * stats["ap"]) * F(2, 3)
+                    damage += extra_damage  # Only primary target, never multiplied by targets.
+                    proc_damage += extra_damage
+                    proc_times.append(t)
+                    proc_ready = t + PROC_CD
+        bonus_rate = F(1) if mode == "r038" and has_mana and t < mana_until else F(0)
         rate = base_rate + bonus_rate
         events = [end]
+        if kill_index < len(kills):
+            events.append(kills[kill_index])
         if ready > t:
             events.append(ready)
         if mana_until > t:
@@ -94,10 +127,16 @@ def simulate(items=(), duration=40, base_regen=5, enable_passives=True, base_dam
         if rate:
             bonus_recovered += actual * bonus_rate / rate
         t = next_t
-    assert start_mana + recovered - spent == mana
+    assert start_mana + recovered + refunded - spent == mana
     assert 0 <= mana <= max_mana
+    assert all(b - a >= PROC_CD for a, b in zip(proc_times, proc_times[1:]))
+    assert refunded <= restore_amount * len(refund_times)
     return {"casts": casts, "buffed_casts": buffed_casts, "dps": round(float(damage / end), 4),
-            "passive_mana_received": round(float(bonus_recovered), 4), "end_mana": round(float(mana), 4)}
+            "proc_times": [round(float(x), 4) for x in proc_times],
+            "proc_damage": round(float(proc_damage), 4),
+            "kill_refund_times": [round(float(x), 4) for x in refund_times],
+            "passive_mana_received": round(float(bonus_recovered + refunded), 4),
+            "end_mana": round(float(mana), 4)}
 
 
 def main():
@@ -113,7 +152,9 @@ def main():
         if item["passive"] == "—":
             assert reserve == 0
         else:
-            assert 150 <= reserve <= 450 and F("0.1") <= reserve / item["price"] <= F("0.25")
+            # R042 explicitly reviews a 500-gold reserve for stronger mana sustain.
+            allowance = 500 if name == "澄源法杖" else 450
+            assert 150 <= reserve <= allowance and F("0.1") <= reserve / item["price"] <= F("0.25")
         declaration = re.search(r"^" + NAME_IDS[name] + r" .*", TEXT, re.M).group(0)
         assert f"price={item['price']}; combineFee={item['fee']};" in declaration
         assert declaration.split(" = ")[1].split(";")[0].split(" + ") == [NAME_IDS[m] for m in item["materials"]]
@@ -126,8 +167,7 @@ def main():
             for duration in (5, 10, 20, 40, 60, 180):
                 items = (name,) if name else ()
                 scenarios.append({"item": name or "裸装", "base_regen": regen, "seconds": duration,
-                                  "with_passive": simulate(items, duration, regen),
-                                  "without_passive": simulate(items, duration, regen, False)})
+                                  **{mode: simulate(items, duration, regen, mode) for mode in ("current", "r038", "off")}})
     coefficient_sensitivity = []
     for base_damage, ratio in ((300, F('0.5')), (100, F('1.5'))):
         for name in (None, *NAMES):
@@ -135,14 +175,39 @@ def main():
                 coefficient_sensitivity.append({"item": name or "裸装", "base_damage": base_damage,
                     "ap_ratio": float(ratio), "base_regen": 12, "seconds": duration,
                     **simulate((name,) if name else (), duration, 12, base_damage=base_damage, ap_ratio=ratio)})
-    print(json.dumps({"scope": "R038 single-spell design model, not hero/game/HB validation",
+    pressure = []
+    for cost in (40, 50, 60):
+        for kills_count in (0, 4, 6, 8, 12):
+            kills = [F(40 * i, kills_count + 1) for i in range(1, kills_count + 1)]
+            common = dict(mana_cost=cost, base_cooldown=2, kill_times=kills)
+            pressure.append({"cost": cost, "seconds": 40, "credited_kills": kills_count,
+                **{mode: simulate(("澄源法杖",), mode=mode, **common) for mode in ("current", "r038", "off")},
+                "proposed_30": simulate(("澄源法杖",), kill_refund=30, **common)})
+    proc_gold = []
+    for ap in (40, 100, 200, 300):
+        for targets in (1, 3, 5):
+            for duration in (40, 180):
+                result = simulate(("流转法典",), duration, base_regen=12, extra_ap=ap-40, targets=targets)
+                # Counterfactual flat AP has no item proc; all casts/targets share ratio 1 and MR50.
+                gold = result["proc_damage"] / (result["casts"] * targets * 2/3) * float(PRICES['ap'])
+                proc_gold.append({"ap": ap, "targets": targets, "seconds": duration, "gold": round(gold, 2)})
+    assert simulate(("流转法典",), duration=12, base_cooldown=1, mana_cost=0)["proc_times"] == [0.0]
+    assert len(simulate(("流转法典",), duration=13, base_cooldown=1, mana_cost=0)["proc_times"]) == 2
+    assert simulate(("澄源法杖",), kill_times=())["passive_mana_received"] == 0
+    assert simulate(("澄源法杖",), mana_cost=0, kill_times=(1,2))["passive_mana_received"] == 0
+    assert simulate(("澄源法杖", "澄源法杖"), duration=2, kill_times=(1,))["passive_mana_received"] == float(REFUND)
+    assert simulate(("澄源法杖",), duration=2, kill_times=(1,1))["passive_mana_received"] == float(REFUND * 2)
+    assert simulate(("澄源法杖",), duration=2, kill_times=(2,))["passive_mana_received"] == 0
+    print(json.dumps({"scope": "R042 single-spell design model, not hero/game/HB validation",
                       "budgets": budgets, "scenarios": scenarios,
-                      "effect_gold": {"余韵": [float(AP_BUFF * u * PRICES['ap']) for u in (F('.5'), F('.7'), F('.9'), F(1))],
-                                      "导流": [float(MANA_BUFF * u * PRICES['regen']) for u in (F('.6'), F('.8'), F(1))]},
+                      "resource_pressure": pressure, "proc_gold": proc_gold,
+                      "takedown_gold_no_overflow_40s": {str(kills): float(REFUND * kills / 40 * PRICES['regen'])
+                                                       for kills in (0, 4, 6, 8, 12)},
                       "coefficient_sensitivity": coefficient_sensitivity,
                       "two_copies_40s": {name: simulate((name, name)) for name in NAMES},
-                      "codex_and_staff_180s": {"with_passives": simulate(("流转法典", "澄源法杖"), 180),
-                                                "without_passives": simulate(("流转法典", "澄源法杖"), 180, enable_passives=False)}}, ensure_ascii=False, indent=2))
+                      "codex_and_staff_40s_8_kills": {mode: simulate(("流转法典", "澄源法杖"),
+                          base_cooldown=2, mana_cost=50, kill_times=range(4,33,4), mode=mode)
+                          for mode in ("current", "off")}}, ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":

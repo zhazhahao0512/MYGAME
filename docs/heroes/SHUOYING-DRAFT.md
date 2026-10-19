@@ -1,6 +1,6 @@
 # 朔影 · 魔法刺客建议 V0.1
 
-2026-10-20（北京时间），R058。**助手提案，待用户评审；未修改游戏源码、未替换夜隼等原型、未进行真实刺客木桩测试。** 烬璃由用户回复“可以，继续”接受为可后调首版，见[D030](../decisions/D030-jinli-first-draft-accepted.md)。依[D026](../decisions/D026-first-roster-design.md)，待辅助也设计好后，再统一修改这四名英雄代码。
+2026-10-20（北京时间），R058。**用户于R063回复“可以，继续”，接受为可后调首版，见[D034](../decisions/D034-shuoying-first-draft-accepted.md)；未修改游戏源码、未替换夜隼等原型、未进行真实刺客木桩测试。** 烬璃由用户回复“可以，继续”接受为可后调首版，见[D030](../decisions/D030-jinli-first-draft-accepted.md)。依[D026](../decisions/D026-first-roster-design.md)，待辅助也设计好后，再统一修改这四名英雄代码。
 
 ## 1. 定位
 

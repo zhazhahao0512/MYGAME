@@ -39,10 +39,12 @@ try{
   else assert.ok(await page.locator('.hero-panel.selected .skill,.hero-panel.selected .gear-slot').evaluateAll(els=>els.every(el=>{const r=el.getBoundingClientRect();return r.height>=44&&r.bottom<=innerHeight;})),'touch controls fit');
   await page.screenshot({path:`test-results/battle-visual/${width}x${height}.png`});
   if(!touch){
+   assert.equal(await page.locator('.hero-panel .stat-entry').count(),8);
    await page.locator('.squad-section').screenshot({path:`test-results/battle-visual/${width}x${height}-hero-stats.png`});
    await click('attributes');assert.match(await page.locator('.attribute-toggle').textContent(),/次要/);
+   assert.equal(await page.locator('.hero-panel .stat-entry').count(),11);
    assert.equal((await page.locator('.battle-details').boundingBox()).height,layout.details.height,'attribute pages keep the same bottom-panel height');
-   assert.ok(await page.locator('.hero-panel .stat-grid>div').evaluateAll(cells=>cells.every(cell=>{
+   assert.ok(await page.locator('.hero-panel .stat-grid .stat-entry').evaluateAll(cells=>cells.every(cell=>{
     const label=cell.querySelector('span'),value=cell.querySelector('b'),l=label.getBoundingClientRect(),v=value.getBoundingClientRect(),c=cell.getBoundingClientRect();
     return label.scrollWidth<=label.clientWidth&&l.right<=v.left&&v.right<=c.right&&v.bottom<=c.bottom;
    })),'secondary attribute labels and values remain readable without overlap');
@@ -53,6 +55,12 @@ try{
    assert.ok(cast&&automatic&&cast.x>=automatic.x+automatic.width,'manual ultimate does not cover the auto toggle');
    const name=await page.locator('.hero-panel .hero-name').boundingBox(),role=await page.locator('.detail-position').boundingBox();
    assert.ok(name.y+name.height<=role.y+.5,'hero name and role do not overlap');
+  }
+  if(touch){
+   await click('detail-stats');assert.equal(await page.locator('.hero-panel .stat-entry').count(),8);
+   await click('detail-stats');assert.equal(await page.locator('.hero-panel .stat-entry').count(),11);
+   assert.ok(await page.locator('.hero-panel .stat-entry').evaluateAll(cells=>cells.every(cell=>{const r=cell.getBoundingClientRect(),l=cell.querySelector('span').getBoundingClientRect(),v=cell.querySelector('b').getBoundingClientRect();return r.bottom<=innerHeight&&r.right<=innerWidth&&l.right<=v.left;})),'touch secondary attributes fit without overlap');
+   await page.screenshot({path:`test-results/battle-visual/${width}x${height}-secondary.png`});
   }
   metrics.push(layout);await context.close();
  }

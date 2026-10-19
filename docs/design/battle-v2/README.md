@@ -1,5 +1,18 @@
 # 战斗 V2 视觉对照与实际截图
 
+## R039 当前：只调整英雄数值区
+
+用户澄清意图是英雄数值区，R032 扩大到背景等区域的理解由 [D018](../../decisions/D018-hero-stats-reference.md) 纠正。本轮仅调整左下英雄属性：四个连续两行组、紧凑名称/数字、淡金与象牙白层次、细竖线分隔；次要页四组三行，单按钮切页且等高。背景、战场、数值与机制本轮未改。
+
+以下是实际构建在 Chromium 运行的截图，保留真实临时状态与最终属性值：
+
+- [2K 主要属性局部](focused-hero-primary.png) · [2K 次要属性局部](focused-hero-secondary.png)
+- [2560×1440 整页](focused-desktop.png) · [740×360 次要属性](focused-phone-secondary.png)
+
+`npm run build` 与 `node scripts/battle-visual-check.mjs` 通过；检查 2560×1440、1440×900、844×390、740×360 的页面边界、手机点击区域、属性数量及次要页文字/数值不重叠、桌面两页等高和手动大招。实际查看两张 2K 局部、1440 次要局部和 740 横屏截图。底栏保持约 33.5%/35.2%（2K/1440）；手机是 Chromium 模拟，非全真机覆盖。用户视觉认可与上线验收待后续，不以检查通过代替。
+
+以下保留历史截图与当时记录。
+
 ## R032 按用户附图接续美术
 
 用户再次提供的参考图与本目录 [battle-v2-concept.png](battle-v2-concept.png) SHA256 相同。本轮按 [D015](../../decisions/D015-battle-reference-art.md) 重做实际页面的材质和控件，以下均为真实 Chromium 游戏截图：

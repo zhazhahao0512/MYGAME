@@ -1,4 +1,4 @@
-import { heroMechanicReason,heroTargets,tauntedTarget,heroDamageOptions,heroShotPayload,heroHit,heroEvent,heroReduction,releaseHeroEffect,tickHeroes,absorbHeroShields } from './heroes/mechanics.js';
+import { heroMechanicReason,heroTargets,tauntedTarget,heroDamageOptions,heroShotPayload,heroHit,heroEvent,heroReduction,releaseHeroEffect,tickHeroes } from './heroes/mechanics.js';
 import { enemyStats } from './combat/enemies.js';
 import { actionHitChance } from './heroes/accuracy.js';
 import { progressionSummary } from './heroes/progression.js';
@@ -13,7 +13,7 @@ import { CAST_MODES, normalizeSkillModes, chooseManagedSkill } from './combat/ca
 import { TriggerQueue } from './combat/events.js';
 import { BATTLE_V2, ENEMY_TYPES, CHALLENGE_TYPES, TARGET_MODES, normalizeTactics, rankTargets } from './combat/tactics.js';
 import { GOLD_SCALE } from './equipment.js';
-import { initializeEquipment, hasPassive, syncEquipment, changeEquipmentTarget, absorbEquipmentShield, procSnapshot, basicHit, recordParticipation, restoreTakedownMana } from './combat/equipment.js';
+import { initializeEquipment, passiveParams, syncEquipment, changeEquipmentTarget, absorbEquipmentShield, procSnapshot, basicHit, recordParticipation, restoreTakedownMana, mitigateEquipmentDamage, equipmentDamaged, equipmentSpellReleased, supportSpellBatch, fixedEquipmentRegen } from './combat/equipment.js';
 export const STEP=.02;
 export const hitChance=(accuracy,evasion=0,distance=0,correction=0)=>Math.max(0,Math.min(1,(accuracy+correction-evasion-distance)/100));
 export const cooldown=(seconds,haste)=>seconds/(1+Math.max(0,haste)/100);
@@ -168,8 +168,8 @@ export class Battle {
     const hit=options.canMiss===false||random(this.rng)<actionHitChance(source,target,options);
     const crit=(options.canCrit??!skill)&&random(this.rng)<s.crit;
     const resistance=Math.max(0,(magic?t.resist:t.armor)-(magic?s.magicPen:s.armorPen));
-    const raw=((options.amount||0)+s.attack*(options.attack??multiplier)+s.power*(options.power??(skill?.8:0)))*(crit?s.critDamage+(!skill&&hasPassive(source,'basic_crit_multiplier')?.15:0):1)*(1+s.damageAmp);
-    const damage=damageType==='true'?raw:raw*100/(100+resistance)*(1-t.reduction)*heroReduction(target)*(!skill&&damageType==='physical'&&hasPassive(target,'basic_physical_guard')?.92:1);
+    const raw=((options.amount||0)+s.attack*(options.attack??multiplier)+s.power*(options.power??(skill?.8:0)))*(crit?s.critDamage+(!skill?(passiveParams(source,'basic_crit_multiplier')?.critMultiplierBonus||0):0):1)*(1+s.damageAmp);
+    const damage=damageType==='true'?raw:raw*100/(100+resistance)*(1-t.reduction)*heroReduction(target)*(!skill&&damageType==='physical'?1-(passiveParams(target,'basic_physical_guard')?.reduction||0):1);
     return {hit,crit,powerSnapshot:s.power,damageType,damage:Math.max(0,damage),vamp:options.noVamp?0:(skill?0:s.lifeSteal)+s.omni,lifeSteal:skill||options.noVamp?0:s.lifeSteal,omni:options.noVamp?0:s.omni,healing:s.healing};
   }
   fire(source,target,{skill=false,multiplier=1,duration,...options}={}) {
@@ -179,7 +179,8 @@ export class Battle {
       start:this.tick,end:this.tick+ticks(duration??1/source.stats.attackSpeed),skill,visualColor:source.def?.color,attackRange:source.def?.range||'melee',origin:skill?'skill':'attack',originId:options.originId||(skill?'skill':'attack'),skillKey:options.skillKey||'',onHit:structuredClone(options.onHit||[]),
       ...this.snapshot(source,target,multiplier,skill,options)};
     shot.kit=heroShotPayload(this,source,target,options);
-    if(!skill){if(hasPassive(source,'triple_hit_damage'))shot.comboDamage=procSnapshot(this,source,target,source.stats.attack*.30,'physical','triple_hit_damage');}
+    const triple=passiveParams(source,'triple_hit_damage');
+    if(!skill&&triple)shot.comboDamage=procSnapshot(this,source,target,source.stats.attack*triple.attackRatio,'physical','triple_hit_damage');
     if(!skill)shot.heroPayload=lanyaAttackPayload(this,source,target);
     this.shots.push(shot);
     if(!skill){source.attack={start:shot.start,end:shot.end};this.emit('attack',source,target);this.flushTriggers();}
@@ -191,7 +192,8 @@ export class Battle {
     if(!target||target.hp<=0)return;
     this.events.root(()=>{
       if(!shot.hit){target.lastEvent={text:'闪避',tick:this.tick,type:'dodge'};this.emitEffect('dodge',target,0,false,this.visualSource(source,shot));this.emit('dodge',source,target);return;}
-      if(!shot.skill&&hasPassive(source,'low_health_lifesteal')&&source.hp>0&&source.hp<source.stats.hp*.5){shot={...shot,vamp:shot.vamp+.03,lifeSteal:shot.lifeSteal+.03};}
+      const blood=passiveParams(source,'low_health_lifesteal');
+      if(!shot.skill&&blood&&source.hp>0&&source.hp<source.stats.hp*blood.threshold){shot={...shot,vamp:shot.vamp+blood.lifeSteal,lifeSteal:shot.lifeSteal+blood.lifeSteal};}
       if(!shot.skill)lanyaMainHit(this,source,shot.heroPayload);
       this.dealDamage(source,target,shot);
       heroHit(this,source,target,shot);
@@ -205,8 +207,10 @@ export class Battle {
   visualSource(source,context={}) {return {source:source?.id||context.source,origin:context.origin||(context.skill?'skill':'attack'),originId:context.originId||'attack',skillKey:context.skillKey||'',visualColor:context.visualColor||source?.def?.color,attackRange:context.attackRange||source?.def?.range};}
   dealDamage(source,target,snapshot) {
     if(target.hp<=0)return;
+    syncEquipment(target,this.tick);
+    snapshot={...snapshot,damage:mitigateEquipmentDamage(target,snapshot)};
     if(snapshot.damage>0)target.lastDamagedTick=this.tick;
-    const absorbed=snapshot.damageType==='shield_piercing_magic'?0:Math.min(target.shield,snapshot.damage);target.shield-=absorbed;absorbEquipmentShield(target,absorbHeroShields(target,absorbed));
+    const absorbed=snapshot.damageType==='shield_piercing_magic'?0:Math.min(target.shield,snapshot.damage);target.shield-=absorbed;absorbEquipmentShield(target(target,absorbed));
     const lost=Math.min(target.hp,snapshot.damage-absorbed);target.hp=Math.max(0,target.hp-lost);
     target.lastEvent={text:lost>0?`${snapshot.crit?'暴击 ':''}−${Math.round(lost)}`:`护盾 −${Math.round(absorbed)}`,tick:this.tick,type:'damage'};
     if(lost>0||absorbed>0)this.emitEffect('damage',target,lost,!!snapshot.crit,{...this.visualSource(source,snapshot),hpLoss:lost,shieldLoss:absorbed});
@@ -215,10 +219,12 @@ export class Battle {
     this.emit('damaged',source,target,lost,{absorbed});
     if(source?.hp>0&&lost>0&&snapshot.vamp>0)this.heal(source,source,lost*snapshot.vamp*(1+snapshot.healing),{...this.visualSource(source,snapshot),healingKind:snapshot.lifeSteal>0?(snapshot.omni>0?'vamp':'lifesteal'):'omni'});
     syncEquipment(target,this.tick);
+    equipmentDamaged(this,source,target,snapshot,lost+absorbed);
     if(target.hp===0) {
       restoreTakedownMana(this,target);
       this.emitEffect('death',target);this.emit('kill',source,target);this.emit('death',source,target);
-      target.shield=0;target.attack=null;target.casting=null;target.pendingCast=null;target.castPlan=null;
+      target.shield=0;target.timedShields?.clear();target.attack=null;target.casting=null;target.pendingCast=null;target.castPlan=null;
+      syncEquipment(target,this.tick);
       if(target.side==='enemy') {
         this.kills++;const gold=target.reward??(target.boss?150:30);this.gold+=gold;
         if(target.boss)this.bossKilled=true;
@@ -228,9 +234,10 @@ export class Battle {
     }
   }
   heal(source,target,amount,context={}) {
-    if(target.hp<=0)return;
+    if(target.hp<=0)return 0;
     const actual=Math.max(0,Math.min(target.stats.hp-target.hp,amount));target.hp+=actual;syncEquipment(target,this.tick);
-    if(actual>0){this.emitEffect('heal',target,actual,false,{...this.visualSource(source,context),healingKind:context.healingKind||'heal'});this.emit('heal',source,target,actual);}
+    if(actual>0){this.emitEffect('heal',target,actual,false,{...this.visualSource(source,context),healingKind:context.healingKind||'heal'});if(!context.suppressTriggers)this.emit('heal',source,target,actual);}
+    return actual;
   }
   addStatus(source,target,statusId) {
     const definition=typeof statusId==='string'?STATUSES[statusId]:statusId;
@@ -241,11 +248,12 @@ export class Battle {
     return status;
   }
   applyEffect(source,target,effect,context={origin:'trigger',originId:'effect'}) {
-    if(target.hp<=0)return;
-    if(effect.type==='heal')this.heal(source,target,((effect.amount||0)+source.stats.power*(effect.power||0))*(1+source.stats.healing),context);
+    if(target.hp<=0)return 0;
+    if(effect.type==='heal')return this.heal(source,target,((effect.amount||0)+source.stats.power*(effect.power||0))*(1+source.stats.healing),context);
     else if(effect.type==='shield') {
       const amount=Math.max(0,((effect.amount||0)+source.stats.power*(effect.power||0))*(1+source.stats.shielding));
       if(amount>0){target.shield+=amount;this.emitEffect('shield',target,amount,false,this.visualSource(source,context));this.emit('shield',source,target,amount);}
+      return amount;
     }else if(effect.type==='status')this.addStatus(source,target,effect.status);
     else if(effect.type==='damage') {
       const snapshot={...this.snapshot(source,target,0,true,{attack:0,power:0,...effect}),...context};
@@ -313,22 +321,29 @@ export class Battle {
     if(skill.target==='threeAllies')targets=this.skillTargets(unit,skill);
     if(skill.retarget==='release'&&targets.length<action.targets.length)targets=this.skillTargets(unit,skill);
     if(!targets.length){this.emit('fizzle',unit,unit,0,{skill:skill.id});this.flushTriggers();return;}
-    const empowered=hasPassive(unit,'charged_spell_damage')&&unit.equipment.spellReady<=this.tick&&skill.effects.some(e=>e.type==='damage');
+    const echo=passiveParams(unit,'charged_spell_damage');
+    const empowered=echo&&unit.equipment.spellReady<=this.tick&&skill.effects.some(e=>e.type==='damage');
     let firstDamage=true;
     this.events.root(()=>{
       releaseLanya(this,unit,action.index,skill);
+      equipmentSpellReleased(this,unit,action);
+      const beneficiaries=[];
       for(const target of targets)for(const effect of skill.effects) {
         if(effect.type==='damage'){
           const shot=this.fire(unit,target,{skill:true,duration:effect.travel??.3,...effect,originId:skill.id,skillKey:unit.side==='hero'?String(action.index+1):skill.key});
           if(empowered&&firstDamage){
-            shot.spellBonus=procSnapshot(this,unit,target,25+.05*shot.powerSnapshot,'magic','charged_spell_damage');
-            unit.equipment.spellReady=this.tick+ticks(12);
+            shot.spellBonus=procSnapshot(this,unit,target,echo.baseDamage+echo.powerRatio*shot.powerSnapshot,'magic','charged_spell_damage');
+            unit.equipment.spellReady=this.tick+ticks(echo.cooldown);
           }
           firstDamage=false;
         }
-        else if(effect.type==='hero')releaseHeroEffect(this,unit,target,effect,{origin:'skill',originId:skill.id,skillKey:String(action.index+1)});
-        else this.applyEffect(unit,target,effect,{origin:'skill',originId:skill.id,skillKey:unit.side==='hero'?String(action.index+1):skill.key});
+        else {
+          const context={origin:'skill',originId:skill.id,skillKey:unit.side==='hero'?String(action.index+1):skill.key,castAction:action};
+          const actual=effect.type==='hero'?releaseHeroEffect(this,unit,target,effect,context):this.applyEffect(unit,target,effect,context);
+          if(['heal','shield','hero'].includes(effect.type)&&actual>0)beneficiaries.push(target);
+        }
       }
+      supportSpellBatch(this,unit,action,beneficiaries);
       this.emit('cast',unit,unit,0,{skill:skill.id});
     });
     this.flushTriggers();
@@ -347,7 +362,8 @@ export class Battle {
     for(const unit of this.units()) {
       if(unit.hp<=0)continue;
       const hpBefore=unit.hp;
-      unit.hp=Math.min(unit.stats.hp,unit.hp+unit.stats.hpRegen*(1+unit.stats.healing)*STEP);
+      const fixedRegen=fixedEquipmentRegen(unit);
+      unit.hp=Math.min(unit.stats.hp,unit.hp+((unit.stats.hpRegen-fixedRegen)*(1+unit.stats.healing)+fixedRegen)*STEP);
       // Natural regeneration remains outside heal triggers. Only its display is batched.
       this.regenTotals.set(unit.id,(this.regenTotals.get(unit.id)||0)+unit.hp-hpBefore);
       if(this.tick%50===0){const actual=this.regenTotals.get(unit.id);if(actual>0)this.emitEffect('heal',unit,actual,false,{source:unit.id,origin:'regen',originId:'regen',healingKind:'regen'});this.regenTotals.delete(unit.id);}

@@ -1,6 +1,6 @@
 # 命名被动与攻击特效
 
-2026-10-19（北京时间），R021 建立、R025 增补、R035 调整背水、R038 新增法系被动、R042 修订余韵/导流；依据见 [D007](decisions/D007-purple-effects.md)、[D010](decisions/D010-physical-purple-scope.md)/[D016](decisions/D016-passive-gold-budget.md)、[D017](decisions/D017-mage-purple-scope.md)。数值、价格和配方以 [装备设计](EQUIPMENT-DESIGN.md) 为准。R047用户明确授权全部47件后，11被动已在`src/combat/equipment.js`与Battle钩子接入；[D024](decisions/D024-equipment-runtime.md)记录局部实现边界，未部署。
+2026-10-19（北京时间），R021 建立、R025 增补、R035 调整背水、R038 新增法系被动、R042 修订余韵/导流；依据见 [D007](decisions/D007-purple-effects.md)、[D010](decisions/D010-physical-purple-scope.md)/[D016](decisions/D016-passive-gold-budget.md)、[D017](decisions/D017-mage-purple-scope.md)。数值、价格和配方以 [装备设计](EQUIPMENT-DESIGN.md) 为准。**当前R064/D035已接入78件、21命名被动及18个红版升级**；[实际运行契约](COMBAT.md#equipment-runtime-r064)优先于下文历史未实施表述。R047用户明确授权全部47件后，11被动已在`src/combat/equipment.js`与Battle钩子接入；[D024](decisions/D024-equipment-runtime.md)记录局部实现边界，未部署。
 
 ## 确认范围与术语
 
@@ -98,12 +98,12 @@ R042 重做两个法系被动并复审导流500金预算，参考 [金币参考]
 
 当前11个命名效果按每英雄effectId集合去重；基础属性按槽相加。实际逻辑、快照、护盾先后与归属见[D024](decisions/D024-equipment-runtime.md)及[运行契约](COMBAT.md#equipment-runtime-r047)。`tests/equipment.test.js`直接使用真实Battle验证护盾命中、重复被动、冷却/临界值、附伤禁吸血和计数、真实死亡参与，不只是静态预算脚本。旧橙示例只保留旧存档兼容，仍沿其旧的每件触发，不当作正式同名唯一体系的新装备。
 
-Q001的本批共用命中/读取时点/盾期限已经局部落实；Q009的其它技能携带特效仍待设计，红装同名等级比较现有R060提案待接受，见下方接续；不因R047实施自动扩展所有招式的触发资格。
+Q001的本批共用命中/读取时点/盾期限已经局部落实；Q009的其它技能携带特效仍待设计，红装同名等级比较由R064/D035接续接受并实施，见下方接续；不因R047实施自动扩展所有招式的触发资格。
 
 <a id="survival-support-effects-r053"></a>
-## R053 整批紫装被动（R056首版已接受，未接入游戏）
+## R053 整批紫装被动（R056接受，R064已接入）
 
-用户要求一次多设计装备，授权范围见[D027](decisions/D027-purple-batch-scope.md)；R056用户回复“可以”，接受状态见[D029](decisions/D029-purple-batch-accepted.md)。新增12件中，厚土护符、守备沙漏为纯属性；其余10个命名如下，参数与R053相同。现有11个运行被动不变，不把设计接受当作已实现。
+用户要求一次多设计装备，授权范围见[D027](decisions/D027-purple-batch-scope.md)；R056用户回复“可以”，接受状态见[D029](decisions/D029-purple-batch-accepted.md)。新增12件中，厚土护符、守备沙漏为纯属性；其余10个命名如下，参数与R053相同。原11个被动保持；本批10个被动已在R064按D035接入。
 
 | 装备 | 被动名称 | effectId | 类型与摘要 |
 | --- | --- | --- | --- |
@@ -120,10 +120,10 @@ Q001的本批共用命中/读取时点/盾期限已经局部落实；Q009的其�
 
 这些均不是普攻攻击特效：分别是施法、受伤、承伤修正、回复条件或保护被动。基础属性可叠，同名每英雄唯一；主动治疗/护盾只给首个有效结算批次的一个受益者触发一份，不按群体人数或持续跳数复制。附加资源/治疗/护盾固定值、不可递归触发其他被动；应援盾跨持有者同名不累加。完整选人、快照、减伤顺序、边界及估值均以[整批装备规范](EQUIPMENT-DESIGN.md#purple-survival-support-r053)为准，后续同名红装继承不得换名叠加。
 
-## R060 红装同名升级提案（尚未接受或接入）
+## R060 红装同名升级（R064接受并实施）
 
 [19件红装规范](equipment/RED-EQUIPMENT.md)逐项列出18个同名高级效果、紫→红变化、触发继承与三条明确转型；结构化配置见[red-equipment-r060.json](equipment/red-equipment-r060.json)，范围见[D031](decisions/D031-red-equipment-scope.md)。本批沿用既有18个effectId，不新增18个可叠加名称；晨星法杖没有被动。
 
-提案采用紫rank1/红rank2，每英雄每effectId只激活最高rank整份，平级重复使用同参数一份，不混取字段；合成仅商店，每场重建后初始化计数/冷却，不能战中重排刷新。应援目标端高rank覆盖低rank，同rank不累加、刷新4秒，低rank不能延长有效高rank盾。Q009仍开放至本批接受及相关实现；该局部提案不放行任意技能触发普攻特效，也不取消三重打击/余韵的不暴击、不普攻或全能吸血、不递归约束。
+R064已采用紫rank1/红rank2，每英雄每effectId只激活最高rank整份，平级重复使用同参数一份，不混取字段；合成仅商店，每场重建后初始化计数/冷却，不能战中重排刷新。应援目标端高rank覆盖低rank，同rank不累加、刷新4秒，低rank不能延长有效高rank盾。Q009同名等级部分由D035接受并实施，其它扩展仍开放；本批不放行任意技能触发普攻特效，也不取消三重打击/余韵的不暴击、不普攻或全能吸血、不递归约束。
 
 血契→赤潮明确将回流转为血性，铁卫→赤锋将卸力转为背水，静心→破阵将隔魔转为应战；这些是可选构筑转型，材料被动不全部保留。原紫装仍可独立使用，其数值/效果未因红装提案被修改。

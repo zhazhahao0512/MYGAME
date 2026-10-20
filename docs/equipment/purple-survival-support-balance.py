@@ -97,13 +97,15 @@ def check_catalog():
     ids = [i['effectId'] for i in ITEMS if 'effectId' in i]
     names = [i['passive'] for i in ITEMS if 'passive' in i]
     assert len(ids) == len(set(ids)) == len(set(names)) == 10
-    for name, effect in zip(names, ids):
-        assert not re.search(r'^\s*'+re.escape(effect)+r'\s*:', SOURCE, re.M)
-        assert f"name:'{name}'" not in SOURCE
     rows = []
     for item in ITEMS:
-        assert item['id'] not in CATALOG
-        assert item['name'] not in {m['name'] for m in MATERIALS}
+        # R064 implements these designs. Check the live definition when present,
+        # while retaining the same historical scenario inputs and valuations.
+        live = CATALOG.get(item['id'])
+        if live:
+            for key in ('name', 'stats', 'price', 'recipe', 'combineFee', 'effectId', 'parameters'):
+                assert live.get(key) == item.get(key), (item['id'], key)
+        assert not any(m['name'] == item['name'] and m['id'] != item['id'] for m in MATERIALS)
         materials = [CATALOG[x] for x in item['recipe']]
         tiers = sorted(m['rarity'] for m in materials)
         assert tiers in [['blue','white'],['blue','blue'],['blue','white','white']]

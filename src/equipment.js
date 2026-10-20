@@ -1,4 +1,4 @@
-// Fixed equipment content. Design authority: docs/EQUIPMENT-DESIGN.md (D024).
+// Fixed equipment content. Design authority: docs/EQUIPMENT-DESIGN.md (D024/D035).
 // attackSpeed is additive bonus percentage, relative to each hero's base rate.
 export const GOLD_SCALE = 10;
 export const EQUIPMENT = [
@@ -49,22 +49,67 @@ export const EQUIPMENT = [
   {"id":"purple_radiant_staff","name":"辉光法杖","mark":"杖","rarity":"purple","stats":{"power":80},"price":1600,"weight":100,"recipe":["blue_apprentice_staff","white_glimmer_wand"],"combineFee":500},
   {"id":"purple_flowing_codex","name":"流转法典","mark":"典","rarity":"purple","stats":{"power":40,"haste":10},"price":1800,"weight":100,"recipe":["blue_chanting_tome","white_glimmer_wand"],"combineFee":700,"effectId":"charged_spell_damage"},
   {"id":"purple_clearwell_staff","name":"澄源法杖","mark":"杖","rarity":"purple","stats":{"power":35,"mana":250,"manaRegen":1},"price":2200,"weight":100,"recipe":["blue_mana_staff","blue_mana_orb"],"combineFee":800,"effectId":"takedown_mana_restore"},
+  {"id":"purple_abundant_staff","name":"丰盈法杖","stats":{"power":50,"hp":300},"price":1800,"mark":"杖","rarity":"purple","weight":100,"recipe":["blue_vitality_staff","white_glimmer_wand"],"combineFee":700,"effectId":"spell_self_mend","parameters":{"heal":40,"cooldown":8},"effectRank":1},
+  {"id":"purple_stonegrain_staff","name":"石纹法杖","stats":{"power":45,"armor":15,"hp":150},"price":2000,"mark":"杖","rarity":"purple","weight":100,"recipe":["blue_guarding_staff","white_glimmer_wand","white_vitality_pendant"],"combineFee":650,"effectId":"physical_hit_power","parameters":{"power":20,"duration":4},"effectRank":1},
+  {"id":"purple_stillmind_staff","name":"静心法杖","stats":{"power":45,"resist":15},"price":1650,"mark":"杖","rarity":"purple","weight":100,"recipe":["blue_warding_staff","white_glimmer_wand"],"combineFee":600,"effectId":"magic_damage_guard","parameters":{"reduction":0.06},"effectRank":1},
+  {"id":"purple_deepearth_amulet","name":"厚土护符","stats":{"hp":800},"price":1600,"mark":"符","rarity":"purple","weight":100,"recipe":["blue_vitality_amulet","white_vitality_pendant"],"combineFee":500},
+  {"id":"purple_evergreen_amulet","name":"长青护符","stats":{"hp":450,"hpRegen":6},"price":1700,"mark":"符","rarity":"purple","weight":100,"recipe":["blue_regrowth_amulet","white_regeneration_bead"],"combineFee":700,"effectId":"low_health_regeneration","parameters":{"threshold":0.5,"hpRegen":6},"effectRank":1},
+  {"id":"purple_bastion_armor","name":"磐石胸甲","stats":{"hp":400,"armor":20},"price":1800,"mark":"甲","rarity":"purple","weight":100,"recipe":["blue_guardian_armor","white_iron_armor"],"combineFee":700,"effectId":"flat_basic_physical_block","parameters":{"block":8},"effectRank":1},
+  {"id":"purple_spellward_cloak","name":"镇魔斗篷","stats":{"hp":400,"resist":20},"price":1800,"mark":"篷","rarity":"purple","weight":100,"recipe":["blue_warding_cloak","white_antimagic_cloak"],"combineFee":700,"effectId":"large_magic_hit_guard","parameters":{"threshold":0.08,"reduction":0.2},"effectRank":1},
+  {"id":"purple_equilibrium_sigil","name":"均衡护印","stats":{"hp":300,"armor":15,"resist":15},"price":1900,"mark":"印","rarity":"purple","weight":100,"recipe":["blue_balanced_amulet","white_vitality_pendant"],"combineFee":760,"effectId":"mixed_damage_regeneration","parameters":{"historyWindow":6,"hpRegen":4,"duration":4},"effectRank":1},
+  {"id":"purple_sentinel_hourglass","name":"守备沙漏","stats":{"hp":400,"haste":10},"price":1600,"mark":"漏","rarity":"purple","weight":100,"recipe":["blue_vitality_hourglass","white_hourglass"],"combineFee":400},
+  {"id":"purple_relief_codex","name":"救护法典","stats":{"power":25,"hp":250,"haste":5},"price":1700,"mark":"典","rarity":"purple","weight":100,"recipe":["blue_chanting_tome","white_vitality_pendant"],"combineFee":600,"effectId":"ally_spell_mend","parameters":{"heal":35,"cooldown":8},"effectRank":1},
+  {"id":"purple_spiritwell_orb","name":"灵泉宝珠","stats":{"mana":200,"manaRegen":2,"hp":150},"price":1750,"mark":"珠","rarity":"purple","weight":100,"recipe":["blue_mana_orb","white_meditation_charm","white_vitality_pendant"],"combineFee":500,"effectId":"ally_spell_mana","parameters":{"mana":20,"cooldown":12},"effectRank":1},
+  {"id":"purple_shelter_pendant","name":"庇护挂坠","stats":{"hp":400,"mana":150},"price":1550,"mark":"坠","rarity":"purple","weight":100,"recipe":["blue_twin_resource_orb","white_vitality_pendant"],"combineFee":400,"effectId":"ally_low_health_shield","parameters":{"threshold":0.4,"shield":100,"duration":4,"cooldown":18},"effectRank":1},
+  {"id":"red_storm_blades","name":"风暴双刃","stats":{"attack":28,"attackSpeed":0.48},"price":3400,"mark":"刃","rarity":"red","weight":100,"recipes":[{"materials":["purple_battle_spear","blue_swift_blades"],"fee":700},{"materials":["purple_gale_blades","blue_tempered_sword"],"fee":1150}],"effectId":"focused_haste","parameters":{"perStack":0.06,"maxStacks":3,"duration":3},"effectRank":2,"description":"连续命中同一主目标，每层＋6%攻速，最多3层，持续3秒；换目标清空。"},
+  {"id":"red_decisive_crossbow","name":"决胜连弩","stats":{"attack":28,"attackSpeed":0.4},"price":3300,"mark":"弩","rarity":"red","weight":100,"recipes":[{"materials":["purple_combo_bow","blue_duelist_blade"],"fee":850}],"effectId":"triple_hit_damage","parameters":{"every":3,"attackRatio":0.45},"effectRank":2,"description":"每第3次普攻命中，附加45%总攻击力物理伤害；不暴击、不吸血、不递归。"},
+  {"id":"red_riftwind_bow","name":"裂风战弓","stats":{"attackSpeed":0.44,"crit":0.2},"price":3400,"mark":"弓","rarity":"red","weight":100,"recipes":[{"materials":["purple_hunting_wind_bow","blue_hunter_bow"],"fee":750}],"effectId":"critical_haste","parameters":{"attackSpeed":0.24,"duration":3},"effectRank":2,"description":"普攻暴击命中后，额外攻速＋24%，持续3秒，只刷新。"},
+  {"id":"red_judgment_blade","name":"裁决战刃","stats":{"attack":48,"crit":0.16},"price":3100,"mark":"刃","rarity":"red","weight":100,"recipes":[{"materials":["purple_keen_warblade","blue_tempered_sword"],"fee":650},{"materials":["purple_steel_greatsword","white_spiked_blade","white_spiked_blade"],"fee":800}],"effectId":"basic_crit_multiplier","parameters":{"critMultiplierBonus":0.3},"effectRank":2,"description":"普攻暴击伤害倍率＋0.30，基础150%变180%。"},
+  {"id":"red_crimson_tide_blade","name":"赤潮战刃","stats":{"attack":32,"attackSpeed":0.2,"lifeSteal":0.06},"price":3400,"mark":"刃","rarity":"red","weight":100,"recipes":[{"materials":["purple_bloodtide_blades","blue_blood_blade"],"fee":550},{"materials":["purple_bloodpact_blade","blue_swift_blades"],"fee":600,"replacesPassive":"回流"}],"effectId":"low_health_lifesteal","parameters":{"threshold":0.5,"lifeSteal":0.06},"effectRank":2,"description":"生命低于50%时，普攻吸血额外＋6个百分点。"},
+  {"id":"red_crimson_edge_axe","name":"赤锋重斧","stats":{"attack":40,"hp":500,"armor":15},"price":3600,"mark":"斧","rarity":"red","weight":100,"recipes":[{"materials":["purple_campaign_axe","blue_ironward_sword"],"fee":1000},{"materials":["purple_ironward_blade","blue_campaign_sword"],"fee":900,"replacesPassive":"卸力"}],"effectId":"low_health_attack","parameters":{"threshold":0.5,"attack":20},"effectRank":2,"description":"生命低于50%时，攻击力＋20。"},
+  {"id":"red_watch_halberd","name":"守望战戟","stats":{"attack":16,"attackSpeed":0.32,"hp":650},"price":3600,"mark":"戟","rarity":"red","weight":100,"recipes":[{"materials":["purple_watch_blades","blue_duelist_blade"],"fee":850}],"effectId":"four_hit_shield","parameters":{"every":4,"shield":50,"duration":3},"effectRank":2,"description":"每第4次普攻命中，护盾补到50，持续3秒，不累加。"},
+  {"id":"red_morningstar_staff","name":"晨星法杖","stats":{"power":160},"price":3200,"mark":"杖","rarity":"red","weight":100,"recipes":[{"materials":["purple_radiant_staff","blue_apprentice_staff"],"fee":800}]},
+  {"id":"red_echo_codex","name":"回响法典","stats":{"power":80,"haste":15},"price":3300,"mark":"典","rarity":"red","weight":100,"recipes":[{"materials":["purple_flowing_codex","blue_chanting_tome"],"fee":700}],"effectId":"charged_spell_damage","parameters":{"baseDamage":45,"powerRatio":0.08,"cooldown":12},"effectRank":2,"description":"每12秒就绪，下一次伤害型主动在主目标首段附加45＋8%法强魔伤。"},
+  {"id":"red_tidal_staff","name":"潮汐法杖","stats":{"power":55,"mana":350,"manaRegen":2},"price":3300,"mark":"杖","rarity":"red","weight":100,"recipes":[{"materials":["purple_clearwell_staff","blue_mana_staff"],"fee":400}],"effectId":"takedown_mana_restore","parameters":{"mana":20,"participationWindow":6},"effectRank":2,"description":"每参与击杀一个怪物回复20法力，沿用6秒伤害参与窗口，无冷却。"},
+  {"id":"red_lifebloom_scepter","name":"生息权杖","stats":{"power":80,"hp":600},"price":3200,"mark":"杖","rarity":"red","weight":100,"recipes":[{"materials":["purple_abundant_staff","blue_vitality_staff"],"fee":600}],"effectId":"spell_self_mend","parameters":{"heal":65,"cooldown":8},"effectRank":2,"description":"成功释放伤害型主动技能回复自身65生命，冷却8秒。"},
+  {"id":"red_battleweave_robe","name":"破阵法衣","stats":{"power":65,"hp":300,"armor":15,"resist":15},"price":3500,"mark":"衣","rarity":"red","weight":100,"recipes":[{"materials":["purple_stonegrain_staff","blue_warding_staff"],"fee":750},{"materials":["purple_stillmind_staff","blue_guarding_staff"],"fee":1100,"replacesPassive":"隔魔"}],"effectId":"physical_hit_power","parameters":{"power":35,"duration":4,"damageTypes":["physical","magic"]},"effectRank":2,"description":"实际承受物理或魔法伤害后，法强＋35，持续4秒，只刷新。"},
+  {"id":"red_mountain_heart","name":"山岳之心","stats":{"hp":1200,"hpRegen":6},"price":3300,"mark":"心","rarity":"red","weight":100,"recipes":[{"materials":["purple_deepearth_amulet","blue_regrowth_amulet"],"fee":950},{"materials":["purple_evergreen_amulet","blue_vitality_amulet"],"fee":800}],"effectId":"low_health_regeneration","parameters":{"threshold":0.5,"hpRegen":8},"effectRank":2,"description":"生命低于50%时，额外回复＋8/秒；含面板共14/秒。"},
+  {"id":"red_ironwall_armor","name":"铁壁重铠","stats":{"hp":750,"armor":30},"price":3100,"mark":"铠","rarity":"red","weight":100,"recipes":[{"materials":["purple_bastion_armor","blue_guardian_armor"],"fee":550}],"effectId":"flat_basic_physical_block","parameters":{"block":12},"effectRank":2,"description":"护甲和比例减伤后，每次物理普攻本体再抵消12点，最低0。"},
+  {"id":"red_spellward_mantle","name":"镇魔法袍","stats":{"hp":750,"resist":30},"price":3100,"mark":"袍","rarity":"red","weight":100,"recipes":[{"materials":["purple_spellward_cloak","blue_warding_cloak"],"fee":550}],"effectId":"large_magic_hit_guard","parameters":{"threshold":0.08,"reduction":0.25},"effectRank":2,"description":"每段魔伤超过最大生命8%的部分降低25%，不影响破魔。"},
+  {"id":"red_equilibrium_bulwark","name":"均衡壁垒","stats":{"hp":500,"armor":15,"resist":15,"haste":10},"price":3300,"mark":"垒","rarity":"red","weight":100,"recipes":[{"materials":["purple_equilibrium_sigil","blue_vitality_hourglass"],"fee":600},{"materials":["purple_sentinel_hourglass","blue_balanced_amulet"],"fee":860}],"effectId":"mixed_damage_regeneration","parameters":{"historyWindow":6,"hpRegen":7,"duration":4},"effectRank":2,"description":"6秒内兼有物理、魔法实际承伤时，受击获得/刷新回复＋7/秒，持续4秒。"},
+  {"id":"red_redemption_codex","name":"救赎法典","stats":{"power":40,"hp":450,"haste":10},"price":3000,"mark":"典","rarity":"red","weight":100,"recipes":[{"materials":["purple_relief_codex","blue_vitality_hourglass"],"fee":500}],"effectId":"ally_spell_mend","parameters":{"heal":65,"cooldown":8},"effectRank":2,"description":"主动有效治疗/加盾其他友军后，为其中生命比例最低的一人额外治疗65，冷却8秒。"},
+  {"id":"red_wellspring_chalice","name":"源流圣杯","stats":{"hp":350,"mana":300,"manaRegen":3,"haste":5},"price":3300,"mark":"杯","rarity":"red","weight":100,"recipes":[{"materials":["purple_spiritwell_orb","blue_vitality_hourglass"],"fee":750}],"effectId":"ally_spell_mana","parameters":{"mana":30,"cooldown":12},"effectRank":2,"description":"主动有效治疗/加盾其他友军后，为其中缺蓝最多的一人回复30法力，冷却12秒。"},
+  {"id":"red_oath_emblem","name":"守誓徽章","stats":{"hp":700,"mana":200,"haste":5},"price":3000,"mark":"章","rarity":"red","weight":100,"recipes":[{"materials":["purple_shelter_pendant","blue_vitality_hourglass"],"fee":650}],"effectId":"ally_low_health_shield","parameters":{"threshold":0.4,"shield":180,"duration":4,"cooldown":18},"effectRank":2,"description":"其他友军受伤后仍存活且生命低于40%，给予180护盾、持续4秒，冷却18秒。"},
 ];
 export const equipmentById = id => EQUIPMENT.find(item => item.id === id);
 export const PASSIVES = {
-  triple_hit_damage: {name:'三重打击',description:'每第 3 次普攻命中，对同一目标附加 30% 总攻击力的物理伤害。附伤受护甲减免，不能暴击、吸血或触发攻击特效。'},
-  critical_haste: {name:'乘风',description:'普攻暴击命中后，额外攻速 +20%，持续 3 秒，只刷新。'},
-  low_health_lifesteal: {name:'血性',description:'普攻结算前生命低于 50% 时，该次普攻额外获得 3% 吸血。'},
-  four_hit_shield: {name:'战意护盾',description:'每第 4 次普攻命中，获得 30 点护盾，持续 3 秒。本效果重新触发时补至 30，不叠加。'},
-  focused_haste: {name:'穷追',description:'连续普攻命中同一主目标，每次额外攻速 +4%，最多 3 层，持续 3 秒。换目标立即清空，未命中不刷新。'},
-  basic_crit_multiplier: {name:'狠厉',description:'普攻暴击伤害倍率增加 0.15，例如 150% → 165%。'},
-  post_hit_regeneration: {name:'回流',description:'普攻命中后，生命回复 +3/秒，持续 3 秒，只刷新。'},
-  low_health_attack: {name:'背水',description:'当前生命低于 50% 时，攻击力 +12。'},
-  basic_physical_guard: {name:'卸力',description:'受到的普攻本体物理伤害在护甲减免后额外降低 8%，不影响技能和附伤。'},
-  charged_spell_damage: {name:'余韵',description:'开场就绪。下次伤害型主动技能在主目标首段命中时，附加 25 + 5% 法强的魔法伤害。独立冷却 12 秒，不受急速影响；附伤不能暴击、吸血或触发命中特效。'},
-  takedown_mana_restore: {name:'导流',description:'每参与击杀一个怪物恢复 15 法力：死亡前 6 秒内实际伤害过其生命或护盾。同一怪物只计一次，无冷却；自身须存活，溢出丢弃。'},
+  triple_hit_damage: {parameters:{"every":3,"attackRatio":0.3},name:'三重打击',description:'每第 3 次普攻命中，对同一目标附加 30% 总攻击力的物理伤害。附伤受护甲减免，不能暴击、吸血或触发攻击特效。'},
+  critical_haste: {parameters:{"attackSpeed":0.2,"duration":3},name:'乘风',description:'普攻暴击命中后，额外攻速 +20%，持续 3 秒，只刷新。'},
+  low_health_lifesteal: {parameters:{"threshold":0.5,"lifeSteal":0.03},name:'血性',description:'普攻结算前生命低于 50% 时，该次普攻额外获得 3% 吸血。'},
+  four_hit_shield: {parameters:{"every":4,"shield":30,"duration":3},name:'战意护盾',description:'每第 4 次普攻命中，获得 30 点护盾，持续 3 秒。本效果重新触发时补至 30，不叠加。'},
+  focused_haste: {parameters:{"perStack":0.04,"maxStacks":3,"duration":3},name:'穷追',description:'连续普攻命中同一主目标，每次额外攻速 +4%，最多 3 层，持续 3 秒。换目标立即清空，未命中不刷新。'},
+  basic_crit_multiplier: {parameters:{"critMultiplierBonus":0.15},name:'狠厉',description:'普攻暴击伤害倍率增加 0.15，例如 150% → 165%。'},
+  post_hit_regeneration: {parameters:{"hpRegen":3,"duration":3},name:'回流',description:'普攻命中后，生命回复 +3/秒，持续 3 秒，只刷新。'},
+  low_health_attack: {parameters:{"threshold":0.5,"attack":12},name:'背水',description:'当前生命低于 50% 时，攻击力 +12。'},
+  basic_physical_guard: {parameters:{"reduction":0.08},name:'卸力',description:'受到的普攻本体物理伤害在护甲减免后额外降低 8%，不影响技能和附伤。'},
+  charged_spell_damage: {parameters:{"baseDamage":25,"powerRatio":0.05,"cooldown":12},name:'余韵',description:'开场就绪。下次伤害型主动技能在主目标首段命中时，附加 25 + 5% 法强的魔法伤害。独立冷却 12 秒，不受急速影响；附伤不能暴击、吸血或触发命中特效。'},
+  takedown_mana_restore: {parameters:{"mana":15,"participationWindow":6},name:'导流',description:'每参与击杀一个怪物恢复 15 法力：死亡前 6 秒内实际伤害过其生命或护盾。同一怪物只计一次，无冷却；自身须存活，溢出丢弃。'},
+  spell_self_mend: {"name":"滋养","description":"成功释放伤害型主动技能，回复自身40生命；独立冷却8秒。满血仍消耗机会，装备治疗不触发其它被动。","parameters":{"heal":40,"cooldown":8}},
+  physical_hit_power: {"name":"应战","description":"实际承受敌方物理血量或护盾伤害后，法强＋20，持续4秒，只刷新；致死不触发。","parameters":{"power":20,"duration":4}},
+  magic_damage_guard: {"name":"隔魔","description":"受到的魔法伤害额外降低6%，不影响破魔伤害。","parameters":{"reduction":0.06}},
+  low_health_regeneration: {"name":"回春","description":"生命低于50%时，额外生命回复＋6/秒，回到半血立即失效。","parameters":{"threshold":0.5,"hpRegen":6}},
+  flat_basic_physical_block: {"name":"坚忍","description":"物理普攻本体经护甲与比例减伤后，再抵消8伤害，最低0；技能和附伤不适用。","parameters":{"block":8}},
+  large_magic_hit_guard: {"name":"魔障","description":"每段魔法伤害超过当前最大生命8%的部分降低20%；不影响破魔。","parameters":{"threshold":0.08,"reduction":0.2}},
+  mixed_damage_regeneration: {"name":"均势","description":"最近6秒内兼有敌方物理、魔法实际承伤时，受击获得回复＋4/秒，持续4秒，只刷新。","parameters":{"historyWindow":6,"hpRegen":4,"duration":4}},
+  ally_spell_mend: {"name":"援手","description":"主动有效治疗或加盾其他友军后，为首个有效批次中生命比例最低的一人额外治疗35；冷却8秒，每次施法只检查一次。","parameters":{"heal":35,"cooldown":8}},
+  ally_spell_mana: {"name":"济能","description":"主动有效治疗或加盾其他友军后，为首个有效批次中缺蓝最多的一人回复20法力；冷却12秒，每次施法只检查一次。","parameters":{"mana":20,"cooldown":12}},
+  ally_low_health_shield: {"name":"应援","description":"其他友军受敌伤后仍存活且低于40%生命，给予100护盾、持续4秒；冷却18秒。不保护自己，同名盾跨持有者不累加。","parameters":{"threshold":0.4,"shield":100,"duration":4,"cooldown":18}},
 };
-export const passiveFor = item => PASSIVES[equipmentById(item?.base)?.effectId];
+export function passiveFor(item) {
+  const d=equipmentById(item?.base||item?.id),base=PASSIVES[d?.effectId];
+  return base?{...base,id:d.effectId,rank:d.effectRank||1,parameters:d.parameters||base.parameters,description:d.description||base.description}:null;
+}
+export const recipesFor = definition => definition?.recipes || (definition?.recipe?[{materials:definition.recipe,fee:definition.combineFee}]:[]);
 export function equipmentModifiers(item, source) {
   return Object.entries(item.stats).map(([stat,value])=>({source,stat,op:stat==='attackSpeed'&&equipmentById(item.base)?'percent':'flat',value}));
 }

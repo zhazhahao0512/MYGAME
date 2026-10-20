@@ -45,7 +45,34 @@ try {
     await click('[data-act="preview-combine"][data-id="blue_tempered_sword"]');assert.equal(await page.locator('[data-act="confirm-combine"]').isDisabled(),true);assert.match(await page.locator('.transaction-total').innerText(),/缺少/);
     await click('[data-act="close-popover"]');
     await click('[data-act="inspect-offer"][data-index="1"]');assert.match(await page.locator('.inspection-card').innerText(),/15 法力/);assert.match(await page.locator('.inspection-card').innerText(),/合成费 800/);
-    await context.close();console.log(`${label}: purple descriptions, real three-material craft, missing material blocking, save reload and viewport passed`);
+    // R064: alternate red recipes, explicit passive conversion and a new purple-to-red chain.
+    await page.evaluate(async()=>{
+      const M=await import('/src/model.js'),r=M.createRun(8802);
+      const layouts=[['purple_bloodpact_blade','blue_swift_blades'],['purple_steel_greatsword','white_spiked_blade','white_spiked_blade'],['blue_vitality_staff','white_glimmer_wand','blue_vitality_staff']];
+      r.party=layouts.map((ids,i)=>({hero:['wind','stone','tide'][i],gear:ids.map(id=>M.makeItem(r,id)).concat(Array(4-ids.length).fill(null))}));r.phase='ready';r.candidates=[];
+      M.finishRound(r,{won:true,kills:20,gold:5000});r.chest.claimed=true;localStorage.setItem(M.SAVE_KEY,JSON.stringify(r));
+    });
+    await page.reload();await click('[data-act="continue"]');
+    await click(gear(0,0));assert.match(await page.locator('.upgrade-routes').innerText(),/回流.*血性.*原被动不保留/s);
+    await click('[data-act="preview-combine"][data-id="red_crimson_tide_blade"][data-recipe="1"]');
+    assert.match(await page.locator('.shop-popover').innerText(),/当前路线 2.*回流.*血性/s);
+    assert.match(await page.locator('.transaction-total').innerText(),/合成费 600/);
+    await page.screenshot({path:`test-results/equipment/${label}-red-conversion.png`,fullPage:false});
+    await click('[data-act="confirm-combine"]');assert.equal((await save()).gold,4400);
+    await click(gear(1,0));await click('[data-act="preview-combine"][data-id="red_judgment_blade"][data-recipe="1"]');
+    assert.equal(await page.locator('.combine-materials li').count(),3);await click('[data-act="confirm-combine"]');
+    let state=await save();assert.equal(state.gold,3600);assert.equal(state.party[1].gear.filter(Boolean).length,1);
+    await click(gear(2,0));await click('[data-act="preview-combine"][data-id="purple_abundant_staff"]');await click('[data-act="confirm-combine"]');
+    assert.equal((await save()).gold,2900);await click(gear(2,0));
+    await click('[data-act="preview-combine"][data-id="red_lifebloom_scepter"]');await click('[data-act="confirm-combine"]');
+    state=await save();assert.equal(state.gold,2300);assert.deepEqual(state.party.map(m=>m.gear[0].base),['red_crimson_tide_blade','red_judgment_blade','red_lifebloom_scepter']);
+    await page.reload();await click('[data-act="continue"]');await click(gear(1,0));
+    assert.match(await page.locator('.item-passive').last().innerText(),/180%.*最高等级/s);
+    assert.match(await page.locator('.shop-popover').innerText(),/路线 1.*合成费 650.*路线 2.*合成费 800/s);
+    const redBox=await page.locator('.shop-popover').boundingBox();assert.ok(redBox.x>=0&&redBox.x+redBox.width<=viewport.width+1&&redBox.y>=0&&redBox.y+redBox.height<=viewport.height+1);
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+    await page.screenshot({path:`test-results/equipment/${label}-red-details.png`,fullPage:false});
+    await context.close();console.log(`${label}: purple and alternate red crafting, passive conversion, duplicate materials, fixed fees, save reload and viewport passed`);
   }
   assert.deepEqual(errors,[]);
 }finally{await browser?.close();server.kill();}

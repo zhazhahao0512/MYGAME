@@ -1,9 +1,10 @@
+import { supportSpellBatch } from '../combat/equipment.js';
 import { heroBaseStats } from './foundation.js';
 import { actionHitChance } from './accuracy.js';
 import { removeStatus } from '../combat/unit.js';
 const step=b=>b.stepSeconds;
 const ticks=(b,s)=>Math.ceil(s/step(b));
-const state=u=>u.heroState??=( {resolve:0,marks:new Map(),heals:new Map(),shields:new Map()} );
+const state=u=>u.heroState??=( {resolve:0,marks:new Map(),heals:new Map()} );
 const active=(u,id)=>[...(u.statuses?.values()||[])].find(s=>s.definition.id===id);
 const status=(id,name,duration,extra={})=>({id,name,duration,stacking:'refresh',modifiers:[],...extra});
 export function heroMechanicReason(unit,index){
@@ -71,25 +72,18 @@ export function heroEvent(battle,type,source,target,amount,extra){
   s.resolve=Math.min(target.stats.hp*.08,s.resolve+(amount+(extra.absorbed||0))*ratio);
  }
 }
-export function absorbHeroShields(unit,amount){
- let remaining=amount;
- const ward=unit.equipment?.ward?{amount:unit.equipment.ward,expiresAt:unit.equipment.wardExpires,order:-1,ward:true}:null;
- const layers=[...(unit.heroState?.shields.values()||[]),...(ward?[ward]:[])].sort((a,b)=>a.expiresAt-b.expiresAt||a.order-b.order);
- for(const layer of layers){const taken=Math.min(layer.amount,remaining);layer.amount-=taken;remaining-=taken;if(layer.ward)unit.equipment.ward=layer.amount;}
- return remaining;
-}
-
 function addShield(battle,source,target,amount,duration,context){
- const shields=state(target).shields,key=`${source.id}:${context.originId}`,old=shields.get(key);
+ const shields=target.timedShields??=new Map(),key=`hero:${source.id}:${context.originId}`,old=shields.get(key);
  const value=Math.max(0,amount*(1+source.stats.shielding));
  target.shield=Math.max(0,target.shield-(old?.amount||0))+value;
- shields.set(key,{amount:value,expiresAt:battle.tick+ticks(battle,duration),order:++battle.effectSerial});
+ shields.set(key,{id:key,source:source.id,rank:1,amount:value,expiresAt:battle.tick+ticks(battle,duration),order:++battle.effectSerial});
  const added=Math.max(0,value-(old?.amount||0));
  if(added>0){battle.emitEffect('shield',target,added,false,battle.visualSource(source,context));battle.emit('shield',source,target,added);}
+ return added;
 }
 function healWave(battle,source,target,amount,context){
  const boost=target.hp/target.stats.hp<.4?1.12:1;
- battle.heal(source,target,amount*boost,{...context,heroHealing:true});
+ return battle.heal(source,target,amount*boost,{...context,heroHealing:true});
 }
 export function releaseHeroEffect(battle,source,target,effect,context){
  const s=state(source);
@@ -97,7 +91,7 @@ export function releaseHeroEffect(battle,source,target,effect,context){
   let amount=(effect.amount||0)+(effect.hp||0)*source.stats.hp+(effect.power||0)*source.stats.power;
   if(effect.kind==='stoneShield'){amount+=Math.min(s.resolve,source.stats.hp*.08);s.resolve=0;}
   if(effect.kind==='stoneUltimate')battle.addStatus(source,source,status('lishan-ultimate','不动山关',effect.duration,{recovery:effect.recovery}));
-  addShield(battle,source,target,amount,effect.duration,context);
+  return addShield(battle,source,target,amount,effect.duration,context);
  }else if(effect.kind==='huntMark'){
   s.hunt={target:target.id,accuracy:effect.accuracy,expiresAt:battle.tick+ticks(battle,effect.duration)};
  }else if(effect.kind==='protection'){
@@ -106,24 +100,29 @@ export function releaseHeroEffect(battle,source,target,effect,context){
   battle.addStatus(source,target,status('lingxi-protection','安澜',effect.duration,{reduction,shared:true}));
  }else if(effect.kind==='healingWave'){
   const multiplier=1+source.stats.healing;
-  healWave(battle,source,target,(effect.amount+effect.power*source.stats.power)*multiplier,context);
+  const actual=healWave(battle,source,target,(effect.amount+effect.power*source.stats.power)*multiplier,context);
   state(target).heals.set(`${source.id}:${context.originId}`,{source:source.id,amount:(effect.tickAmount+effect.tickPower*source.stats.power)*multiplier,remaining:effect.count,next:battle.tick+ticks(battle,1),context});
+  return actual;
  }
 }
 export function heroReduction(target){return 1-(active(target,'lingxi-protection')?.definition.reduction||0);}
 export function tickHeroes(battle){
+ const batches=new Map();
  for(const unit of battle.units()){
   const s=unit.heroState;if(!s)continue;
   s.resolve=Math.min(s.resolve,unit.stats.hp*.08);
-  for(const [key,layer] of s.shields)if(layer.expiresAt<=battle.tick||unit.hp<=0){unit.shield=Math.max(0,unit.shield-layer.amount);s.shields.delete(key);}
   for(const [key,mark] of s.marks)if(mark.expiresAt<=battle.tick)s.marks.delete(key);
   if(s.hunt&&(s.hunt.expiresAt<=battle.tick||!(battle.find(s.hunt.target)?.hp>0)))delete s.hunt;
   if(unit.hp<=0){s.heals.clear();s.marks.clear();s.resolve=0;continue;}
   for(const [key,heal] of s.heals)if(heal.next<=battle.tick){
-   const source=battle.find(heal.source);if(source)healWave(battle,source,unit,heal.amount,heal.context);
+   const source=battle.find(heal.source);
+   if(source&&healWave(battle,source,unit,heal.amount,heal.context)>0&&heal.context.castAction){
+    const action=heal.context.castAction,batch=batches.get(action)||{source,targets:[]};batch.targets.push(unit);batches.set(action,batch);
+   }
    heal.next+=ticks(battle,1);if(--heal.remaining<=0)s.heals.delete(key);
   }
  }
+ for(const [action,batch] of batches)supportSpellBatch(battle,batch.source,action,batch.targets);
 }
 export function heroSkillValue(battle,unit,index,skill){
  if(!skill.id?.startsWith(`${unit.def?.id}-`)||!['lishan','jinli','shuoying','lingxi'].includes(unit.def?.id))return null;
@@ -133,7 +132,7 @@ export function heroSkillValue(battle,unit,index,skill){
   const p=incomingPressure(battle,target),low=target.hp/target.stats.hp<=.35;
   if(e.kind?.includes('Shield')||e.kind==='stoneUltimate'){
    purpose='sustain';band=low&&p>0?1:4;
-   const old=target.heroState?.shields.get(`${unit.id}:${skill.id}`);
+   const old=target.timedShields?.get(`hero:${unit.id}:${skill.id}`);
    if(old?.amount>0&&old.expiresAt-battle.tick>ticks(battle,1))continue;
    const amount=(e.amount+(e.hp||0)*unit.stats.hp+(e.power||0)*unit.stats.power+(e.kind==='stoneShield'?(unit.heroState?.resolve||0):0))*(1+unit.stats.shielding);
    value+=Math.min(amount,Math.max(0,p-target.shield));

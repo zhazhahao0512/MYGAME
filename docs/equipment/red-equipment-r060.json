@@ -1,5 +1,5 @@
 {
-  "status": "R060 design proposal; not accepted parameters or runtime content",
+  "status": "Accepted first-version design and implemented in R064 / D035; balance remains provisional",
   "items": [
     {
       "id": "red_storm_blades",

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import * as M from '../src/model.js';
-import {EQUIPMENT, equipmentById, PASSIVES} from '../src/equipment.js';
+import {EQUIPMENT, equipmentById, recipesFor, PASSIVES} from '../src/equipment.js';
 import {skillsFor} from '../src/combat/content.js';
 import {RARITIES} from '../src/data.js';
 import {Battle, STEP} from '../src/battle.js';
@@ -23,15 +23,18 @@ function fixture(ids=[],hero='wind'){
 const basic=(b,u,t,options={})=>{const shot=b.fire(u,t,{canMiss:false,...options});b.settle(shot);return shot;};
 const direct=(b,u,t,damage)=>b.dealDamage(u,t,{damage,vamp:0,origin:'skill'});
 
-test('47 fixed definitions exactly cover the approved IDs, tiers, recipes and prices',()=>{
+test('78 fixed definitions cover approved tiers, all 73 recipes and prices',()=>{
   assert.deepEqual(RARITIES.map(r=>r.id),['white','blue','purple','red','orange']);
-  assert.deepEqual(['white','blue','purple'].map(t=>EQUIPMENT.filter(d=>d.rarity===t).length),[12,21,14]);
-  assert.equal(new Set(EQUIPMENT.map(d=>d.id)).size,47);assert.equal(Object.keys(PASSIVES).length,11);
-  const doc=readFileSync(new URL('../docs/EQUIPMENT-DESIGN.md',import.meta.url),'utf8');
+  assert.deepEqual(['white','blue','purple','red'].map(t=>EQUIPMENT.filter(d=>d.rarity===t).length),[12,21,26,19]);
+  assert.equal(new Set(EQUIPMENT.map(d=>d.id)).size,78);assert.equal(Object.keys(PASSIVES).length,21);
+  const doc=readFileSync(new URL('../docs/EQUIPMENT-DESIGN.md',import.meta.url),'utf8')+
+    readFileSync(new URL('../docs/equipment/purple-survival-support-r053.json',import.meta.url),'utf8')+
+    readFileSync(new URL('../docs/equipment/red-equipment-r060.json',import.meta.url),'utf8');
+  assert.equal(EQUIPMENT.reduce((n,d)=>n+recipesFor(d).length,0),73);
   for(const d of EQUIPMENT){
-    assert.ok(doc.includes(`${d.id} `),d.id);
+    assert.ok(doc.includes(d.id),d.id);
     if(d.rarity==='white')assert.equal(Object.keys(d.stats).length,1);
-    else {assert.equal(d.price,d.recipe.reduce((n,id)=>n+equipmentById(id).price,0)+d.combineFee);assert.ok(d.recipe.every(id=>equipmentById(id)));}
+    else for(const r of recipesFor(d)){assert.equal(d.price,r.materials.reduce((n,id)=>n+equipmentById(id).price,0)+r.fee);assert.ok(r.materials.every(id=>equipmentById(id)));}
     if(d.rarity==='blue'){assert.equal(d.recipe.length,2);assert.ok(d.recipe.every(id=>id.startsWith('white_')));assert.equal(d.effectId,undefined);}
     if(d.effectId)assert.ok(PASSIVES[d.effectId]);
   }
@@ -43,7 +46,7 @@ test('random shop and chest offers use only fixed formal content, and preserve s
     r.floor=copy.floor=floor;const item=M.makeItem(r),other=M.makeItem(copy),d=equipmentById(item.base);
     assert.deepEqual(item,other);assert.deepEqual(item.stats,d.stats);assert.equal(item.price,d.price);assert.equal(item.rarity,d.rarity);seen.add(item.base);
   }
-  assert.equal(seen.size,47);assert.throws(()=>M.makeItem(r,'orange'));
+  assert.equal(seen.size,59);assert.ok([...seen].every(id=>!id.startsWith('red_')));assert.throws(()=>M.makeItem(r,'orange'));
 });
 test('formal attack speed is a bonus relative to different hero base rates, duplicate bases stack',()=>{
   for(const hero of ['wind','stone']){

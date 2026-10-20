@@ -153,6 +153,8 @@
 
 | 31件新增装备实施：src/equipment.js、combat/equipment.js、battle.js仅装备/治疗护盾钩子、model.js配方/供给、app.js仅合成/详情；必要inspection/unit/字体及装备测试/浏览器脚本；装备规范/COMBAT、D035及索引、Q009、公共装备补充/本行/R064 | 进行中（代码实施与验收） | equipment-runtime-20261020-r064 | 2026-10-20 | 基线d97686d；用户接受红装并要求先加入，含所需12紫及19红共78件、73配方；保留怪物/英雄/界面风格，先发布认领再实施；预留D035/R064 |
 
+| 弹道站位分层与技能倍率：src/renderer/PhaserBattleRenderer.ts；scripts/attack-animation-check.mjs；UI-INTERACTION与COMBAT仅新增表现接续、新D036/索引、公共动画补充/本行/R065 | 进行中（纯表现实施与浏览器验证） | attack-lanes-20261020-r065 | 2026-10-20 | 基线b0aed21；用户要求双方5→1弧线高度递减，技能暂用普攻3倍/大招5倍；不改battle/model/装备或R064已认领范围，预留D036/R065 |
+
 认领为共享仓库交接记录，不是自动锁；其他窗口避开“进行中”范围，重叠须先协调。未登记不证明没有窗口工作；中止或接管也须记录。
 
 ### 分层状态快照

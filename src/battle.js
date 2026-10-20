@@ -210,7 +210,7 @@ export class Battle {
     syncEquipment(target,this.tick);
     snapshot={...snapshot,damage:mitigateEquipmentDamage(target,snapshot)};
     if(snapshot.damage>0)target.lastDamagedTick=this.tick;
-    const absorbed=snapshot.damageType==='shield_piercing_magic'?0:Math.min(target.shield,snapshot.damage);target.shield-=absorbed;absorbEquipmentShield(target(target,absorbed));
+    const absorbed=snapshot.damageType==='shield_piercing_magic'?0:Math.min(target.shield,snapshot.damage);target.shield-=absorbed;absorbEquipmentShield(target,absorbed);
     const lost=Math.min(target.hp,snapshot.damage-absorbed);target.hp=Math.max(0,target.hp-lost);
     target.lastEvent={text:lost>0?`${snapshot.crit?'暴击 ':''}−${Math.round(lost)}`:`护盾 −${Math.round(absorbed)}`,tick:this.tick,type:'damage'};
     if(lost>0||absorbed>0)this.emitEffect('damage',target,lost,!!snapshot.crit,{...this.visualSource(source,snapshot),hpLoss:lost,shieldLoss:absorbed});

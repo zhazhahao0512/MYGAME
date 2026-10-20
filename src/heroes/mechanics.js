@@ -131,7 +131,7 @@ export function heroSkillValue(battle,unit,index,skill){
  for(const target of targets)for(const e of skill.effects){
   const p=incomingPressure(battle,target),low=target.hp/target.stats.hp<=.35;
   if(e.kind?.includes('Shield')||e.kind==='stoneUltimate'){
-   purpose='sustain';band=low&&p>0?1:4;
+   purpose='sustain';band=low&&p>0?1:unit.def?.id==='lishan'?3:4;
    const old=target.timedShields?.get(`hero:${unit.id}:${skill.id}`);
    if(old?.amount>0&&old.expiresAt-battle.tick>ticks(battle,1))continue;
    const amount=(e.amount+(e.hp||0)*unit.stats.hp+(e.power||0)*unit.stats.power+(e.kind==='stoneShield'?(unit.heroState?.resolve||0):0))*(1+unit.stats.shielding);

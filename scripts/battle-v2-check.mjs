@@ -39,11 +39,17 @@ try{
   assert.equal(await page.locator('[data-act="accept-challenge"]:enabled').count(),0,'full enemy side disables challenges');
   for(let i=0;i<150&&!await page.locator('[data-act="accept-challenge"]:enabled').count();i++)await page.clock.runFor(100);
   assert.ok(await page.locator('[data-act="accept-challenge"]:enabled').count(),'real combat produces a vacancy');
+  // HUD refreshes every 40 ms while simulation steps every 20 ms. Re-selecting
+  // the hero refreshes the visible count at the frozen tick before comparing it.
+  await click('select-unit','[data-hero="2"]');
   const tickBefore=await page.locator('#battle-canvas').getAttribute('data-tick');
-  await click('accept-challenge');assert.match(await page.locator('#queue-count').textContent(),/5\/5/);
+  const countBefore=Number((await page.locator('#queue-count').textContent()).split('/')[0]);
+  await click('accept-challenge');const countAfter=Number((await page.locator('#queue-count').textContent()).split('/')[0]);
+  assert.equal(countAfter,countBefore+1,'one accepted challenge fills exactly one vacancy, including simultaneous AoE kills');
   assert.match(await page.locator('#challenge-queue').textContent(),/号位/,'challenge appears immediately on the field');
   assert.equal(await page.locator('#battle-canvas').getAttribute('data-tick'),tickBefore,'entry needs no combat tick or refill wait');
-  assert.equal(await page.locator('[data-act="accept-challenge"]:enabled').count(),0);
+  if(countAfter===5)assert.equal(await page.locator('[data-act="accept-challenge"]:enabled').count(),0);
+  else assert.ok(await page.locator('[data-act="accept-challenge"]:enabled').count()>0,'remaining vacancies stay usable');
   assert.equal(await page.locator('[data-act="cancel-challenge"]').count(),0);
   const countdown=await page.locator('#spawn-countdown').textContent();await click('pause');await page.clock.runFor(1000);assert.equal(await page.locator('#spawn-countdown').textContent(),countdown);await click('close');
   if(touch)await click('detail-tactics');
@@ -60,11 +66,11 @@ try{
  // Real run uses normal storage; reopening resumes at pre-battle checkpoint with intent retained.
  const page=await browser.newPage({viewport:{width:1440,height:900}});page.on('pageerror',e=>errors.push(e.message));await page.goto(url);
  const click=a=>page.locator(`[data-act="${a}"]`).filter({visible:true}).first().click();
- await click('new');await click('confirm-hero');await click('confirm-hero');await click('start-battle');await page.locator('#battle-canvas[data-engine]').waitFor();
+ await click('new');await click('confirm-hero');await click('confirm-hero');await click('start-battle');if(await page.locator('[data-act="battle-recommended"]').count())await click('battle-recommended');await page.locator('#battle-canvas[data-engine]').waitFor();
  await click('select-unit');await page.locator('[data-act="select-enemy"][data-index="3"]').click();await page.locator('[data-mode="health"]').click();
  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('squad-expedition.save.v1')));
  assert.ok(saved.party.some(m=>m.tactics?.preferredSlot===3&&m.tactics.mode==='health'));
- await page.reload();await click('continue');await click('start-battle');await page.locator('#battle-canvas[data-engine]').waitFor();
+ await page.reload();await click('continue');await click('start-battle');if(await page.locator('[data-act="battle-recommended"]').count())await click('battle-recommended');await page.locator('#battle-canvas[data-engine]').waitFor();
  const idx=saved.party.findIndex(m=>m.tactics?.preferredSlot===3);await page.locator(`[data-act="select-unit"][data-hero="${idx}"]`).first().click();
  assert.match(await page.locator('#target-preference').textContent(),/优先位置 4/);assert.equal(await page.locator('[data-mode="health"]').getAttribute('aria-pressed'),'true');
  assert.deepEqual(errors,[]);console.log('Checkpoint tactics survive reload; no browser errors.');

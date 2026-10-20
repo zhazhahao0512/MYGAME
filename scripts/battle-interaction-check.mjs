@@ -17,8 +17,17 @@ try{
     const tick=()=>page.locator('#battle-canvas').getAttribute('data-tick');
     const screenshot=name=>page.screenshot({path:`test-results/battle-interaction/${touch?'phone':'desktop'}-${name}.png`});
     const noOverflow=async()=>assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth&&document.documentElement.scrollHeight<=innerHeight),'battle fits viewport');
-    await page.goto(url);await page.clock.install();await click('preview-menu');await click('preview','[data-page="battle"]');await page.locator('#battle-canvas[data-engine]').waitFor();await page.clock.runFor(100);
-    await click('select-unit','[data-hero="2"]');await click('skill-mode','[data-hero="2"][data-skill="3"]');await click('skill-mode','[data-hero="2"][data-skill="3"]');
+    await page.goto(url);
+    // Set the exercised caster to click mode before combat: formal ultimates are
+    // ready at t=0 and managed mode may legitimately spend them immediately.
+    await page.evaluate(async()=>{
+      const M=await import('/src/model.js'),{HEROES}=await import('/src/data.js');
+      const run=M.createRun(70891);run.level=5;run.floor=4;run.phase='ready';run.candidates=[];run.augments=['resonant-guard'];
+      run.party=HEROES.map((h,i)=>({hero:h.id,gear:[null,null,null,null],skillModes:Array(4).fill(i===2?'manual':'managed')}));
+      run.party.forEach((_,i)=>M.recommendSkills(run,i));localStorage.setItem(M.SAVE_KEY,JSON.stringify(run));
+    });
+    await page.reload();await click('continue');await page.clock.install();await click('start-battle');await page.locator('#battle-canvas[data-engine]').waitFor();await page.clock.runFor(100);
+    await click('select-unit','[data-hero="2"]');
     // Advance only explicitly from here: machine load must not alter 400ms hover assertions.
     await page.clock.pauseAt(new Date((await page.evaluate(()=>Date.now()))+1000));
     const canvas=await page.locator('canvas').elementHandle();await noOverflow();
@@ -61,7 +70,7 @@ try{
     paused=await tick();await click('close');assert.match(await page.locator('#modal-title').textContent(),/稍作休整/);await page.clock.runFor(200);assert.equal(await tick(),paused,'closing an unrelated modal cannot release background pause');await click('close');
     await page.mouse.move(1,1);await page.clock.runFor(5400);
     const cast=page.locator('[data-act="cast-skill"][data-hero="2"][data-skill="3"]');
-    // A six-second spawn gap can be followed by a 0.25s Q cast; wait through both, without fabricating targets.
+    // Wait for a real live target/action opportunity; no cooldown or mana is fabricated.
     for(let n=0;n<80&&await cast.isDisabled();n++)await page.clock.runFor(100);
     assert.equal(await cast.isDisabled(),false,'manual R becomes available with a live target');
     await click('skill','[data-hero="2"][data-skill="3"]');assert.equal(await cast.isDisabled(),false,'viewing R never spends it');paused=await tick();await page.clock.runFor(300);assert.equal(await tick(),paused);

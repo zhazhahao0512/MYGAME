@@ -246,3 +246,9 @@ body:has(.expedition-shop) .shop-popover .btn.primary {background:#edc575;color:
 }
 
 .shop-popover .item-box>.equipment-name,.inspection-card .item-box>.equipment-name {font:600 13px/1.45 system-ui,sans-serif;white-space:normal;overflow-wrap:anywhere}
+
+/* Four independent click-cast modes must fit inside the identity column. */
+@media (min-width:1101px),(min-height:601px) and (min-width:601px) {
+ .battle-v2 .manual-skills {width:100%;min-width:0;flex-wrap:nowrap;gap:2px}
+ .battle-v2 .manual-skills .cast-skill {flex:1 1 0;min-width:0;padding:3px 2px;font-size:calc(10 * var(--ui));white-space:nowrap}
+}

@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { Battle } from '../src/battle.js';
 import * as M from '../src/model.js';
 
-// Prototype journey checks: use real combat and transactions, without boosted stats
+// Formal-roster journey checks: use real combat and transactions, without boosted stats
 // or fabricated victories. These sample runs are not a final balance requirement.
 for (const seed of [1, 7, 42]) {
-  test(`prototype expedition reaches floor 20 through combat, shopping and saved checkpoints (seed ${seed})`, () => {
+  test(`formal-roster expedition reaches floor 20 through combat, shopping and saved checkpoints (seed ${seed})`, () => {
     let run = M.createRun(seed);
     M.recruit(run, run.candidates[0]);
 
@@ -36,7 +36,7 @@ for (const seed of [1, 7, 42]) {
       run.phase = 'battle';
       const battle = new Battle(run);
       for (let tick = 0; tick < 15000 && ['combat', 'cleanup'].includes(battle.phase); tick++) battle.step();
-      assert.equal(battle.phase, 'won', `floor ${floor} must finish with the demo loadout`);
+      assert.equal(battle.phase, 'won', `floor ${floor} must finish with the sampled loadout`);
       M.finishRound(run, battle.result());
       assert.equal(run.phase, 'shop');
       assert.throws(() => M.nextFloor(run), /宝箱/);

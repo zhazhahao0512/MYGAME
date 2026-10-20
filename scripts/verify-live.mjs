@@ -41,6 +41,7 @@ try {
   await page.locator('[data-act="confirm-hero"]').click();
   await page.locator('[data-act="confirm-hero"]').click();
   await page.locator('[data-act="start-battle"]').click();
+  if(await page.locator('[data-act="battle-recommended"]').count())await page.locator('[data-act="battle-recommended"]').click();
   await page.waitForFunction(() => Number(document.querySelector('#battle-canvas')?.dataset.tick) > 125, null, { timeout: 30000 });
   assert.equal(await page.locator('#battle-canvas canvas').count(), 1);
   await page.locator('[data-act="pause"]').click();
@@ -54,6 +55,7 @@ try {
   await page.locator('[data-act="continue"]').click();
   // Battle saves intentionally resume at the pre-battle checkpoint.
   await page.locator('[data-act="start-battle"]').click();
+  if(await page.locator('[data-act="battle-recommended"]').count())await page.locator('[data-act="battle-recommended"]').click();
   await page.waitForFunction(() => Number(document.querySelector('#battle-canvas')?.dataset.tick) > 25, null, { timeout: 30000 });
   assert.deepEqual(errors, []);
   console.log(`Public deployment verified: ${base.href} ${version.releaseId}; health, commit, JS/CSS, battle, pause and saved-game reload passed.`);

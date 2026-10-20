@@ -245,10 +245,10 @@ class BattleScene extends Phaser.Scene {
         g.fillStyle(0x18333a).fillRect(left, top + rowStep + (this.compact?20:30*size), barWidth, 3);
         g.fillStyle(COLORS.blue).fillRect(left, top + rowStep + (this.compact?20:30*size), barWidth * castProgress, 3);
       }
-      this.setText(actor.hp, this.compact?`${this.shortNumber(unit.hp)}/${this.shortNumber(unit.stats.hp)}`:`${Math.ceil(unit.hp)}/${Math.round(unit.stats.hp)}  +${Number(unit.stats.hpRegen.toFixed(1))}/s`);
+      this.setText(actor.hp, this.compact?`${this.shortNumber(unit.hp)}/${this.shortNumber(unit.stats.hp)}`:`${Math.ceil(unit.hp)}/${Math.ceil(unit.stats.hp)}  +${Number(unit.stats.hpRegen.toFixed(1))}/s`);
       this.setText(actor.mana, this.compact?`${this.shortNumber(unit.mana)}/${this.shortNumber(unit.stats.mana)}`:`${Math.floor(unit.mana)}/${Math.round(unit.stats.mana)}  +${Number(unit.stats.manaRegen.toFixed(1))}/s`);
       this.setText(actor.shield, unit.shield > 0 ? `盾 ${this.shortNumber(unit.shield)}` : '');
-      if (actor.hovered) hover = `${unit.name}  ·  生命 ${Math.ceil(unit.hp)}/${Math.round(unit.stats.hp)}  ·  ${actor.side === 'hero' ? '点击选中角色' : unit.boss ? '首领' : '敌方单位'}`;
+      if (actor.hovered) hover = `${unit.name}  ·  生命 ${Math.ceil(unit.hp)}/${Math.ceil(unit.stats.hp)}  ·  ${actor.side === 'hero' ? '点击选中角色' : unit.boss ? '首领' : '敌方单位'}`;
     }
     if (this.hoverLabel) this.setText(this.hoverLabel, hover);
   }

@@ -7,3 +7,5 @@
 - 坦克建议见[砺山V0.1](../heroes/LISHAN-DRAFT.md)，R050提出时为助手建议；R054用户回复“可以，下一个，有问题后续再改”，现由[D028](D028-lishan-first-draft-accepted.md)接续接受为首版，参数仍可调整。
 - 动画继续后置；首批英雄均须沿4/4/4/3、二级不同技能、6级普通限制解除、大招5/10/15、15级后固定成长不停及额外选属性的已定规则。
 - 状态：设计顺序已确认；坦克首版已接受，法师烬璃V0.1由[D030](D030-jinli-first-draft-accepted.md)接续接受，刺客朔影V0.1由[D034](D034-shuoying-first-draft-accepted.md)接受，辅助[泠汐V0.1](../heroes/LINGXI-DRAFT.md)已提出待评审；无新增英雄代码/游戏测试/部署。继续范围与待定项见[R050](../PROGRESS.md#r050)、[Q013](../open-questions.md#q013)。
+
+- R066接续：[D037](D037-five-hero-roster-runtime.md)接受辅助并明确五名全面替换测试英雄；四名设计前置已完成，现已进入并完成核心代码接入，验证见[运行规范](../heroes/RUNTIME.md)。上述未实施描述为原设计阶段记录。

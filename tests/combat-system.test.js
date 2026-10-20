@@ -99,12 +99,12 @@ test('cast release retargets only when configured; impact effects apply only aft
     else {assert.equal(b.shots[0].target,b.enemies[1].id);assert.equal(b.enemies[1].statuses.size,0);advance(b,10);assert.ok(isControlled(b.enemies[1]));}
   }
 });
-test('impact snapshots resist later stat changes and fully shielded hits do not trigger damage-taken passive',()=>{
+test('impact snapshots resist later stat changes and shielded hits feed the formal tank resolve',()=>{
   const b=arena();quiet(b);const u=b.party[0],enemy=b.enemies[0];
   const shot=b.fire(enemy,u,{duration:.1});const originalDamage=shot.damage;
   applyStatus(u,STATUSES.fortify,'other',0);u.shield=originalDamage+1;
   b.settle(shot);assert.equal(u.hp,u.stats.hp);assert.equal(u.statuses.size,1);
-  assert.ok(!u.triggerReady.has('passive:stone'));
+  assert.ok(Math.abs(u.heroState.resolve-Math.min(originalDamage*.18,u.stats.hp*.08))<1e-8);
 });
 test('generic shield, orange equipment healing and augment stacking form one working chain',()=>{
   const run=M.createRun(77);run.phase='ready';run.augments=['resonant-guard'];run.party=[{hero:'lishan',gear:[M.makeItem(run,5,'rune'),null,null,null],auto:true}];

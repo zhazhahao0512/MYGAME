@@ -17,7 +17,7 @@ try {
     await page.goto(url);
     await page.evaluate(async()=>{
       const M=await import('/src/model.js');const r=M.createRun(8801);
-      r.party=[{hero:'wind',gear:['blue_duelist_blade','white_iron_sword','white_dagger'].map(id=>M.makeItem(r,id)).concat(null)},{hero:'stone',gear:[M.makeItem(r,'white_iron_sword'),null,null,null]}];r.candidates=[];r.phase='ready';
+      r.party=[{hero:'jinli',gear:['blue_duelist_blade','white_iron_sword','white_dagger'].map(id=>M.makeItem(r,id)).concat(null)},{hero:'lishan',gear:[M.makeItem(r,'white_iron_sword'),null,null,null]}];r.candidates=[];r.phase='ready';
       M.finishRound(r,{won:true,kills:20,gold:2000});r.chest.claimed=true;
       r.shop=['purple_flowing_codex','purple_clearwell_staff','purple_combo_bow','white_dagger'].map(id=>M.makeItem(r,id));localStorage.setItem(M.SAVE_KEY,JSON.stringify(r));
     });
@@ -29,7 +29,7 @@ try {
     await click('[data-act="select-offer"][data-index="3"]');assert.match(await page.locator('#shop-guidance').innerText(),/合成去向.*迅捷双刃/s);await click('[data-act="cancel-selection"]');
     await click(gear(0,0));assert.match(await page.locator('.upgrade-routes').innerText(),/可合成/);
     await click('[data-act="preview-combine"][data-id="purple_battle_spear"]');
-    assert.match(await page.locator('.combine-materials').innerText(),/逐风.*决斗短刃/s);
+    assert.match(await page.locator('.combine-materials').innerText(),/烬璃.*决斗短刃/s);
     assert.equal(await page.locator('.combine-materials li').count(),3);
     const before=await save();assert.equal(before.gold,2000);
     await page.screenshot({path:`test-results/equipment/${label}-combine.png`,fullPage:false});
@@ -49,7 +49,7 @@ try {
     await page.evaluate(async()=>{
       const M=await import('/src/model.js'),r=M.createRun(8802);
       const layouts=[['purple_bloodpact_blade','blue_swift_blades'],['purple_steel_greatsword','white_spiked_blade','white_spiked_blade'],['blue_vitality_staff','white_glimmer_wand','blue_vitality_staff']];
-      r.party=layouts.map((ids,i)=>({hero:['wind','stone','tide'][i],gear:ids.map(id=>M.makeItem(r,id)).concat(Array(4-ids.length).fill(null))}));r.phase='ready';r.candidates=[];
+      r.party=layouts.map((ids,i)=>({hero:['jinli','lishan','lingxi'][i],gear:ids.map(id=>M.makeItem(r,id)).concat(Array(4-ids.length).fill(null))}));r.phase='ready';r.candidates=[];
       M.finishRound(r,{won:true,kills:20,gold:5000});r.chest.claimed=true;localStorage.setItem(M.SAVE_KEY,JSON.stringify(r));
     });
     await page.reload();await click('[data-act="continue"]');

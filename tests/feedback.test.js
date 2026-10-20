@@ -16,9 +16,9 @@ test('pure shield hits cannot create lifesteal; full health has no false healing
  source.hp=source.stats.hp;target.shield=0;b.effects=[];b.settle(b.fire(source,target));assert.equal(b.effects.some(e=>e.type==='heal'),false);
 });
 test('skill vamp snapshots only omni; healing clips to missing health and identifies the skill',()=>{
- const {b,source,target}=fixture();const shot=b.fire(source,target,{skill:true,attack:1,power:0,originId:'stone-Q',skillKey:'Q'});
+ const {b,source,target}=fixture();const shot=b.fire(source,target,{skill:true,attack:1,power:0,originId:'fixture-skill',skillKey:'1'});
  source.stats.omni=0;source.stats.healing=9;source.hp=source.stats.hp-5;b.settle(shot);
- const heal=b.effects.find(e=>e.type==='heal');assert.equal(heal.amount,5);assert.equal(heal.healingKind,'omni');assert.equal(heal.skillKey,'Q');assert.match(feedbackStyle(eventParts(heal)[0]).text,/Q 全能 \+5/);
+ const heal=b.effects.find(e=>e.type==='heal');assert.equal(heal.amount,5);assert.equal(heal.healingKind,'omni');assert.equal(heal.skillKey,'1');assert.match(feedbackStyle(eventParts(heal)[0]).text,/1 全能 \+5/);
 });
 test('overkill and dead attackers cannot generate excess vamp',()=>{
  const {b,source,target}=fixture();target.hp=3;b.settle(b.fire(source,target));assert.ok(Math.abs(b.effects.find(e=>e.type==='heal').amount-1.35)<1e-8);
@@ -31,7 +31,7 @@ test('natural regeneration batches actual recovery without adding heal triggers'
 });
 test('matching impacts merge actual amounts; different crit/source/target/kind never merge',()=>{
  const pool=new PopupBudget();pool.add(event({amount:.6,hpLoss:.6}));pool.add(event({id:2,tick:15,amount:.6,hpLoss:.6}));assert.equal(pool.groups.length,1);assert.equal(pool.groups[0].count,2);assert.equal(pool.groups[0].amount,1.2);assert.match(feedbackStyle(pool.groups[0]).text,/−1 ×2/);
- for(const extra of [{crit:true},{source:'hero-2'},{target:'enemy-2'},{originId:'stone-Q',origin:'skill',skillKey:'Q'}]){const p=new PopupBudget();p.add(event());p.add(event(extra));assert.equal(p.groups.length,2);}
+ for(const extra of [{crit:true},{source:'hero-2'},{target:'enemy-2'},{originId:'fixture-skill',origin:'skill',skillKey:'1'}]){const p=new PopupBudget();p.add(event());p.add(event(extra));assert.equal(p.groups.length,2);}
  const p=new PopupBudget();p.add(event({shieldLoss:5}));assert.deepEqual(p.groups.map(g=>g.kind),['damage','absorb']);
 });
 test('aggregation uses simulation time, drops old instances, and freezes without new ticks',()=>{

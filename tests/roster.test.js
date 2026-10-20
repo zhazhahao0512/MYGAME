@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {Battle} from '../src/battle.js';
 import {HEROES} from '../src/data.js';
 import * as M from '../src/model.js';
+import {initializeEquipment} from '../src/combat/equipment.js';
 import {skillsFor} from '../src/combat/content.js';
 import {setSource} from '../src/combat/unit.js';
 import {initializeProgression,recommendedRanks,rankReason,growthOffers,chooseGrowth} from '../src/heroes/progression.js';
@@ -116,4 +117,28 @@ test('managed heroes use conditional mechanics without RNG reads and support doe
  assert.equal(evaluateSkill(b,u,0),null);assert.equal(evaluateSkill(b,u,3),null);
  const ally=b.party[1];ally.hp=200;configure(t,{attack:200,hpRegen:0,manaRegen:0,accuracy:1000});t.targetId=ally.id;
  assert.ok(incomingPressure(b,ally)>0);assert.equal(evaluateSkill(b,u,0).band,1);assert.equal(chooseManagedSkill(b,u),0);assert.equal(b.rng.seed,seed);
+});
+
+test('actual group healing triggers each support item only once per cast, not once per target or tick',()=>{
+ const {b,u,r}=arena(['lingxi','lishan','jinli','shuoying']);
+ initializeEquipment(u,['purple_relief_codex','purple_spiritwell_orb'].map(id=>M.makeItem(r,id)));
+ for(const ally of b.party.slice(1)){ally.hp=100;ally.mana=0;}
+ cast(b,u,3);advance(b,.36);
+ assert.equal(b.effects.filter(e=>e.originId==='ally_spell_mend').length,1);
+ assert.equal(b.effects.filter(e=>e.originId==='ally_spell_mana').length,1);
+ assert.equal(b.party.slice(1).reduce((n,a)=>n+a.mana,0),20);
+ advance(b,5);assert.equal(b.effects.filter(e=>e.originId==='ally_spell_mend').length,1);
+});
+test('first effective periodic batch may trigger support, but checked casts never retry when item CD ends',()=>{
+ const {b,u,r}=arena(['lingxi','lishan']);initializeEquipment(u,[M.makeItem(r,'purple_relief_codex')]);
+ // Direct healing initially overheals both, then a future tick has a real ally recipient.
+ cast(b,u,3);advance(b,.36);assert.equal(u.equipment.ready.size,0);
+ b.party[1].hp=100;advance(b,1);assert.equal(b.effects.filter(e=>e.originId==='ally_spell_mend').length,1);
+ u.equipment.ready.set('ally_spell_mend',0);advance(b,4);assert.equal(b.effects.filter(e=>e.originId==='ally_spell_mend').length,1);
+});
+test('hero shield and equipment ward share the same expiration/absorption ledger',()=>{
+ const {b,u,r,t}=arena(['lishan']);initializeEquipment(u,[M.makeItem(r,'purple_watch_blades')]);
+ for(let i=0;i<4;i++)b.settle(b.fire(u,t));near(u.equipment.ward,30);
+ cast(b,u,0);const shield=u.shield;hurt(b,t,u,50);near(u.equipment.ward,0);near(u.shield,shield-50);
+ advance(b,3);near(u.shield,shield-50);advance(b,1);near(u.shield,0);
 });

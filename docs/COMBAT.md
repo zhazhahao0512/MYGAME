@@ -191,3 +191,8 @@ shot与视觉事件新增只读`visualColor/attackRange`；近战在来源蓄势
 ## R065 表现接续：站位弧线与技能大小
 
 [D036](decisions/D036-attack-lanes-and-skill-scale.md)只修改renderer：飞行攻击按来源位置1至5逐级提高弧线，双方一致；技能图形宽高为普攻3倍、4号/R大招5倍。近战普攻仍为来源蓄势/真实命中斩击，治疗和护盾不新增飞行shot。减少动效仍保留必要分层，取消装饰；不改变shot快照、目标、start/end、命中、伤害或RNG。可读性/时序契约与测试见[UI规范R065](UI-INTERACTION-DESIGN.md#attack-lanes-r065)。
+
+
+### R066 · 五名正式英雄接入
+
+当前可选名单为岚牙/砺山/烬璃/朔影/泠汐，旧七名及通用演示技能已退出运行池。技能数据、加点/推荐/16级选择、三模式、技能机制与旧档边界以[英雄运行规范](heroes/RUNTIME.md)及[D037](decisions/D037-five-hero-roster-runtime.md)为准；历史示例段不代表当前运行名单。有限英雄盾加入R064 timedShields；持续群疗按同一施法action向辅助装备报首有效批次。角色仍使用现有通用攻击表现，没有本轮专属动画改动。

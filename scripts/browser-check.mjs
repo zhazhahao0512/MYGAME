@@ -35,11 +35,15 @@ try{
   const first=(await save()).party[0].hero;assert.ok((await save()).candidates.every(id=>id!==first));
   await click('confirm-hero');assert.equal((await save()).party.length,2);await shot('ready-2k');
   // Browser clock advances the actual application loop; no production debug hooks or state injections.
-  await page.clock.install();await click('start-battle');await engineReady();await page.clock.runFor(1500);await shot('battle-2k');
+  await page.clock.install();await click('start-battle');if(await page.locator('[data-act="battle-recommended"]').count())await click('battle-recommended');await engineReady();await page.clock.runFor(1500);await shot('battle-2k');
   const canvas=await page.locator('#battle-canvas canvas').elementHandle();
   await click('attributes');assert.equal(await canvas.evaluate(el=>el.isConnected),true,'switching attributes must preserve the Phaser instance');await click('attributes');
   await click('pause');const time=await page.locator('#battle-clock').textContent(),tick=await page.locator('#battle-canvas').getAttribute('data-tick');await page.clock.runFor(1000);assert.equal(await page.locator('#battle-clock').textContent(),time);assert.equal(await page.locator('#battle-canvas').getAttribute('data-tick'),tick);await click('close');
-  await page.clock.runFor(52000);assert.equal(await page.locator('.shop-shell').count(),1,`battle should finish into shop: ${JSON.stringify({phase:(await save()).phase,clock:await page.locator('#battle-clock').allTextContents(),errors})}`);
+  // This seed recruits the formal assassin/support pair: the real engine clears
+  // floor 1 around 68 s, beyond the prototype's fixed 53.5 s observation.
+  // Wait for actual victory within a bounded 120 s budget, preserving real combat.
+  for(let elapsed=1500;elapsed<120000&&await page.locator('#battle-clock').count();elapsed+=5000)await page.clock.runFor(5000);
+  assert.equal(await page.locator('.shop-shell').count(),1,`battle should finish into shop: ${JSON.stringify({phase:(await save()).phase,clock:await page.locator('#battle-clock').allTextContents(),errors})}`);
   assert.equal(await page.locator('.chest-choices').count(),1,'victory shows inline chest and party');
   assert.equal(await page.locator('[role="dialog"]').count(),0);await shot('chest-inline-2k');
   await noOverflow();assert.equal(await page.locator('[data-act="next"]').isDisabled(),true);

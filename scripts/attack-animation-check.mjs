@@ -32,9 +32,9 @@ try {
  const trace=await page.evaluate(async()=>{
   const [{Battle},{createRun},{PhaserBattleRenderer}]=await Promise.all([import('/src/battle.js'),import('/src/model.js'),import('/src/renderer/PhaserBattleRenderer.ts')]);
   document.body.innerHTML='<div id="animation-stage" style="width:1400px;height:650px"></div>';
-  const run=createRun(42);run.phase='ready';run.party=['wind','lanya','blade'].map(hero=>({hero,gear:[null,null,null,null]}));
+  const run=createRun(42);run.phase='ready';run.party=['jinli','lanya','shuoying'].map(hero=>({hero,gear:[null,null,null,null]}));
   const battle=new Battle(run),control=new Battle(structuredClone(run));
-  for(const b of [battle,control]){for(const u of b.units())u.nextAttack=Infinity;b.fire(b.party[0],b.enemies[1],{duration:1});b.fire(b.party[1],b.enemies[2],{duration:1,skill:true,canMiss:false,originId:'animation-check'});b.fire(b.party[2],b.enemies[3],{duration:1,canMiss:false});}
+  for(const b of [battle,control]){for(const u of b.units()){u.nextAttack=Infinity;u.ready.fill(Infinity);}b.fire(b.party[0],b.enemies[1],{duration:1});b.fire(b.party[1],b.enemies[2],{duration:1,skill:true,canMiss:false,originId:'animation-check'});b.fire(b.party[2],b.enemies[3],{duration:1,canMiss:false});}
   const state={motion:true,paused:false};const host=document.querySelector('#animation-stage');
   const renderer=new PhaserBattleRenderer(host,battle,{advance(){},selected:()=>0,select(){},motion:()=>state.motion,paused:()=>state.paused});
   await new Promise(resolve=>{const check=()=>host.dataset.engine?resolve():setTimeout(check,20);check();});
@@ -50,7 +50,7 @@ try {
   return {snapshots,equal:JSON.stringify(snapshot(battle))===JSON.stringify(snapshot(control))};
  });
  assert.equal(trace.equal,true,'rendering on/off does not change combat');
- for(const f of trace.snapshots){assert.equal(f.normal.length,3);assert.equal(f.reduced.length,3);assert.deepEqual(f.normal.map(p=>p.x),f.reduced.map(p=>p.x));assert.deepEqual(f.normal.map(p=>p.texture),['attack-arrow','attack-slash','attack-spell']);assert.deepEqual(f.normal.map(p=>p.tint),[0xa9c7a3,0xd69682,0xacc6a1]);assert.ok(f.reduced.every(p=>!p.glow));}
+ for(const f of trace.snapshots){assert.equal(f.normal.length,3);assert.equal(f.reduced.length,3);assert.deepEqual(f.normal.map(p=>p.x),f.reduced.map(p=>p.x));assert.deepEqual(f.normal.map(p=>p.texture),['attack-arrow','attack-slash','attack-spell']);assert.deepEqual(f.normal.map(p=>p.tint),[0xc391ce,0xb6b9d2,0xacc6a1]);assert.ok(f.reduced.every(p=>!p.glow));}
  assert.notEqual(trace.snapshots[0].reduced[0].x,trace.snapshots[2].reduced[0].x,'basic projectile travels');
  assert.notEqual(trace.snapshots[0].reduced[2].x,trace.snapshots[2].reduced[2].x,'skill projectile travels');
  assert.equal(trace.snapshots[0].reduced[1].x,trace.snapshots[2].reduced[1].x,'melee windup remains at source');
@@ -66,7 +66,7 @@ try {
  });
  assert.notEqual(ending.old,ending.newId);assert.equal(ending.visible,2,'same-slot replacement hides the invalid old projectile');
  assert.equal(ending.beforeImpact,ending.beforeHp);assert.ok(ending.afterImpact<ending.beforeImpact,'skill settles at arrival');
- assert.equal(ending.earlyStrikes,0);assert.deepEqual(ending.impactStrikes,[0xd69682],'melee slash only appears on real impact, in source color');
+ assert.equal(ending.earlyStrikes,0);assert.deepEqual(ending.impactStrikes,[0xb6b9d2],'melee slash only appears on real impact, in source color');
  // Presentation fixture: both directions, five source slots, exact 1x/3x/5x sizes.
  const lanes=[];
  for(const [width,height] of [[1400,650],[720,160]]){
@@ -75,7 +75,7 @@ try {
    const [{Battle},{createRun},{PhaserBattleRenderer},{HEROES}]=await Promise.all([import('/src/battle.js'),import('/src/model.js'),import('/src/renderer/PhaserBattleRenderer.ts'),import('/src/data.js')]);
    document.body.innerHTML=`<p style="color:white">弹道表现测试：双方五个位置，普攻／技能／大招</p><div id="lane-stage" style="width:${width}px;height:${height}px"></div>`;
    const run=createRun(56);run.party=HEROES.slice(0,5).map(h=>({hero:h.id,gear:[null,null,null,null]}));
-   const b=new Battle(run);for(const u of b.units()){u.nextAttack=Infinity;u.def={...u.def,range:'ranged'};}
+   const b=new Battle(run);for(const u of b.units()){u.nextAttack=Infinity;u.ready.fill(Infinity);u.def={...u.def,range:'ranged'};}
    for(const source of b.units())for(const key of ['', '1','4'])b.fire(source,(source.side==='hero'?b.enemies:b.party)[2],{duration:1,skill:!!key,skillKey:key});
    while(b.tick<25)b.step();
    const before=JSON.stringify({rng:b.rng,shots:b.shots,units:b.units().map(u=>[u.hp,u.mana])});

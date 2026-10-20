@@ -9,11 +9,11 @@ import {Battle, STEP} from '../src/battle.js';
 import {setSource, expireStatuses} from '../src/combat/unit.js';
 import {syncEquipment} from '../src/combat/equipment.js';
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-7,`${a} ≠ ${b}`);
-function runWith(ids=[],hero='wind') {
+function runWith(ids=[],hero='jinli') {
   const r=M.createRun(42);r.party=[{hero,gear:[...ids.map(id=>M.makeItem(r,id)),...Array(4-ids.length).fill(null)],skillModes:Array(4).fill('manual')}];r.candidates=[];r.phase='ready';return r;
 }
 function shop(ids=[]){const r=runWith(ids);M.finishRound(r,{won:true,kills:20,gold:2000});return r;}
-function fixture(ids=[],hero='wind'){
+function fixture(ids=[],hero='jinli'){
   const b=new Battle(runWith(ids,hero)),u=b.party[0];
   for(const t of b.enemies){setSource(t,'test',{modifiers:[{stat:'hp',op:'override',value:10000},{stat:'armor',op:'override',value:50},{stat:'resist',op:'override',value:50}]});t.hp=t.stats.hp;t.nextAttack=1e9;t.skills=[];}
   u.skills=skillsFor(hero);u.ready.fill(0);u.nextAttack=1e9;
@@ -49,13 +49,13 @@ test('random shop and chest offers use only fixed formal content, and preserve s
   assert.equal(seen.size,59);assert.ok([...seen].every(id=>!id.startsWith('red_')));assert.throws(()=>M.makeItem(r,'orange'));
 });
 test('formal attack speed is a bonus relative to different hero base rates, duplicate bases stack',()=>{
-  for(const hero of ['wind','stone']){
+  for(const hero of ['jinli','lishan']){
     const r=runWith(['purple_battle_spear','purple_battle_spear'],hero),m=r.party[0];
     near(M.statsFor(m).attackSpeed,M.baseStatsFor(m).attackSpeed*1.48);
   }
 });
 test('same-material crafting consumes distinct equipped instances across heroes, only charges fee and preserves empty slots',()=>{
-  const r=shop(['white_iron_sword']);r.party.push({hero:'stone',gear:[null,null,M.makeItem(r,'white_iron_sword'),null]});
+  const r=shop(['white_iron_sword']);r.party.push({hero:'lishan',gear:[null,null,M.makeItem(r,'white_iron_sword'),null]});
   const uid=r.party[0].gear[0].uid,before=structuredClone(r),q=M.previewCombine(r,'blue_tempered_sword',0,0,uid);
   assert.deepEqual(r,before);assert.equal(q.cost,150);assert.equal(q.reason,'');assert.equal(new Set(q.uids).size,2);
   const item=M.combineEquipment(r,'blue_tempered_sword',0,0,uid,q.uids);
@@ -109,7 +109,7 @@ test('critical haste and pursuit add to fixed percentages once, cap/refresh and 
   expireStatuses(u,150);near(u.stats.attackSpeed,base*1.72);
 });
 test('blood lifesteal reads current health before impact, strictly below 50%, and only restores body HP damage',()=>{
-  const {b,u,t}=fixture(['purple_bloodtide_blades','purple_bloodtide_blades'],'tide');
+  const {b,u,t}=fixture(['purple_bloodtide_blades','purple_bloodtide_blades'],'jinli');
   let shot=b.fire(u,t,{canMiss:false});u.hp=u.stats.hp*.5;let before=u.hp;b.settle(shot);near(u.hp-before,shot.damage*.06);
   shot=b.fire(u,t,{canMiss:false});u.hp=u.stats.hp*.5-1;before=u.hp;b.settle(shot);near(u.hp-before,shot.damage*.09);
   t.shield=10000;u.hp=10;basic(b,u,t);near(u.hp,10);
@@ -141,7 +141,7 @@ test('backwater is a dynamic unique +12, respects strict threshold, and does not
   b.heal(u,u,20);near(u.stats.attack,normal);near(shot.damage,(normal+12)/1.5);
 });
 test('echo binds once to primary first damage, uses release AP snapshot, shares miss, and has independent 12s cooldown',()=>{
-  const {b,u}=fixture(['purple_flowing_codex','purple_flowing_codex'],'tide');u.stats.haste=1000;
+  const {b,u}=fixture(['purple_flowing_codex','purple_flowing_codex'],'jinli');u.stats.haste=1000;
   const skill={...u.skills[0],ranks:undefined,target:'allEnemies',cost:0,castTime:1,effects:[{type:'damage',amount:1,attack:0,power:0,travel:.1},{type:'damage',amount:1,attack:0,power:0,travel:.2}]};u.skills[0]=skill;
   assert.ok(b.cast(u,0));const action=u.casting;u.stats.power=123;const ap=u.stats.power;u.casting=null;b.release(u,action);u.stats.power=999;
   assert.equal(b.shots.length,10);assert.equal(b.shots.filter(s=>s.spellBonus).length,1);near(b.shots[0].spellBonus.damage,(25+.05*ap)/1.5);assert.equal(u.equipment.spellReady,600);
@@ -150,14 +150,15 @@ test('echo binds once to primary first damage, uses release AP snapshot, shares 
   b.shots=[];b.tick=600;b.release(u,action);assert.equal(b.shots.filter(s=>s.spellBonus).length,1);assert.equal(u.equipment.spellReady,1200);
 });
 test('echo ignores non-damage releases, interruptions and dead targets; proc has no vamp or on-hit recursion',()=>{
-  const {b,u,t}=fixture(['purple_flowing_codex','purple_combo_bow'],'stone');u.hp=20;u.stats.omni=1;
-  u.ready.fill(0);assert.ok(b.cast(u,2));assert.equal(u.equipment.spellReady,0);
+  const {b,u,t}=fixture(['purple_flowing_codex','purple_combo_bow'],'lishan');u.hp=20;u.stats.omni=1;
+  u.ready.fill(0);assert.ok(b.cast(u,0));assert.equal(u.equipment.spellReady,0);
+  u.skills[0]={...u.skills[1],ranks:undefined,castTime:.25};
   u.ready[0]=0;assert.ok(b.cast(u,0));b.addStatus(t,u,'stun');assert.equal(u.casting,null);assert.equal(u.equipment.spellReady,0);
   expireStatuses(u,100);u.ready[0]=0;b.tick=100;assert.ok(b.cast(u,0));const action=u.casting;u.casting=null;b.release(u,action);
   const shot=b.shots.at(-1);assert.ok(shot.spellBonus);assert.equal(shot.spellBonus.vamp,0);t.hp=1;const count=u.equipment.hits;b.settle(shot);assert.equal(u.equipment.hits,count);assert.equal(b.effects.filter(e=>e.originId==='charged_spell_damage').length,0);assert.equal(u.equipment.spellReady,700);
 });
 test('conduit credits real shield/HP assists at the 6s boundary once, excludes expiry/dead/nonparticipants, and clamps mana',()=>{
-  const r=runWith(['purple_clearwell_staff','purple_clearwell_staff'],'tide');r.party.push({hero:'wind',gear:[null,null,null,null]});const b=new Battle(r),[u,killer]=b.party,t=b.enemies[0];u.mana=0;t.shield=20;
+  const r=runWith(['purple_clearwell_staff','purple_clearwell_staff'],'jinli');r.party.push({hero:'shuoying',gear:[null,null,null,null]});const b=new Battle(r),[u,killer]=b.party,t=b.enemies[0];u.mana=0;t.shield=20;
   direct(b,u,t,1);assert.equal(u.mana,0);b.tick=300;direct(b,killer,t,1e6);assert.equal(u.mana,15);direct(b,killer,t,1e6);assert.equal(u.mana,15);
   const late=b.enemies[1];direct(b,u,late,1);b.tick=601;direct(b,killer,late,1e6);assert.equal(u.mana,15);
   direct(b,killer,b.enemies[2],1e6);assert.equal(u.mana,15);

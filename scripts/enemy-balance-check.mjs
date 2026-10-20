@@ -43,7 +43,7 @@ for(let seed=1;seed<=count;seed++){
 const encounters=[];
 for(const [floor,level] of [[1,1],[4,3],[8,6],[12,10],[20,15]])for(const build of ['bare','equipped'])for(let seed=1;seed<=count;seed++){
  const run=M.createRun(seed);run.floor=floor;run.level=level;run.phase='ready';
- run.party=['stone','lanya','ember','leaf','blade'].slice(0,Math.min(5,floor+1)).map(hero=>({hero,gear:[null,null,null,null]}));
+ run.party=['lishan','lanya','jinli','lingxi','shuoying'].slice(0,Math.min(5,floor+1)).map(hero=>({hero,gear:[null,null,null,null]}));
  for(const [i,m] of run.party.entries()){
   M.recommendSkills(run,i);
   if(build==='equipped'){

@@ -18,7 +18,7 @@ try{
   await page.evaluate(async()=>{
    const M=await import('/src/model.js'),{initializeProgression}=await import('/src/heroes/progression.js');
    const r=M.createRun(8801);r.level=5;r.floor=4;r.phase='ready';r.candidates=[];
-   r.party=['lanya','stone','fire','wind','leaf'].map((hero,i)=>({hero,gear:[M.makeItem(r,'blue_balanced_amulet'),M.makeItem(r,'purple_clearwell_staff'),null,null]}));
+   r.party=['lanya','lishan','jinli','shuoying','lingxi'].map((hero,i)=>({hero,gear:[M.makeItem(r,'blue_balanced_amulet'),M.makeItem(r,'purple_clearwell_staff'),null,null]}));
    // Use actual catalog hero ids, keeping a fixed five-person state across runs.
    const {HEROES}=await import('/src/data.js');r.party.forEach((m,i)=>{m.hero=HEROES[i].id;initializeProgression(m,r.level,r.seed,{legacy:true});});
    M.finishRound(r,{won:true,gold:3000,kills:42});

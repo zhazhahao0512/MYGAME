@@ -11,7 +11,7 @@ const red=JSON.parse(readFileSync(new URL('../docs/equipment/red-equipment-r060.
 const purple=JSON.parse(readFileSync(new URL('../docs/equipment/purple-survival-support-r053.json',import.meta.url))).items;
 function run(loadouts=[[]]){
  const r=M.createRun(64);r.phase='ready';r.candidates=[];
- r.party=loadouts.map((ids,i)=>({hero:['wind','tide','stone','ember','shade'][i],gear:[...ids.map(id=>M.makeItem(r,id)),...Array(4-ids.length).fill(null)],skillModes:Array(4).fill('manual')}));return r;
+ r.party=loadouts.map((ids,i)=>({hero:['jinli','shuoying','lishan','lingxi','lanya'][i],gear:[...ids.map(id=>M.makeItem(r,id)),...Array(4-ids.length).fill(null)],skillModes:Array(4).fill('manual')}));return r;
 }
 function fixture(loadouts=[[]]){
  const b=new Battle(run(loadouts));

@@ -55,7 +55,7 @@ try{
  }
  // Real saved run: changes in battle survive reload; it restarts the round by the existing save contract.
  const page=await browser.newPage({viewport:{width:1440,height:900}});activePage=page;await page.goto(url);
- await page.evaluate(async()=>{const M=await import('/src/model.js');const run=M.createRun(17);M.recruit(run,run.candidates[0]);M.recruit(run,run.candidates[0]);localStorage.setItem(M.SAVE_KEY,JSON.stringify(run));});
+ await page.evaluate(async()=>{const M=await import('/src/model.js');const run=M.createRun(17);M.recruit(run,run.candidates[0]);M.recruit(run,run.candidates[0]);run.party.forEach((_,i)=>M.recommendSkills(run,i));localStorage.setItem(M.SAVE_KEY,JSON.stringify(run));});
  await page.reload();await page.locator('[data-act="continue"]').click();await page.locator('[data-act="start-battle"]').click();await page.locator('#battle-canvas[data-engine]').waitFor();
  const first=page.locator('[data-act="skill-mode"][data-skill="0"]');await first.click();await first.click();
  const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('squad-expedition.save.v1')));assert.equal(stored.party[0].skillModes[0],'manual');

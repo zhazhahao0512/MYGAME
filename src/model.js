@@ -161,7 +161,7 @@ export function parseSave(raw) {
     if(!Array.isArray(run.party)||run.party.length>5||new Set(run.party.map(h=>h.hero)).size!==run.party.length)return null;
     if(!run.party.every(h=>knownHeroId(h.hero)&&Array.isArray(h.gear)&&validateLoadout(h.gear)&&h.gear.every(validItem)))return null;
     if(!Array.isArray(run.candidates)||run.candidates.some(id=>!knownHeroId(id))||!Array.isArray(run.shop)||!run.shop.every(validItem))return null;
-    if(!migrateHeroRoster(run))return null;
+    if(!migrateHeroRoster(run)||!run.party.every(m=>heroById(m.hero))||run.candidates.some(id=>!heroById(id)))return null;
     if(['initial','recruit'].includes(run.phase)&&(run.candidates.length!==Math.min(3,5-run.party.length)||new Set(run.candidates).size!==run.candidates.length||run.candidates.some(id=>run.party.some(h=>h.hero===id))))return null;
     if(run.phase!=='initial'&&run.party.length===0)return null;
     if(run.phase==='shop'&&(run.shop.length!==4||!run.chest||!Array.isArray(run.chest.options)||run.chest.options.length!==3||!run.chest.options.every(i=>i&&validItem(i))||typeof run.chest.claimed!=='boolean'||typeof run.chest.refreshUsed!=='boolean'))return null;

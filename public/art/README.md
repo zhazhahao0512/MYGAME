@@ -18,3 +18,5 @@ pyftsubset /usr/share/fonts/opentype/noto/NotoSerifCJK-Bold.ttc --font-number=2 
 采用已验证的 WOFF；环境缺少 Brotli Python 扩展，未将 WOFF2 作为构建前提。字体和素材均由自有游戏服务器提供，游戏运行不请求第三方字体或图片服务。
 
 R064补齐新增紫/红装备名称、被动说明与多路线提示字形；仍从同一Noto字体生成源码子集，未更换字体或引入外部请求。
+
+R066为五名正式英雄及技能升级说明补充字形；以当前合并后的全部源码文字与既有字形并集重新生成Regular/Bold，不移除R064装备字形。

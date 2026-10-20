@@ -157,7 +157,7 @@
 | 31件新增装备实施：src/equipment.js、combat/equipment.js、battle.js仅装备/治疗护盾钩子、model.js配方/供给、app.js仅合成/详情；必要inspection/unit/字体及装备测试/浏览器脚本；装备规范/COMBAT、D035及索引、Q009、公共装备补充/本行/R064 | 已释放（代码与本地验收完成） | equipment-runtime-20261020-r064 | 2026-10-20 | 基线d97686d；b0aed21认领已发布核验，结果D035/R064；78件/73配方及被动已接入，旧英雄版逻辑/浏览器验证通过。保留R065/R066；后续英雄生命周期和持续施法接入须复用COMBAT R064接口；未部署 |
 
 | 弹道站位分层与技能倍率：src/renderer/PhaserBattleRenderer.ts；scripts/attack-animation-check.mjs；UI-INTERACTION与COMBAT仅新增表现接续、新D036/索引、公共动画补充/本行/R065 | 已释放（表现实现与专项检查完成） | attack-lanes-20261020-r065 | 2026-10-20 | 基线b0aed21；7016e3d认领已发布，结果D036/R065；双方5→1弧线与技能3/5倍实现；不改battle/model/装备，保留R064/R066。R066新英雄替换后需同步既有动画夹具的旧英雄ID |
-| 五正式英雄替换与加点：src/heroes/、data.js仅HEROES、combat/content.js、casting.js英雄估值；battle.js仅英雄生命周期/选敌/发射/施法桥接，暂避R064装备/治疗护盾函数；model.js仅英雄迁移/招募、app.js仅英雄/成长展示、英雄测试与浏览器脚本；英雄规范/RUNTIME、D037/索引/Q013及英雄状态/R066 | 进行中（用户明确实施五英雄与技能升级） | hero-roster-runtime-20261020-r066 | 2026-10-20 | 基线b0aed21；预留D037/R066；保留R064装备钩子/配方/供给/合成/详情，英雄机制先独立模块再接桥；泠汐已接受，五名全面替换测试英雄，旧存档保留资源并迁移 |
+| 五正式英雄替换与加点：src/heroes/、data.js仅HEROES、combat/content.js、casting.js英雄估值；battle.js仅英雄生命周期/选敌/发射/施法桥接，暂避R064装备/治疗护盾函数；model.js仅英雄迁移/招募、app.js仅英雄/成长展示、英雄测试与浏览器脚本、字体补字与四点击按钮布局；renderer仅小数生命上限显示取整，保留R065弹道；README/英雄规范/RUNTIME、D037/索引/Q013及英雄状态/R066 | 进行中（用户明确实施五英雄与技能升级） | hero-roster-runtime-20261020-r066 | 2026-10-20 | 认领b1c735e已发布；本地五英雄/升级/迁移及R064接口整合已通过逻辑和正常整局浏览器，剩余组合回归中。截图发现小数HP满血显示可能1152/1151，扩围仅renderer文字取整；R065已释放，保留其轨迹/尺寸。保留R067首页方案范围，预留D037/R066 |
 
 | 首页/选人/准备视觉方案：检索既有首页素材与历史记录；新增docs/design/ui-entry-proposal/图稿/说明；公共仅本行/UI补充/R067；不改src或R066英雄展示 | 进行中（找回参考与三页设计） | ui-entry-design-20261020-r067 | 2026-10-20 | 基线b70a4c1；用户要求开始设计并寻找旧首页图，保持R061深蓝/金边风格；本轮交付可实现方案，避开R066英雄代码/成长展示；预留R067，无新玩法决定 |
 

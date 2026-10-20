@@ -1,0 +1,71 @@
+[
+  {
+    "screen": "home",
+    "width": 1440,
+    "height": 900,
+    "documentHeight": 900,
+    "errors": []
+  },
+  {
+    "screen": "recruit",
+    "width": 1440,
+    "height": 900,
+    "documentHeight": 900,
+    "actionBottom": 888,
+    "errors": []
+  },
+  {
+    "screen": "ready",
+    "width": 1440,
+    "height": 900,
+    "documentHeight": 900,
+    "actionBottom": 888,
+    "errors": []
+  },
+  {
+    "screen": "home",
+    "width": 2560,
+    "height": 1440,
+    "documentHeight": 1440,
+    "errors": []
+  },
+  {
+    "screen": "recruit",
+    "width": 2560,
+    "height": 1440,
+    "documentHeight": 1440,
+    "actionBottom": 1416,
+    "errors": []
+  },
+  {
+    "screen": "ready",
+    "width": 2560,
+    "height": 1440,
+    "documentHeight": 1440,
+    "actionBottom": 1416,
+    "errors": []
+  },
+  {
+    "screen": "home",
+    "width": 390,
+    "height": 844,
+    "documentHeight": 844,
+    "errors": []
+  },
+  {
+    "screen": "recruit",
+    "width": 390,
+    "height": 844,
+    "documentHeight": 1808,
+    "actionBottom": 834,
+    "errors": []
+  },
+  {
+    "screen": "ready",
+    "width": 390,
+    "height": 844,
+    "documentHeight": 1416,
+    "actionBottom": 834,
+    "errors": []
+  }
+]

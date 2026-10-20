@@ -2,6 +2,10 @@
 
 电脑浏览器优先的 2D 单人自动战斗游戏框架。页面、整局流程和统一战斗基础已接入；岚牙、砺山、烬璃、朔影、泠汐五名正式英雄及78件装备已接入，支持独立技能升级与托管。首版数值仍待平衡。所有头像、技能图标和装备图标使用文字方框，不依赖外部图片或字体服务。
 
+## 最新整合入口
+
+已收拢的当前设置、源码位置和未完成项统一见 [PROGRESS当前交接](docs/PROGRESS.md#当前交接)（R068，2026-10-20）。当前包含五英雄、78件装备/73配方、统一战斗商店界面、快速补满和分层弹道；[首页/选人/准备新稿](docs/design/ui-entry-proposal/README.md)仍是独立设计，未接入。仓库版本与8080服务器版本分别验收，不使用旧部署包代表最新main。
+
 ## 多窗口共享进度
 
 共同入口为 [AGENTS.md](AGENTS.md) 与 [项目进度 PROGRESS](docs/PROGRESS.md)。开工先同步并检查远端，再读全部已定稿 [decisions](docs/decisions/README.md)、[module-status 与认领](docs/PROGRESS.md#module-status)、近期 [CHANGELOG（逐轮记录）](docs/PROGRESS.md#changelog) 和 `git log -10`。动模块前登记窗口、范围、日期并提交推送；避开已认领模块。收工做适用检查、按单事项只提交自己文件，回写状态/日志并释放认领；未决问题进 [open-questions](docs/open-questions.md)。

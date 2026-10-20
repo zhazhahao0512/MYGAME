@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {Battle} from '../src/battle.js';
 import * as M from '../src/model.js';
 import {CHALLENGE_TYPES} from '../src/combat/tactics.js';
-function runAt(floor=1,level=1){const run=M.createRun(42);run.floor=floor;run.level=level;run.phase='ready';run.party=['stone','lanya','ember','leaf','blade'].slice(0,Math.min(5,floor+1)).map(hero=>({hero,gear:[null,null,null,null]}));run.party.forEach((_,i)=>M.recommendSkills(run,i));return run;}
+function runAt(floor=1,level=1){const run=M.createRun(42);run.floor=floor;run.level=level;run.phase='ready';run.party=['lishan','lanya','jinli','lingxi','shuoying'].slice(0,Math.min(5,floor+1)).map(hero=>({hero,gear:[null,null,null,null]}));run.party.forEach((_,i)=>M.recommendSkills(run,i));return run;}
 test('enemy difficulty is fixed to floor, not player level, upgrades or purchased power',()=>{
  const a=new Battle(runAt(8,6)),run=runAt(8,30);run.party[0].gear[0]=M.makeItem(run,'blue_tempered_sword');
  const b=new Battle(run);assert.deepEqual(a.enemies.map(u=>u.stats),b.enemies.map(u=>u.stats));
@@ -18,7 +18,7 @@ test('normal frontliners require sustained real attacks and boss/challenge durab
  assert.ok(boss.stats.hp>regular.stats.hp*2);assert.ok(late.spawn(1,CHALLENGE_TYPES[0]).stats.hp>regular.stats.hp*1.5);
 });
 test('opening remains playable for a low-output pair with only legal level-one skills and no gear',()=>{
- const run=runAt();run.party=['tide','stone'].map(hero=>({hero,gear:[null,null,null,null]}));run.party.forEach((_,i)=>M.recommendSkills(run,i));
+ const run=runAt();run.party=['jinli','lishan'].map(hero=>({hero,gear:[null,null,null,null]}));run.party.forEach((_,i)=>M.recommendSkills(run,i));
  const b=new Battle(run);for(let i=0;i<6000&&['combat','cleanup'].includes(b.phase);i++)b.step();
  assert.equal(b.phase,'won');assert.ok(b.kills>=10);assert.ok(b.time>40,'end of spawning still requires cleanup');
 });

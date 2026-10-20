@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {Battle} from '../src/battle.js';
 import {createRun} from '../src/model.js';
 import {PopupBudget,eventParts,feedbackStyle,FEEDBACK_COLORS} from '../src/renderer/feedback.js';
-const fixture=()=>{const run=createRun(991);run.party=[{hero:'stone',gear:[null,null,null,null],auto:true}];const b=new Battle(run);const source=b.party[0],target=b.enemies[0];source.hp=50;source.stats.crit=0;source.stats.attack=100;source.stats.healing=.5;source.stats.lifeSteal=.1;source.stats.omni=.2;target.hp=500;target.stats.armor=0;target.stats.resist=0;return {b,source,target};};
+const fixture=()=>{const run=createRun(991);run.party=[{hero:'lishan',gear:[null,null,null,null],auto:true}];const b=new Battle(run);const source=b.party[0],target=b.enemies[0];source.hp=50;source.stats.crit=0;source.stats.attack=100;source.stats.healing=.5;source.stats.lifeSteal=.1;source.stats.omni=.2;target.hp=500;target.stats.armor=0;target.stats.resist=0;return {b,source,target};};
 const event=(extra={})=>({id:1,tick:10,type:'damage',source:'hero-1',target:'enemy-1',side:'enemy',slot:0,origin:'attack',originId:'attack',amount:30,hpLoss:30,shieldLoss:0,crit:false,...extra});
 test('shield absorption and HP loss stay separate; critical shield text remains blue',()=>{
  const {b,source,target}=fixture();target.shield=70;const shot=b.fire(source,target);shot.crit=true;b.settle(shot);

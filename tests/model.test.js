@@ -5,11 +5,11 @@ import { HEROES } from '../src/data.js';
 const ready=()=>{const r=M.createRun(20261015);M.recruit(r,r.candidates[0]);M.recruit(r,r.candidates[0]);return r;};
 const shop=()=>{const r=ready();M.finishRound(r,{won:true,kills:25,gold:750,seconds:25});return r;};
 
-test('initial choice plus four recruitment rounds yields five unique heroes with three candidates each',()=>{
+test('initial choice plus four recruitment rounds yields five unique heroes with at most three remaining candidates',()=>{
   const r=ready();assert.equal(r.party.length,2);
   for(let floor=1;floor<=4;floor++){
     assert.equal(r.floor,floor);M.finishRound(r,{won:true,gold:0,kills:0});M.sellReward(r,0);M.nextFloor(r);
-    if(floor<4){assert.equal(r.candidates.length,3);assert.equal(new Set(r.candidates).size,3);assert.ok(r.candidates.every(id=>!r.party.some(h=>h.hero===id)));M.recruit(r,r.candidates[0]);}
+    if(floor<4){assert.equal(r.candidates.length,Math.min(3,5-r.party.length));assert.equal(new Set(r.candidates).size,r.candidates.length);assert.ok(r.candidates.every(id=>!r.party.some(h=>h.hero===id)));M.recruit(r,r.candidates[0]);}
   }
   assert.equal(r.party.length,5);assert.equal(new Set(r.party.map(h=>h.hero)).size,5);assert.equal(r.phase,'ready');
 });
@@ -83,7 +83,7 @@ test('save validation rejects corrupted state and restores battle at a clean che
   const bad=shop();bad.chest.options=[];assert.equal(M.parseSave(JSON.stringify(bad)),null);
 });
 test('same seed produces the same recruitment and shop results',()=>{
-  assert.deepEqual(M.createRun(81).candidates,M.createRun(81).candidates);assert.deepEqual(shop().shop,shop().shop);assert.equal(HEROES.length>=7,true);
+  assert.deepEqual(M.createRun(81).candidates,M.createRun(81).candidates);assert.deepEqual(shop().shop,shop().shop);assert.equal(HEROES.length,5);
 });
 
 test('transfer preview is read-only, includes both heroes, and matches confirmed swap',()=>{

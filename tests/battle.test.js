@@ -35,7 +35,7 @@ test('dead enemies grant kill rewards only once',()=>{
   b.settle(b.fire(source,target));b.settle(b.fire(source,target));assert.equal(b.kills,1);assert.equal(b.gold,30);
 });
 test('manual ultimate consumes mana and cooldown once and rejects immediate second activation',()=>{
-  const b=battle(),unit=b.party[0];unit.skills=skillsFor('tide');unit.auto=false;unit.ready[3]=0;unit.mana=100;assert.equal(b.cast(unit,3),true);assert.equal(unit.mana,70);assert.equal(b.cast(unit,3),false);assert.equal(unit.mana,70);assert.equal(b.shots.length,5);
+  const b=battle(),unit=b.party[0];unit.skills=skillsFor('jinli',[1,1,1,1]);unit.auto=false;unit.ready[3]=0;unit.mana=100;assert.equal(b.cast(unit,3),true);assert.equal(unit.mana,20);assert.equal(b.cast(unit,3),false);assert.equal(unit.mana,20);for(let i=0;i<30;i++)b.step();assert.equal(b.shots.filter(s=>s.originId==='jinli-4').length,5);
 });
 test('no unbounded heal-overflow and no healing on dead unit',()=>{
   const b=battle();b.party[1].hp=0;for(let i=0;i<100;i++)b.step();assert.equal(b.party[1].hp,0);assert.ok(b.party[0].hp<=b.party[0].stats.hp);

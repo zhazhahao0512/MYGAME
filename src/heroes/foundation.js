@@ -1,17 +1,13 @@
-// First implementation values. Lanya follows docs/heroes/LANYA.md V0.2.
-// The seven prototype heroes have provisional individual panels, not finished kits.
+// Five formal heroes; draft specifications live in docs/heroes/.
 export const CORE_STATS=['hp','hpRegen','mana','manaRegen','attack','attackSpeed','armor','resist'];
 export const ATTRIBUTE_GOLD={hp:2,hpRegen:250/3,mana:3,manaRegen:250,attack:37.5,power:20,attackSpeed:3750,armor:35,resist:35};
 const panel=(values)=>Object.fromEntries(CORE_STATS.map((key,i)=>[key,values[i]]));
 const profile=(role,range,base,growth,subtypes,routes)=>({role,range,base:panel(base),growth:panel(growth),subtypes,routes});
 export const HERO_PROFILES={
-  stone:profile('坦克','melee',[1128.6,2.64,182.4,2.83,60.8,.78,39.6,29.4],[81.7,.17,8.3,.10,2.41,.017,3.12,1.87],['护盾','双抗承伤'],['生命双抗','护盾支援']),
-  wind:profile('射手','ranged',[824.7,1.58,204.6,3.14,79.6,.96,26.8,23.9],[59.8,.12,10.2,.11,3.36,.023,2.17,1.38],['持续普攻'],['攻击攻速','攻击特效']),
-  ember:profile('法师','ranged',[798.3,1.46,258.7,3.87,62.9,.82,24.6,30.2],[56.9,.11,13.4,.16,2.16,.016,1.83,2.03],['范围输出'],['法强','法力续航']),
-  leaf:profile('辅助','ranged',[856.9,2.13,246.5,4.12,57.3,.86,27.9,31.7],[62.8,.16,12.6,.18,1.93,.014,2.02,2.14],['治疗支援'],['回复支援','生命双抗']),
-  blade:profile('战士','melee',[982.4,2.28,187.3,2.91,83.7,.89,33.8,27.6],[72.3,.15,8.9,.11,3.47,.021,2.68,1.76],['持续近战'],['攻击续航','攻防混合']),
-  shade:profile('刺客','melee',[842.6,1.81,213.8,3.37,87.2,1.03,27.3,25.8],[61.4,.13,10.8,.13,3.62,.024,2.08,1.59],['收割'],['攻击穿透','攻速特效']),
-  tide:profile('法师','ranged',[831.5,1.94,239.2,3.69,65.1,.84,25.7,32.8],[60.2,.14,12.8,.15,2.28,.018,1.94,2.21],['法术支援'],['法强急速','法力续航']),
+  lishan:profile('坦克','melee',[1146.8,2.48,184.6,2.92,61.7,.756,36.8,31.6],[78.9,.16,8.7,.11,2.46,.0172,2.68,2.14],['生命护盾','短时保护'],['生命护盾','针对抗性','半肉输出']),
+  jinli:profile('法师','ranged',[816.7,1.46,278.4,3.72,58.9,.812,25.4,29.8],[60.8,.115,12.3,.13,2.08,.0155,1.94,2.06],['印记引爆','范围爆发'],['法强爆发','急速续航','法系生存']),
+  shuoying:profile('刺客','melee',[842.9,1.69,216.8,3.08,68.4,.934,27.6,28.9],[61.7,.125,10.2,.12,2.67,.0184,2.16,1.87],['单体魔法','残血收割'],['法强爆发','急速追猎','生存混合']),
+  lingxi:profile('辅助','ranged',[868.3,1.82,254.6,3.66,55.8,.784,26.7,30.2],[64.3,.125,11.6,.135,1.96,.0142,2.04,2.17],['续航治疗','短时保护'],['法强治疗','急速法力','生存保护']),
   lanya:profile('射手','ranged',[873,1.72,196.8,3.26,76.4,.91,28.7,24.3],[63.4,.13,9.6,.12,3.18,.026,2.35,1.45],['高频普攻','攻击特效','持续输出'],['攻速特效','攻击力','法强附魔','生存']),
 };
 export const LANYA_HERO={id:'lanya',name:'岚牙',role:'射手',mark:'弦',color:'#acc6a1',description:'以疾弦驱动淬锋箭，在十秒连射中释放攻击特效。',tags:HERO_PROFILES.lanya.subtypes,attackRule:'slot3',stats:HERO_PROFILES.lanya.base};

@@ -12,7 +12,7 @@ import { LANYA_HERO } from '../src/heroes/foundation.js';
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-7,`${a} != ${b}`);
 function fixture(level=1){const m={hero:'lanya'};initializeProgression(m,level,123);return {level,seed:123,party:[m],phase:'ready'};}
 test('individual panels, zero AP/crit, fractional growth persists past 15',()=>{
-  assert.equal(new Set(Object.values(HERO_PROFILES).map(p=>p.base.attackSpeed)).size,8);
+  assert.equal(new Set(Object.values(HERO_PROFILES).map(p=>p.base.attackSpeed)).size,5);
   for(const id of Object.keys(HERO_PROFILES))for(const level of [1,15,16,99]){
     const s=heroBaseStats(id,level,BASE);assert.equal(s.power,0);assert.equal(s.crit,0);assert.equal(s.accuracy,95);assert.equal(s.evasion,0);
   }

@@ -5,9 +5,15 @@ import {Battle} from '../src/battle.js';
 import * as M from '../src/model.js';
 import {resolveStats} from '../src/combat/attributes.js';
 import {setSource,removeSource,applyStatus,removeStatus,expireStatuses,isControlled} from '../src/combat/unit.js';
-import {STATUSES,skillsFor} from '../src/combat/content.js';
+import {STATUSES} from '../src/combat/content.js';
 import {TriggerQueue} from '../src/combat/events.js';
-function arena(hero='stone',augments=[]) {
+function skillsFor(){return [
+ {id:'fixture-hit',key:'Q',name:'命中测试',cost:12,cooldown:4,castTime:.25,target:'enemy',retarget:'release',effects:[{type:'damage',damageType:'physical',attack:1.4,power:0,travel:.2,onHit:[{type:'status',status:'stun'}]}]},
+ {id:'fixture-heal',key:'W',name:'治疗测试',cost:16,cooldown:7,castTime:0,target:'allyWeakest',effects:[{type:'heal',amount:30,power:1}]},
+ {id:'fixture-shield',key:'E',name:'护盾测试',cost:18,cooldown:9,castTime:0,target:'self',effects:[{type:'shield',amount:30,power:1},{type:'status',status:'fortify'}]},
+ {id:'fixture-ultimate',key:'R',name:'吟唱测试',cost:30,cooldown:12,castTime:.6,target:'allEnemies',effects:[{type:'damage',attack:1.8,power:.8,travel:.3}]},
+];}
+function arena(hero='lishan',augments=[]) {
   const run=M.createRun(91);run.party=[{hero,gear:[null,null,null,null],auto:true}];run.phase='ready';run.augments=augments;
   const b=new Battle(run);b.party[0].skills=skillsFor(hero);return b;
 }
@@ -40,7 +46,7 @@ test('refresh and capped stacks expire without removing independent sources or h
 test('heroes and monsters share skills, modifiers, statuses and ally targeting',()=>{
   const b=arena(),enemy=b.enemies[0];
   assert.deepEqual(Object.keys(enemy).sort(),Object.keys(b.party[0]).sort());
-  enemy.skills=skillsFor('leaf');enemy.ready=[0,0,0,0];enemy.hp-=20;b.party[0].hp-=30;
+  enemy.skills=skillsFor('lingxi');enemy.ready=[0,0,0,0];enemy.hp-=20;b.party[0].hp-=30;
   const heroHp=b.party[0].hp;assert.equal(b.cast(enemy,1),true);assert.equal(enemy.hp,enemy.stats.hp);assert.equal(b.party[0].hp,heroHp);
   applyStatus(enemy,STATUSES.fortify,enemy.id,0);assert.equal(enemy.stats.armor,enemy.baseStats.armor+8);
 });
@@ -54,14 +60,14 @@ test('same-name statuses from independent sources remove independently; equal-pr
   removeSource(u,'a');removeSource(u,'z');setSource(u,'a',rules('a'));setSource(u,'z',rules('z'));assert.equal(u.rules.attackTarget,'slot3');
 });
 test('simultaneous instant skills use priority and recheck mana; they do not reset attack timing',()=>{
-  const b=arena('tide');quiet(b);const u=b.party[0];u.mana=25;u.nextAttack=5;
+  const b=arena('jinli');quiet(b);const u=b.party[0];u.mana=25;u.nextAttack=5;
   u.skills=[10,30,20].map((priority,i)=>({id:`s${i}`,key:`S${i}`,name:'护盾',priority,cost:10,cooldown:1,castTime:0,target:'self',effects:[{type:'shield',amount:1}]}));u.ready=[0,0,0];u.skillModes=['auto','auto','auto'];
   b.step();assert.equal(u.mana,5);assert.equal(u.shield,2);assert.equal(u.nextAttack,5);
   assert.deepEqual(b.events.history.filter(e=>e.type==='castStart').map(e=>e.skill),['s1','s2']);
   assert.equal(u.ready[0],0);
 });
 test('skill rule overrides affect cost and cooldown and preview checks never consume RNG',()=>{
-  const b=arena('tide'),u=b.party[0];quiet(b);u.ready[0]=0;u.mana=0;
+  const b=arena('jinli'),u=b.party[0];quiet(b);u.ready[0]=0;u.mana=0;
   setSource(u,'test-rule',{rules:[{id:'cost',rule:'skill.Q.cost',value:0},{id:'cd',rule:'skill.Q.cooldown',value:2}]});
   const seed=b.rng.seed;for(let i=0;i<50;i++)assert.equal(b.skillReason(u,0),'就绪');assert.equal(b.rng.seed,seed);
   assert.equal(b.cast(u,0),true);assert.equal(u.mana,0);assert.equal(u.ready[0],Math.ceil(2/(1+u.stats.haste/100)/.02));
@@ -75,10 +81,10 @@ test('cast time occupies actions; tenacity shortens stun and interruption retain
   assert.equal(u.casting,null);assert.equal(u.mana,mana);assert.equal(u.ready[3],ready);
   assert.equal([...u.statuses.values()][0].expiresAt,b.tick+15);
   advance(b,14);assert.ok(isControlled(u));b.step();assert.equal(isControlled(u),false);
-  assert.ok(!b.events.history.some(e=>e.type==='cast'&&e.skill==='stone-R'));
+  assert.ok(!b.events.history.some(e=>e.type==='cast'&&e.skill==='fixture-ultimate'));
 });
 test('a projectile already in flight still settles while its source is stunned',()=>{
-  const b=arena('tide');quiet(b);const source=b.party[0],target=b.enemies[0];
+  const b=arena('jinli');quiet(b);const source=b.party[0],target=b.enemies[0];
   const hp=target.hp;configure(source,{hpRegen:0,manaRegen:0,attack:10,crit:0});
   b.fire(source,target,{duration:.1});b.addStatus(target,source,'stun');advance(b,5);
   assert.ok(target.hp<hp);assert.ok(isControlled(source));
@@ -100,9 +106,9 @@ test('impact snapshots resist later stat changes and fully shielded hits do not 
   b.settle(shot);assert.equal(u.hp,u.stats.hp);assert.equal(u.statuses.size,1);
   assert.ok(!u.triggerReady.has('passive:stone'));
 });
-test('stone shield, orange equipment healing and augment stacking form one working chain',()=>{
-  const run=M.createRun(77);run.phase='ready';run.augments=['resonant-guard'];run.party=[{hero:'stone',gear:[M.makeItem(run,5,'rune'),null,null,null],auto:true}];
-  const b=new Battle(run),u=b.party[0];quiet(b);u.hp=100;u.skills=skillsFor('stone');u.ready[2]=0;
+test('generic shield, orange equipment healing and augment stacking form one working chain',()=>{
+  const run=M.createRun(77);run.phase='ready';run.augments=['resonant-guard'];run.party=[{hero:'lishan',gear:[M.makeItem(run,5,'rune'),null,null,null],auto:true}];
+  const b=new Battle(run),u=b.party[0];quiet(b);u.hp=100;u.skills=skillsFor('lishan');u.ready[2]=0;
   assert.equal(u.stats.hp,u.baseStats.hp+40);assert.equal(b.cast(u,2),true);
   assert.equal(u.hp,108);assert.ok(u.shield>0);
   assert.equal(u.stats.armor,u.baseStats.armor+8+4);
@@ -110,20 +116,20 @@ test('stone shield, orange equipment healing and augment stacking form one worki
   assert.equal(b.events.suppressed,0);
 });
 test('orange clock triggers on critical impact rather than projectile launch',()=>{
-  const run=M.createRun(7);run.phase='ready';run.party=[{hero:'wind',gear:[M.makeItem(run,5,'clock'),null,null,null],auto:true}];
+  const run=M.createRun(7);run.phase='ready';run.party=[{hero:'jinli',gear:[M.makeItem(run,5,'clock'),null,null,null],auto:true}];
   const b=new Battle(run),u=b.party[0];quiet(b);configure(u,{hpRegen:0,manaRegen:0,crit:1});
   const speed=u.stats.attackSpeed,shot=b.fire(u,b.enemies[0]);assert.equal(u.statuses.size,0);
   b.settle(shot);assert.ok(Math.abs(u.stats.attackSpeed-speed-.15)<1e-10);assert.ok([...u.statuses.values()].some(s=>s.definition.id==='tempo'));
 });
 test('reciprocal zero-cooldown retaliation terminates, independent attacks can trigger again, and rewards occur once',()=>{
-  const b=arena('tide');quiet(b);const a=b.party[0],z=b.enemies[0];
+  const b=arena('jinli');quiet(b);const a=b.party[0],z=b.enemies[0];
   for(const u of [a,z]){configure(u,{hp:1000,hpRegen:0,manaRegen:0,armor:0,attack:10,crit:0,accuracy:1000});u.hp=1000;u.triggers=[{id:'reflect',event:'damaged',relation:'target',effects:[{type:'damage',target:'attacker',amount:1,damageType:'physical'}]}];}
   b.settle(b.fire(a,z));assert.equal(z.hp,989);assert.equal(a.hp,999);assert.equal(b.events.pending.length,0);assert.ok(b.events.suppressed>0);
   b.settle(b.fire(a,z));assert.equal(z.hp,978);assert.equal(a.hp,998);
   z.hp=1;const shot=b.fire(a,z);b.settle(shot);b.settle(shot);assert.equal(b.kills,1);
 });
 test('lethal critical impact records stable hit, critical, damaged, lifesteal, kill and death order',()=>{
-  const b=arena('tide');quiet(b);const source=b.party[0],target=b.enemies[0];
+  const b=arena('jinli');quiet(b);const source=b.party[0],target=b.enemies[0];
   configure(source,{attack:100,crit:1,lifeSteal:.1,hpRegen:0,manaRegen:0});source.hp=100;target.hp=1;
   const shot=b.fire(source,target);b.settle(shot);
   assert.deepEqual(b.events.history.map(e=>e.type),['attack','hit','critical','damaged','heal','kill','death']);

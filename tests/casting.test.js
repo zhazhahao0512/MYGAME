@@ -5,7 +5,7 @@ import * as M from '../src/model.js';
 import {normalizeSkillModes,chooseManagedSkill,evaluateSkill} from '../src/combat/casting.js';
 const ability=(id,cost,amount,extra={})=>({id,key:id,name:id,cost,cooldown:10,castTime:0,target:'enemy',priority:10,effects:[{type:'damage',amount,attack:0,power:0,damageType:'magic'}],...extra});
 function arena(){
- const run=M.createRun(17);run.phase='ready';run.party=[{hero:'stone',gear:[null,null,null,null],skillModes:normalizeSkillModes()}];
+ const run=M.createRun(17);run.phase='ready';run.party=[{hero:'lishan',gear:[null,null,null,null],skillModes:normalizeSkillModes()}];
  const b=new Battle(run),u=b.party[0];
  for(const actor of b.units()){actor.nextAttack=Infinity;actor.ready=actor.skills.map(()=>Infinity);actor.stats.hpRegen=0;actor.stats.manaRegen=0;actor.triggers=[];}
  u.stats.mana=200;u.mana=150;u.stats.power=0;u.guaranteedManaRegen=0;

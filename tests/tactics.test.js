@@ -41,8 +41,8 @@ test('commands do not reset attack timers, mana or projectiles; invalid commands
 });
 test('status rule overrides supersede defaults and invalidate old locks when removed',()=>{
  const b=setup(),u=b.party[0];b.setTactics(0,{mode:'far'});assert.equal(b.target(u).slot,4);
- setSource(u,'taunt-test',{rules:[{rule:'attackTarget',value:'slot3',priority:10}]});
- assert.equal(b.target(u).slot,2);removeSource(u,'taunt-test');assert.equal(b.target(u).slot,4);
+ setSource(u,'taunt-test',{rules:[{rule:'attackTarget',value:'front',priority:10}]});
+ assert.equal(b.target(u).slot,0);removeSource(u,'taunt-test');assert.equal(b.target(u).slot,4);
 });
 test('tactics survive checkpoint reload, shop swaps and next battle, old saves get defaults',()=>{
  const b=setup();b.commandTarget(0,b.enemies[4].id);b.setTactics(0,{mode:'ratio'},b.enemies[4].id);

@@ -1,3 +1,4 @@
+import { heroReduction } from './mechanics.js';
 import { actionHitChance } from './accuracy.js';
 import { removeStatus } from '../combat/unit.js';
 
@@ -53,7 +54,7 @@ export function lanyaAttackPayload(battle,unit,target){
   const parts=[{damage:unit.level*(ult?.definition.multiplier||1),damageType:'true',originId:'lanya-passive'}];
   if(empowered){
     const s=unit.stats,t=target.stats;
-    parts.push({damage:(edge.bonus+.25*s.attack+.30*s.power)*(1+s.damageAmp)*100/(100+Math.max(0,t.resist-s.magicPen))*(1-t.reduction),damageType:'magic',originId:'lanya-1'});
+    parts.push({damage:(edge.bonus+.25*s.attack+.30*s.power)*(1+s.damageAmp)*100/(100+Math.max(0,t.resist-s.magicPen))*(1-t.reduction)*heroReduction(target),damageType:'magic',originId:'lanya-1'});
     if(!ult&&--unit.edgeCharges<=0)clear(unit,'lanya-edge');
   }
   return {parts,refund:speed.rank>0?speed.refund:0};
@@ -66,7 +67,7 @@ export function lanyaMainHit(battle,unit,payload){
 }
 function perHit(unit,target,extra=0){
   const s=unit.stats,t=target.stats;
-  return ((s.attack*(1+s.crit*(s.critDamage-1))*(1+s.damageAmp)*100/(100+Math.max(0,t.armor-s.armorPen))*(1-t.reduction))+unit.level+extra)*actionHitChance(unit,target);
+  return ((s.attack*(1+s.crit*(s.critDamage-1))*(1+s.damageAmp)*100/(100+Math.max(0,t.armor-s.armorPen))*(1-t.reduction)*heroReduction(target))+unit.level+extra)*actionHitChance(unit,target);
 }
 export function lanyaSkillValue(battle,unit,index,skill){
   if(!isLanya(unit))return null;
@@ -74,7 +75,7 @@ export function lanyaSkillValue(battle,unit,index,skill){
   const target=battle.previewSkillTargets(unit,{target:'enemy'})[0];if(!target)return {value:0,band:3};
   const s=unit.stats,t=target.stats,hit=actionHitChance(unit,target);
   const edge=battle.getSkill(unit,0),speed=battle.getSkill(unit,1);
-  const magic=edge.rank>0?(edge.bonus+.25*s.attack+.30*s.power)*(1+s.damageAmp)*100/(100+Math.max(0,t.resist-s.magicPen))*(1-t.reduction):0;
+  const magic=edge.rank>0?(edge.bonus+.25*s.attack+.30*s.power)*(1+s.damageAmp)*100/(100+Math.max(0,t.resist-s.magicPen))*(1-t.reduction)*heroReduction(target):0;
   // Limit the useful window by current visible enemy health, never future spawns/RNG.
   const hp=battle.living(unit.side==='hero'?'enemy':'hero').reduce((n,u)=>n+u.hp+u.shield,0);
   const window=Math.min(index===3?10:index===1?5:8,hp/Math.max(1,perHit(unit,target)*s.attackSpeed));

@@ -2,6 +2,7 @@ import './heroes/growth.css';
 import './expedition-ui.css';
 import { renderGrowth,growthButton,skillDetails } from './heroes/growth-ui.js';
 import { initializeProgression,progressionSummary } from './heroes/progression.js';
+import { HERO_PASSIVES } from './heroes/roster.js';
 import { LANYA_PASSIVE } from './heroes/lanya.js';
 import { HEROES, heroById, BASE, RULES, rarityFor, PRIMARY, SECONDARY, STAT_LABELS, statText } from './data.js';
 import * as M from './model.js';
@@ -11,7 +12,7 @@ import { CAST_MODE_INFO, normalizeSkillModes, nextSkillMode } from './combat/cas
 import { TARGET_MODES } from './combat/tactics.js';
 import { Battle, STEP, cooldown } from './battle.js';
 import { installPointerDrag } from './pointer-drag.js';
-import { skillsFor, STONE_PASSIVE, AUGMENTS, EQUIPMENT_EFFECTS } from './combat/content.js';
+import { skillsFor, AUGMENTS, EQUIPMENT_EFFECTS } from './combat/content.js';
 
 const app=document.querySelector('#app'),modalRoot=document.querySelector('#modal-root');
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -78,12 +79,12 @@ function inspectionContent(anchor){
   if(inspect==='enemy-skill'){const u=battle?.find(anchor.dataset.enemyId),skill=u?.skills[Number(anchor.dataset.skill)];return skill?`<h3>${escape(u.name)} · ${escape(skill.name)}</h3><p>法力消耗 ${skill.cost} · 冷却 ${skill.cooldown}s · 施法 ${skill.castTime}s</p><p>对敌方目标释放伤害技能。</p>${pauseNote}`:null;}
   if(!member)return null;
   if(inspect==='passive'&&member.hero==='lanya')return `<h3>${LANYA_PASSIVE.name}</h3><p>${LANYA_PASSIVE.description}</p>${pauseNote}`;
-  if(inspect==='passive')return `<h3>${member.hero==='stone'?STONE_PASSIVE.name:'被动技能'}</h3><p>${member.hero==='stone'?STONE_PASSIVE.description:'专属被动尚未设计，当前占位。'}</p>${pauseNote}`;
+  if(inspect==='passive'){const passive=HERO_PASSIVES[member.hero];return `<h3>${escape(passive.name)}</h3><p>${escape(passive.description)}</p>${pauseNote}`;}
   const n=Number(skill),unit=screen==='battle'?battle.party[h]:null,definition=unit?battle.getSkill(unit,n):skillsFor(member.hero,progressionSummary(member,run.level).ranks)[n];
   if(!definition)return null;
   const stats=unit?.stats||M.statsFor(member,run.level,run.augments);
-  const targets={threeEnemies:'最多三个不同敌人',self:'自身',enemy:unit?.tactics?'敌方 · 沿用当前锁定 / 英雄选敌策略':`敌方 · ${roleName[heroById(member.hero).attackRule]||'最前方'}`,allEnemies:'所有存活敌人',allAllies:'所有存活友军',allyWeakest:'生命比例最低的受伤友军'};
-  return `<h3>${n+1} · ${escape(definition.name)} · ${definition.rank||0}级</h3><p>${escape(skillDetails(definition))}</p><dl><div><dt>目标</dt><dd>${targets[definition.target]}</dd></div><div><dt>法力消耗</dt><dd>${definition.cost}</dd></div><div><dt>当前冷却</dt><dd>${cooldown(definition.cooldown,stats.haste).toFixed(2)} 秒</dd></div><div><dt>施法时间</dt><dd>${definition.castTime||0} 秒</dd></div>${unit?`<div><dt>当前状态</dt><dd>${battle.skillReason(unit,n)}</dd></div>`:''}</dl><p>吸血 ${statText('lifeSteal',stats.lifeSteal)} · 全能吸血 ${statText('omni',stats.omni)}。吸血按实际生命伤害恢复，不计护盾吸收；伤害技能仅触发全能吸血。</p><small>${member.hero==='lanya'?'攻击特效英雄 · 被动与1、3附伤不吸血。':member.hero==='stone'?'示例技能已生效，数值待调整。':'通用演示技能，专属技能待设计。'}</small>${pauseNote}`;
+  const targets={threeEnemies:'最多三个不同敌人',self:'自身',enemy:unit?.tactics?'敌方 · 沿用当前锁定 / 英雄选敌策略':`敌方 · ${roleName[heroById(member.hero).attackRule]||'最前方'}`,allEnemies:'所有存活敌人',allAllies:'所有存活友军',threeAllies:'最多三名友方',allyPressure:'受压友方',allyWeakest:'生命比例最低的受伤友军'};
+  return `<h3>${n+1} · ${escape(definition.name)} · ${definition.rank||0}级</h3><p>${escape(skillDetails(definition))}</p><dl><div><dt>目标</dt><dd>${targets[definition.target]}</dd></div><div><dt>法力消耗</dt><dd>${definition.cost}</dd></div><div><dt>当前冷却</dt><dd>${cooldown(definition.cooldown,stats.haste).toFixed(2)} 秒</dd></div><div><dt>施法时间</dt><dd>${definition.castTime||0} 秒</dd></div>${unit?`<div><dt>当前状态</dt><dd>${battle.skillReason(unit,n)}</dd></div>`:''}</dl><p>吸血 ${statText('lifeSteal',stats.lifeSteal)} · 全能吸血 ${statText('omni',stats.omni)}。吸血按实际生命伤害恢复，不计护盾吸收；伤害技能仅触发全能吸血。</p><small>${member.hero==='lanya'?'攻击特效英雄 · 被动与1、3附伤不吸血。':'正式英雄技能 · 可在成长界面手动升级或按推荐补点。'}</small>${pauseNote}`;
 }
 function topbar(title,subtitle='',right=''){
   return `<header class="topbar"><button class="brand-mini" data-act="home" aria-label="返回首页"><span class="brand-symbol">远</span><span>小队远征</span></button><div class="topbar-title"><h1>${title}</h1>${subtitle?`<span>${subtitle}</span>`:''}</div><div class="topbar-actions">${preview?'<span class="badge preview-badge">界面预览</span>':''}${right}${btn(icon('settings'),'settings','icon-btn','aria-label="设置"')}</div></header>`;
@@ -130,9 +131,9 @@ function renderHome(){
       <div class="home-art" aria-label="五名英雄的文字占位卡片"><div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div><span class="art-cross cross-a">＋</span><span class="art-cross cross-b">＋</span><div class="art-caption"><span>YOUR NEXT PARTY</span><b>五种可能，一支队伍。</b></div><div class="hero-fan">${members.map((h,i)=>`<div class="fan-card fan-${i}" style="--hero:${h.color};--i:${i}"><span class="fan-number">0${i+1}</span>${portrait(h)}<div class="fan-bottom"><span>${h.role}</span><b>${h.name}</b><i></i></div></div>`).join('')}</div><div class="art-ground"></div><div class="route-track"><span>01</span>${Array.from({length:20},(_,i)=>`<i class="${i<4?'lit':''}"></i>`).join('')}<span>20</span></div><div class="art-note"><span class="tiny-diamond"></span>招募 · 装备 · 再出发</div></div></section>
     <footer class="home-footer"><span><i class="status-dot"></i> 全程本地运行 · 自动保存关卡进度</span><span>头像 / 技能 / 装备采用文字占位 <span class="footer-divider">/</span> 电脑横屏优先</span></footer></div>`;
 }
-function recruitCards(){return run.candidates.map((id,i)=>{const h=heroById(id),active=(selectedHero||run.candidates[0])===id;return `<button class="recruit-card ${active?'selected':''}" data-act="choose-hero" data-id="${id}" style="--hero:${h.color}"><div class="recruit-card-top"><span>候选 0${i+1}</span><span class="choice-check">${active?icon('check'):'＋'}</span></div>${portrait(h,'large')}<span class="hero-role">${h.role}</span><h2>${h.name}</h2><p>${h.description}</p><div class="tags">${h.tags.map(t=>`<span>${t}</span>`).join('')}</div><div class="candidate-stats"><span>攻击 <b>${h.stats.attack||BASE.attack}</b></span><span>法强 <b>${h.stats.power||BASE.power}</b></span><span>生命 <b>${h.stats.hp||BASE.hp}</b></span></div><div class="placeholder-skills">被动 <span>1</span><span>2</span><span>3</span><span>4</span></div><small class="muted">${h.id==='lanya'?'攻击特效英雄 · 被动与四个技能已接入':h.id==='stone'?'示例角色 · 被动与四个技能已生效':'演示角色 · 专属技能待正式设计'}</small></button>`;}).join('');}
+function recruitCards(){return run.candidates.map((id,i)=>{const h=heroById(id),active=(selectedHero||run.candidates[0])===id;return `<button class="recruit-card ${active?'selected':''}" data-act="choose-hero" data-id="${id}" style="--hero:${h.color}"><div class="recruit-card-top"><span>候选 0${i+1}</span><span class="choice-check">${active?icon('check'):'＋'}</span></div>${portrait(h,'large')}<span class="hero-role">${h.role}</span><h2>${h.name}</h2><p>${h.description}</p><div class="tags">${h.tags.map(t=>`<span>${t}</span>`).join('')}</div><div class="candidate-stats"><span>攻击 <b>${h.stats.attack||BASE.attack}</b></span><span>法强 <b>${h.stats.power||BASE.power}</b></span><span>生命 <b>${h.stats.hp||BASE.hp}</b></span></div><div class="placeholder-skills">被动 <span>1</span><span>2</span><span>3</span><span>4</span></div><small class="muted">${h.id==='lanya'?'攻击特效英雄 · 被动与四个技能已接入':'正式英雄 · 被动与四个技能已接入'}</small></button>`;}).join('');}
 function renderRecruit(){const initial=run.phase==='initial';return `<div class="page-shell">${topbar(initial?'选择初始英雄':'新的同伴',initial?'远征准备 / 01':`第 ${run.floor} 层准备 · 招募 ${run.floor} / 4`)}<section class="recruit-intro"><span class="eyebrow">${initial?'FIRST COMPANION':'BUILD YOUR PARTY'}</span><h2>${initial?'远征，从一位同伴开始。':'下一段路，一起走。'}</h2><p>${initial?'选择你的初始英雄。进入前四层时，还能各招募一名同伴。':'从三个随机候选中选择一位加入。英雄一旦加入，本次远征不可替换。'}</p></section><div class="recruit-grid">${recruitCards()}</div><footer class="page-bottom"><div class="party-mini"><span>当前队伍 <b>${run.party.length}/5</b></span>${run.party.map(m=>`<span class="mini-name" style="--hero:${heroById(m.hero).color}">${heroById(m.hero).name}</span>`).join('')}${!run.party.length?'<small class="muted">等待第一位同伴</small>':''}</div>${btn(`确认选择 · ${heroById(selectedHero||run.candidates[0]).name} ${icon('arrow')}`,'confirm-hero','primary')}</footer></div>`;}
-function renderReady(){return `<div class="page-shell">${topbar('准备出发',`第 ${run.floor} / 20 层` ,gold(run.gold))}<section class="ready-intro"><span class="eyebrow">EXPEDITION ${String(run.floor).padStart(2,'0')}</span><h2>${run.floor%5===0?'前方，有守门人在等待。':'队伍就位，准备迎战。'}</h2><p>坚守 ${RULES.roundSeconds} 秒，随后清理场上剩余敌人。击败怪物获得金币。</p></section><div class="ready-party">${[...run.party].reverse().map((m,i)=>{const h=heroById(m.hero);return `<div class="ready-hero" style="--hero:${h.color}"><span class="slot-label">${run.party.length-i} 号位</span>${portrait(h,'large')}<h3>${h.name}</h3><span>${h.role} · Lv.${run.level}</span>${growthButton(m,run.level,run.party.length-i-1)}</div>`;}).join('')}</div><div class="ready-direction">后排 <span>──────────────────────</span> 前排 →</div><div class="ready-actions"><span class="muted">装备和站位只能在战后商店调整</span>${btn(`进入第 ${run.floor} 层 ${icon('arrow')}`,'start-battle','primary large-button')}</div><p class="prototype-note">岚牙专属技能已接入；可点击成长分配技能点，也可保留点数。其余英雄技能仍为示例。</p></div>`;}
+function renderReady(){return `<div class="page-shell">${topbar('准备出发',`第 ${run.floor} / 20 层` ,gold(run.gold))}<section class="ready-intro"><span class="eyebrow">EXPEDITION ${String(run.floor).padStart(2,'0')}</span><h2>${run.floor%5===0?'前方，有守门人在等待。':'队伍就位，准备迎战。'}</h2><p>坚守 ${RULES.roundSeconds} 秒，随后清理场上剩余敌人。击败怪物获得金币。</p></section><div class="ready-party">${[...run.party].reverse().map((m,i)=>{const h=heroById(m.hero);return `<div class="ready-hero" style="--hero:${h.color}"><span class="slot-label">${run.party.length-i} 号位</span>${portrait(h,'large')}<h3>${h.name}</h3><span>${h.role} · Lv.${run.level}</span>${growthButton(m,run.level,run.party.length-i-1)}</div>`;}).join('')}</div><div class="ready-direction">后排 <span>──────────────────────</span> 前排 →</div><div class="ready-actions"><span class="muted">装备和站位只能在战后商店调整</span>${btn(`进入第 ${run.floor} 层 ${icon('arrow')}`,'start-battle','primary large-button')}</div><p class="prototype-note">五名正式英雄均有专属技能。点击成长手动加点或按推荐补点；每人独立分配，16级起另选属性。</p></div>`;}
 function skillButtons(member,index,combat=false){
   const modes=normalizeSkillModes(member.skillModes);
   return `<div class="skills"><button class="skill passive" data-inspect="passive" data-act="passive" data-hero="${index}"><b>被</b><small>被动</small></button>${skillsFor(member.hero,progressionSummary(member,run.level).ranks).map((s,n)=>{
@@ -399,6 +400,7 @@ function closeModal(){const retainPause=paused&&modal?.type!=='pause';if(modal?.
 function modalFrame(title,body,footer='',cls=''){return `<div class="modal-backdrop"><section class="modal ${cls}" role="dialog" aria-modal="true" aria-labelledby="modal-title"><header class="modal-header"><div><span class="eyebrow">SQUAD EXPEDITION</span><h2 id="modal-title">${title}</h2></div>${btn(icon('cross'),'close','icon-btn','aria-label="关闭弹窗"')}</header><div class="modal-body">${body}</div>${footer?`<footer class="modal-footer">${footer}</footer>`:''}</section></div>`;}
 function renderModal(){
   let html='';
+  if(modal.type==='skill-points')html=modalFrame('还有技能点待分配',`<p>${run.party.filter(m=>progressionSummary(m,run.level).points).map(m=>`${heroById(m.hero).name}：${progressionSummary(m,run.level).points}点`).join('；')}</p><p>推荐补点保留你已选的技能。也可以返回成长界面逐项选择。</p>`,btn('返回加点','close','quiet')+btn('保留点数出战','battle-unspent','quiet')+btn('按推荐补齐并出战','battle-recommended','primary'));
   if(modal.type==='hero-growth'){const member=run.party[modal.hero],hero=heroById(member.hero);html=modalFrame(`${hero.name} · 英雄成长`,renderGrowth(run,modal.hero,hero,skillsFor(member.hero,progressionSummary(member,run.level).ranks)),btn('完成','close','primary'),'hero-growth-modal');}
   if(modal.type==='augment'){
     const augment=AUGMENTS[0],active=(run.augments||[]).includes(augment.id);
@@ -421,7 +423,7 @@ function previewPage(page){
   if(page==='recruit'){run.floor=2;run.phase='recruit';run.candidates=M.sample(run,HEROES.map(h=>h.id).filter(id=>!run.party.some(h=>h.hero===id)),3);selectedHero=null;route();render();return;}
   for(const h of HEROES)if(run.party.length<5&&!run.party.some(m=>m.hero===h.id))run.party.push({hero:h.id,gear:[null,null,null,null],skillModes:normalizeSkillModes()});
   run.floor=4;run.level=5;for(const m of run.party){initializeProgression(m,run.level,run.seed);m.progression.ranks=[1,1,2,1];}run.party.forEach((h,i)=>{h.gear[0]=M.makeItem(run,i%2?'blue':'white');h.gear[1]=M.makeItem(run,'white');});
-  if(page==='battle'){run.augments=[AUGMENTS[0].id];for(const [hero,base] of [['stone','purple_watch_blades'],['wind','purple_combo_bow'],['shade','purple_keen_warblade']]){const member=run.party.find(m=>m.hero===hero);if(member)member.gear[0]=M.makeItem(run,base);}startBattle();return;}
+  if(page==='battle'){run.augments=[AUGMENTS[0].id];for(const [hero,base] of [['lishan','purple_watch_blades'],['lanya','purple_combo_bow'],['shuoying','blue_glowing_staff']]){const member=run.party.find(m=>m.hero===hero);if(member)member.gear[0]=M.makeItem(run,base);}startBattle();return;}
   M.finishRound(run,{won:true,gold:1280,kills:42,seconds:25});
   if(page==='result'){run.floor=20;run.phase='victory';}
   if(page==='shop')run.chest.claimed=true;
@@ -448,7 +450,9 @@ function act(event){const target=event.target.closest('[data-act]');if(!target||
       case 'close':closeModal();break;
       case 'choose-hero':selectedHero=target.dataset.id;render();break;
       case 'confirm-hero':M.recruit(run,selectedHero||run.candidates[0]);selectedHero=null;save();route();render();break;
-      case 'start-battle':startBattle();break;
+      case 'start-battle':if(run.party.some(m=>progressionSummary(m,run.level).points))openModal({type:'skill-points'});else startBattle();break;
+      case 'battle-unspent':closeModal();startBattle();break;
+      case 'battle-recommended':run.party.forEach((_,i)=>M.recommendSkills(run,i));closeModal();startBattle();break;
       case 'retry-engine':renderer?.destroy();renderer=null;render();break;
       case 'pause':openModal({type:'pause'});break;
       case 'detail-loadout':mobileView='loadout';render();break;

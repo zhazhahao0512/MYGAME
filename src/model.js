@@ -1,4 +1,4 @@
-import { memberBaseStats,prepareHeroSave } from './heroes/integration.js';
+import { memberBaseStats,prepareHeroSave,migrateHeroRoster,knownHeroId } from './heroes/integration.js';
 import { initializeProgression } from './heroes/progression.js';
 import { migrateAccuracyBonuses } from './heroes/accuracy.js';
 export { upgradeSkill,recommendSkills,chooseGrowth,progressionSummary } from './heroes/progression.js';
@@ -13,7 +13,7 @@ const fail = message => { throw new Error(message); };
 export function random(run) { let t = run.seed += 0x6d2b79f5; t = Math.imul(t ^ t >>> 15,t|1); t ^= t + Math.imul(t ^ t >>> 7,t|61); run.seed >>>= 0; return ((t ^ t >>> 14) >>> 0)/4294967296; }
 export function sample(run, entries, count) { const list=[...entries]; for(let i=list.length-1;i>0;i--){const j=Math.floor(random(run)*(i+1));[list[i],list[j]]=[list[j],list[i]];} return list.slice(0,count); }
 export function createRun(seed = Date.now() >>> 0) {
-  const run={version:2,heroContentVersion:1,seed,floor:1,level:1,xp:0,gold:0,kills:0,earned:0,party:[],augments:[],phase:'initial',candidates:[],shop:[],refreshes:0,chest:null,serial:0,lastRound:null,createdAt:Date.now()};
+  const run={version:2,heroContentVersion:2,seed,floor:1,level:1,xp:0,gold:0,kills:0,earned:0,party:[],augments:[],phase:'initial',candidates:[],shop:[],refreshes:0,chest:null,serial:0,lastRound:null,createdAt:Date.now()};
   run.candidates=sample(run,HEROES.map(h=>h.id),3); return run;
 }
 export function baseStatsFor(member, level=1) {
@@ -159,9 +159,10 @@ export function parseSave(raw) {
     if(!Array.isArray(run.augments)||run.augments.length>1||run.augments.some(id=>!AUGMENTS.some(a=>a.id===id)))return null;
     if(!['gold','xp','level','seed','serial','kills','earned','refreshes'].every(k=>Number.isFinite(run[k])&&run[k]>=0))return null;
     if(!Array.isArray(run.party)||run.party.length>5||new Set(run.party.map(h=>h.hero)).size!==run.party.length)return null;
-    if(!run.party.every(h=>heroById(h.hero)&&Array.isArray(h.gear)&&validateLoadout(h.gear)&&h.gear.every(validItem)))return null;
-    if(!Array.isArray(run.candidates)||run.candidates.some(id=>!heroById(id))||!Array.isArray(run.shop)||!run.shop.every(validItem))return null;
-    if(['initial','recruit'].includes(run.phase)&&(run.candidates.length!==3||new Set(run.candidates).size!==3||run.candidates.some(id=>run.party.some(h=>h.hero===id))))return null;
+    if(!run.party.every(h=>knownHeroId(h.hero)&&Array.isArray(h.gear)&&validateLoadout(h.gear)&&h.gear.every(validItem)))return null;
+    if(!Array.isArray(run.candidates)||run.candidates.some(id=>!knownHeroId(id))||!Array.isArray(run.shop)||!run.shop.every(validItem))return null;
+    if(!migrateHeroRoster(run))return null;
+    if(['initial','recruit'].includes(run.phase)&&(run.candidates.length!==Math.min(3,5-run.party.length)||new Set(run.candidates).size!==run.candidates.length||run.candidates.some(id=>run.party.some(h=>h.hero===id))))return null;
     if(run.phase!=='initial'&&run.party.length===0)return null;
     if(run.phase==='shop'&&(run.shop.length!==4||!run.chest||!Array.isArray(run.chest.options)||run.chest.options.length!==3||!run.chest.options.every(i=>i&&validItem(i))||typeof run.chest.claimed!=='boolean'||typeof run.chest.refreshUsed!=='boolean'))return null;
     const owned=run.party.flatMap(h=>h.gear).filter(Boolean);

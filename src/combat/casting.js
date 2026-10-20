@@ -1,3 +1,4 @@
+import { heroSkillValue,heroDamageOptions,heroReduction } from '../heroes/mechanics.js';
 import { actionHitChance } from '../heroes/accuracy.js';
 import { lanyaSkillValue } from '../heroes/lanya.js';
 // Casting policy is deterministic and read-only except for its explicit plan state.
@@ -8,11 +9,12 @@ export const normalizeSkillModes=(modes,count=4)=>Array.from({length:count},(_,i
 export const nextSkillMode=mode=>CAST_MODES[(CAST_MODES.indexOf(mode)+1)%CAST_MODES.length];
 const HORIZON=8;
 const EPS=1e-8;
-function expectedDamage(source,target,effect) {
+function expectedDamage(source,target,effect,battle) {
+  if(battle)effect=heroDamageOptions(battle,source,target,effect);
   const s=source.stats,t=target.stats,damageType=effect.damageType||'magic',magic=['magic','shield_piercing_magic'].includes(damageType);
   const hit=effect.canMiss===false?1:actionHitChance(source,target,effect);
   const amount=((effect.amount||0)+s.attack*(effect.attack??1)+s.power*(effect.power??.8))*(1+s.damageAmp);
-  const raw=damageType==='true'?amount:amount*100/(100+Math.max(0,(magic?t.resist:t.armor)-(magic?s.magicPen:s.armorPen)))*(1-t.reduction);
+  const raw=damageType==='true'?amount:amount*100/(100+Math.max(0,(magic?t.resist:t.armor)-(magic?s.magicPen:s.armorPen)))*(1-t.reduction)*heroReduction(target);
   return {reliable:raw,hit,mean:raw*hit*(effect.canCrit?1+s.crit*(s.critDamage-1):1)};
 }
 function pressure(battle,target) {
@@ -33,13 +35,15 @@ export function evaluateSkill(battle,unit,index) {
   if(!skill||skill.rank===0)return null;
   const targets=battle.previewSkillTargets(unit,skill);
   if(!targets.length)return null;
+  const formalValue=heroSkillValue(battle,unit,index,skill);
   const heroValue=lanyaSkillValue(battle,unit,index,skill);
   if(heroValue&&heroValue.value===0&&index!==2)return null;
-  let damage=heroValue?.value||0,support=0,band=heroValue?.band||4,purpose='damage';
+  let damage=heroValue?.value||0,support=0,band=heroValue?.band||formalValue?.band||4,purpose=formalValue?.purpose||'damage';
+  if(formalValue){if(formalValue.purpose==='damage')damage+=formalValue.value;else support+=formalValue.value;}
   for(const target of targets)for(const effect of skill.effects) {
     if(effect.type==='damage') {
       const source=unit.def?.id==='lanya'&&index===2?{...unit,stats:{...unit.stats,accuracy:unit.stats.accuracy+skill.accuracy}}:unit;
-      const d=expectedDamage(source,target,effect);
+      const d=expectedDamage(source,target,effect,battle);
       damage+=Math.min(target.hp+target.shield,d.mean);
       band=Math.min(band,3);
       if(d.hit>=.9&&d.reliable>=target.hp+target.shield&&(target.boss||target.challenge||target.casting))band=Math.min(band,2);
@@ -54,7 +58,7 @@ export function evaluateSkill(battle,unit,index) {
       const p=pressure(battle,target),amount=Math.max(0,((effect.amount||0)+unit.stats.power*(effect.power||0))*(1+unit.stats.shielding));
       support+=p.active?Math.min(amount,p.amount):0;purpose='sustain';
       if(p.active&&p.amount>0&&target.hp/target.stats.hp<=.35)band=1;
-    } else if(effect.type==='status') {
+    } else if(effect.type==='status'&&!formalValue?.replace) {
       const status=battle.statusDefinition(effect.status);if(!status)continue;
       const existing=[...target.statuses.values()].find(s=>s.definition.id===status.id&&s.sourceId===unit.id);
       if(existing&&(existing.expiresAt-battle.tick)*battle.stepSeconds>1)continue;

@@ -44,7 +44,7 @@ test('true damage respects shields, shield-piercing magic respects MR, all damag
  u.stats.accuracy=0;assert.equal(b.fire(u,target,{skill:true,damageType:'true'}).hit,false);
 });
 test('late recruits have all earned points, unlearned skills cannot cast, skill/growth/save rules persist',()=>{
- const r=M.createRun(9);r.level=16;r.candidates=['lanya','stone','wind'];M.recruit(r,'lanya');assert.equal(M.progressionSummary(r.party[0],16).points,15);
+ const r=M.createRun(9);r.level=16;r.candidates=['lanya','lishan','jinli'];M.recruit(r,'lanya');assert.equal(M.progressionSummary(r.party[0],16).points,15);
  r.phase='ready';const b=new Battle(r);assert.equal(b.skillReason(b.party[0],0),'未学习');M.recommendSkills(r,0);assert.deepEqual(r.party[0].progression.ranks,[4,4,4,3]);
  const restored=M.parseSave(JSON.stringify(r));assert.ok(restored);assert.deepEqual(restored.party[0].progression,r.party[0].progression);
  const later=M.statsFor(r.party[0],20);assert.ok(later.hp>M.statsFor(r.party[0],16).hp);assert.equal(later.power,0);
@@ -63,7 +63,7 @@ test('Lanya and formal equipment share one basic hit count, additive AS, and a s
  target.shield=0;const shot=b.fire(u,target);target.hp=shot.damage+1;u.mana=0;b.settle(shot);assert.equal(target.hp,0);assert.equal(u.mana,15);b.settle(shot);assert.equal(u.mana,15);
 });
 test('old accuracy bonuses migrate once while currency, loadout and modes survive',()=>{
- const r=M.createRun(19);r.phase='ready';r.candidates=[];r.party=[{hero:'wind',gear:[M.makeLegacyItem(r,0,'lens'),M.makeLegacyItem(r,0,'boots'),null,null],skillModes:['manual','auto','managed','manual']}];
+ const r=M.createRun(19);r.phase='ready';r.candidates=[];r.party=[{hero:'jinli',gear:[M.makeLegacyItem(r,0,'lens'),M.makeLegacyItem(r,0,'boots'),null,null],skillModes:['manual','auto','managed','manual']}];
  r.version=1;r.gold=20;r.party[0].gear[0].stats={focus:8,crit:.04};r.party[0].gear[1].stats={move:4,tenacity:.04};r.party[0].gear.forEach(i=>{if(i)i.price/=10;});
  const parsed=M.parseSave(JSON.stringify(r));assert.ok(parsed);assert.equal(parsed.gold,200);assert.equal(M.statsFor(parsed.party[0]).accuracy,103);assert.equal(M.statsFor(parsed.party[0]).evasion,4);
  assert.deepEqual(parsed.party[0].skillModes,r.party[0].skillModes);assert.deepEqual(M.parseSave(JSON.stringify(parsed)),parsed);

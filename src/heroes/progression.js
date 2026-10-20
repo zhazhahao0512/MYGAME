@@ -21,19 +21,21 @@ export function rankReason(ranks,level,index){
   if(index<3&&level<6&&ranks[index]>=3)return '6级可升四级';
   return '';
 }
-export function recommendedRanks(level){
-  const ranks=[0,0,0,0];for(const index of RECOMMENDED_ORDER.slice(0,Math.min(level,15)))ranks[index]++;return ranks;
+export const FORMAL_RECOMMENDED_ORDER=[0,1,0,2,3,0,0,1,1,3,1,2,2,2,3];
+export const recommendedOrder=hero=>hero==='lanya'?RECOMMENDED_ORDER:FORMAL_RECOMMENDED_ORDER;
+export function recommendedRanks(level,hero='lanya'){
+  const ranks=[0,0,0,0];for(const index of recommendedOrder(hero).slice(0,Math.min(level,15)))ranks[index]++;return ranks;
 }
 function hash(text){let n=2166136261;for(const c of text)n=Math.imul(n^c.charCodeAt(0),16777619);return n>>>0;}
 export function growthOffers(member,choiceIndex=member.progression?.choices.length||0){
-  let seed=hash(`${member.progression?.seed??0}:${member.hero}:${choiceIndex+16}`);
+  let seed=hash(`${member.progression?.seed??0}:${member.progression?.growthIdentity||member.hero}:${choiceIndex+16}`);
   const pool=[...GROWTH_OPTIONS];
   for(let i=pool.length-1;i>0;i--){seed=(Math.imul(seed,1664525)+1013904223)>>>0;const j=seed%(i+1);[pool[i],pool[j]]=[pool[j],pool[i]];}
   return pool.slice(0,3);
 }
 export function initializeProgression(member,level,seed=0,{legacy=false}={}){
   if(member.progression)return member.progression;
-  member.progression={version:1,seed:hash(`${seed}:${member.hero}`),ranks:legacy?recommendedRanks(level):[0,0,0,0],choices:[]};return member.progression;
+  member.progression={version:1,seed:hash(`${seed}:${member.hero}`),ranks:legacy?recommendedRanks(level,member.hero):[0,0,0,0],choices:[]};return member.progression;
 }
 export function validProgression(member,level){
   const p=member.progression;if(!p||p.version!==1||!Number.isInteger(p.seed)||p.seed<0||p.seed>0xffffffff)return false;
@@ -44,7 +46,7 @@ export function validProgression(member,level){
   return p.choices.every((id,i)=>growthOffers(member,i).some(o=>o.id===id));
 }
 export function progressionSummary(member,level){
-  const ranks=member.progression?.ranks||recommendedRanks(level);
+  const ranks=member.progression?.ranks||recommendedRanks(level,member.hero);
   return {ranks,points:Math.max(0,Math.min(15,level)-sum(ranks)),choices:Math.max(0,level-15-(member.progression?.choices.length||0))};
 }
 function editable(run,heroIndex){
@@ -60,8 +62,8 @@ export function recommendSkills(run,heroIndex){
   const m=editable(run,heroIndex),r=m.progression.ranks;
   // Fill remaining points without undoing any choice the player has made.
   for(let n=0;n<15;n++){
-    const desired=recommendedRanks(run.level);
-    const index=RECOMMENDED_ORDER.find(i=>r[i]<desired[i]&&!rankReason(r,run.level,i))??[0,1,2,3].find(i=>!rankReason(r,run.level,i));
+    const desired=recommendedRanks(run.level,m.hero);
+    const index=recommendedOrder(m.hero).find(i=>r[i]<desired[i]&&!rankReason(r,run.level,i))??[0,1,2,3].find(i=>!rankReason(r,run.level,i));
     if(index===undefined)break;r[index]++;
   }
 }

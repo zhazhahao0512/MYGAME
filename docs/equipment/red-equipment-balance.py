@@ -18,11 +18,12 @@ HERE = Path(__file__).resolve().parent
 spec = importlib.util.spec_from_file_location('purple_r053', HERE / 'purple-survival-support-balance.py')
 purple = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(purple)
-CATALOG = dict(purple.CATALOG)
+CATALOG = {key:item for key,item in purple.CATALOG.items() if item['rarity'] in ('white','blue','purple')}
 CATALOG.update({i['id']: {**i, 'rarity':'purple'} for i in purple.ITEMS})
 PRICES = purple.PRICES
 ITEMS = json.loads((HERE / 'red-equipment-r060.json').read_text())['items']
-EFFECT_NAMES = dict(re.findall(r"^\s*(\w+): \{name:'([^']+)'", purple.SOURCE, re.M))
+EFFECT_NAMES = {key:quoted or single for key,quoted,single in re.findall(
+    r"""^\s*(\w+): \{[^\n]*?(?:"name":\s*"([^"]+)"|name:'([^']+)')""", purple.SOURCE, re.M)}
 EFFECT_NAMES.update({i['effectId']:i['passive'] for i in purple.ITEMS if i.get('effectId')})
 
 
@@ -38,6 +39,10 @@ def check_catalog():
     assert len(effects)==len(set(effects))==18
     roots, recipes, rows = [], [], []
     for item in ITEMS:
+        live = purple.CATALOG.get(item['id'])
+        if live:
+            for key in ('name','stats','price','recipes','effectId','effectRank','parameters'):
+                assert live.get(key)==item.get(key), (item['id'],key)
         assert item['id'] not in CATALOG
         assert item['name'] not in {i['name'] for i in CATALOG.values()}
         assert 2600<=item['price']<=3600

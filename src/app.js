@@ -5,7 +5,7 @@ import { initializeProgression,progressionSummary } from './heroes/progression.j
 import { LANYA_PASSIVE } from './heroes/lanya.js';
 import { HEROES, heroById, BASE, RULES, rarityFor, PRIMARY, SECONDARY, STAT_LABELS, statText } from './data.js';
 import * as M from './model.js';
-import { equipmentById, passiveFor, GOLD_SCALE } from './equipment.js';
+import { equipmentById, passiveFor, recipesFor, GOLD_SCALE } from './equipment.js';
 import { installInspection } from './inspection.js';
 import { CAST_MODE_INFO, normalizeSkillModes, nextSkillMode } from './combat/casting.js';
 import { TARGET_MODES } from './combat/tactics.js';
@@ -48,24 +48,25 @@ function itemBox(item,cls=''){const rarity=rarityFor(item.rarity);return `<span 
 function itemInfo(item){
   const passive=passiveFor(item),effect=passive?`${passive.name}：${passive.description}`:item.rarity==='orange'?(EQUIPMENT_EFFECTS[item.base]?.description||item.effect):null;
   const rarity=rarityFor(item.rarity),formal=equipmentById(item.base);
-  return `<div class="item-details" style="--rarity:${rarity.color}">${itemBox(item)}<div><span class="rarity">${rarity.name}${item.rarity==='orange'?' · 橙装':''}</span><h3>${escape(item.name)}</h3><div class="item-stats">${Object.entries(item.stats).map(([k,v])=>`<span>${formal&&k==='attackSpeed'?'额外攻速':STAT_LABELS[k]} <b>+${formal&&k==='attackSpeed'?`${Math.round(v*100)}%`:statText(k,v)}</b></span>`).join('')}</div>${effect?`<small class="item-passive">${escape(effect)}<br>${passive?'同名被动只生效一份；基础属性可叠加。':'每人限 1 件'}</small>`:''}</div></div>`;
+  return `<div class="item-details" style="--rarity:${rarity.color}">${itemBox(item)}<div><span class="rarity">${rarity.name}${item.rarity==='orange'?' · 橙装':''}</span><h3>${escape(item.name)}</h3><div class="item-stats">${Object.entries(item.stats).map(([k,v])=>`<span>${formal&&k==='attackSpeed'?'额外攻速':STAT_LABELS[k]} <b>+${formal&&k==='attackSpeed'?`${Math.round(v*100)}%`:statText(k,v)}</b></span>`).join('')}</div>${effect?`<small class="item-passive">${escape(effect)}<br>${passive?'同名被动只生效最高等级的一份；基础属性可叠加。':'每人限 1 件'}</small>`:''}</div></div>`;
 }
 function recipeInfo(item){
   const d=equipmentById(item.base),upgrades=M.upgradesFor(item);
-  return (d?.recipe?`<p class="recipe-summary">材料：${d.recipe.map(id=>equipmentById(id).name).join(' + ')}<br>合成费 ${d.combineFee} 金币 · 成品总价 ${d.price} 金币</p>`:'')+
+  return recipesFor(d).map((r,i)=>`<p class="recipe-summary">路线 ${i+1}：${r.materials.map(id=>equipmentById(id).name).join(' + ')}<br>合成费 ${r.fee} 金币 · 成品总价 ${d.price} 金币${conversionInfo(d,r)}</p>`).join('')+
     (upgrades.length?`<p class="recipe-summary">可合成：${upgrades.map(d=>d.name).join('、')}</p>`:'');
 }
+function conversionInfo(d,r){return r.replacesPassive?`<br>被动转换：${escape(r.replacesPassive)} → ${escape(passiveFor(d).name)}，原被动不保留。`:'';}
 function upgradeChoices(item,hero,slot){
-  const choices=M.upgradesFor(item);
-  return choices.length?`<div class="upgrade-routes"><b>合成路线</b><small>使用全队已穿戴材料，成品放回当前槽位。</small>${choices.map(d=>{
-    const q=M.previewCombine(run,d.id,hero,slot,item.uid);
-    return `<button class="upgrade-route" data-act="preview-combine" data-id="${d.id}" data-hero="${hero}" data-slot="${slot}"><span>${d.name} <b>${q.reason?'查看配方':'可合成'}</b></span><small>${d.recipe.map(id=>equipmentById(id).name).join(' + ')} · 合成费 ${d.combineFee}</small><small class="${q.reason?'muted':'increase'}">${q.reason||'材料齐全'}</small></button>`;
+  const choices=M.upgradeRoutesFor(item);
+  return choices.length?`<div class="upgrade-routes"><b>合成路线</b><small>使用全队已穿戴材料，成品放回当前槽位。</small>${choices.map(({definition:d,recipe:r,recipeIndex})=>{
+    const q=M.previewCombine(run,d.id,hero,slot,item.uid,recipeIndex);
+    return `<button class="upgrade-route" data-act="preview-combine" data-id="${d.id}" data-recipe="${recipeIndex}" data-hero="${hero}" data-slot="${slot}"><span>${d.name} <b>${q.reason?'查看配方':'可合成'}</b></span><small>${r.materials.map(id=>equipmentById(id).name).join(' + ')} · 合成费 ${r.fee}${conversionInfo(d,r)}</small><small class="${q.reason?'muted':'increase'}">${q.reason||'材料齐全'}</small></button>`;
   }).join('')}</div>`:'';
 }
-function showCombine(id,hero,slot){
-  const anchor=run.party[hero]?.gear[slot],q=M.previewCombine(run,id,hero,slot,anchor?.uid),item={...q.definition,base:id};
+function showCombine(id,hero,slot,recipeIndex=0){
+  const anchor=run.party[hero]?.gear[slot],q=M.previewCombine(run,id,hero,slot,anchor?.uid,recipeIndex),item={...q.definition,base:id};
   const materials=q.materials.map(m=>`<li>${heroById(run.party[m.hero].hero).name} · 第 ${m.slot+1} 槽：${m.item.name}</li>`).join('');
-  showShopPopover({type:'combine',hero,slot,id,quote:q},'确认合成',itemInfo(item)+recipeInfo(item)+`<p>消耗以下装备，不产生出售金币：</p><ul class="combine-materials">${materials}</ul><p>成品交给 ${heroById(run.party[hero].hero).name} · 第 ${slot+1} 槽</p><p class="transaction-total">合成费 ${q.cost} · 合成后金币 ${q.goldAfter}<br>${escape(q.reason)}</p>`,btn('返回','back-gear','quiet small')+btn('确认合成','confirm-combine','primary small',q.reason?'disabled':''));
+  showShopPopover({type:'combine',hero,slot,id,quote:q},'确认合成',itemInfo(item)+`<p>当前路线 ${recipeIndex+1}${conversionInfo(q.definition,q.recipe)}</p><p>消耗以下装备，不产生出售金币：</p><ul class="combine-materials">${materials}</ul><p>成品交给 ${heroById(run.party[hero].hero).name} · 第 ${slot+1} 槽</p><p class="transaction-total">合成费 ${q.cost} · 合成后金币 ${q.goldAfter}<br>${escape(q.reason)}</p>`,btn('返回','back-gear','quiet small')+btn('确认合成','confirm-combine','primary small',q.reason?'disabled':''));
 }
 function inspectionContent(anchor){
   const {inspect,hero,skill,slot,source,index}=anchor.dataset,h=Number(hero),member=run?.party[h];
@@ -477,9 +478,9 @@ function act(event){const target=event.target.closest('[data-act]');if(!target||
       case 'confirm-acquire':{const pending=shopPopover;if(!pending||pending.type!=='compare')break;if(run.party[pending.hero]?.gear[pending.slot]?.uid!==pending.oldUid)throw new Error('目标装备已变化，请重新选择');commitPlacement(pending.selection,pending.hero,pending.slot);break;}
       case 'sell-reward':if(shopSelection?.type==='offer'&&shopSelection.source==='chest'&&validSelection()){M.sellReward(run,shopSelection.index);completeShopAction('宝箱奖励已出售');}break;
       case 'gear':if(screen==='shop'){if(shopSelection&&shopSelection.type!=='hero')placeSelection(h,s);else showGear(h,s);}else if(run.party[h].gear[s])inspection.show(target,true);break;
-      case 'preview-combine':showCombine(target.dataset.id,h,s);break;
+      case 'preview-combine':showCombine(target.dataset.id,h,s,Number(target.dataset.recipe));break;
       case 'back-gear':if(shopPopover)showGear(shopPopover.hero,shopPopover.slot);break;
-      case 'confirm-combine':{const p=shopPopover;if(p?.type==='combine'){const item=M.combineEquipment(run,p.id,p.hero,p.slot,p.quote.anchorUid,p.quote.uids);completeShopAction(`已合成 ${item.name}`);}break;}
+      case 'confirm-combine':{const p=shopPopover;if(p?.type==='combine'){const item=M.combineEquipment(run,p.id,p.hero,p.slot,p.quote.anchorUid,p.quote.uids,p.quote.recipeIndex);completeShopAction(`已合成 ${item.name}`);}break;}
       case 'sell-gear':{const p=shopPopover;if(p?.type==='gear'&&run.party[p.hero]?.gear[p.slot]?.uid===p.uid){M.sellGear(run,p.hero,p.slot);completeShopAction('装备已出售');}break;}
       case 'transfer':{const p=shopPopover;if(p?.type==='gear'){shopSelection={type:'gear',hero:p.hero,slot:p.slot,uid:p.uid};render();}break;}
       case 'formation':clearShopSelection();render();toast('拖动英雄名字，或依次点击两位英雄的名字交换站位');break;

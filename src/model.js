@@ -7,7 +7,7 @@ import { normalizeSkillModes } from './combat/casting.js';
 import { normalizeTactics } from './combat/tactics.js';
 import { resolveStats } from './combat/attributes.js';
 import { loadoutModifiers, AUGMENTS, EQUIPMENT_EFFECTS } from './combat/content.js';
-import { EQUIPMENT, equipmentById, GOLD_SCALE } from './equipment.js';
+import { EQUIPMENT, equipmentById, recipesFor, GOLD_SCALE } from './equipment.js';
 export const SAVE_KEY = 'squad-expedition.save.v1';
 const fail = message => { throw new Error(message); };
 export function random(run) { let t = run.seed += 0x6d2b79f5; t = Math.imul(t ^ t >>> 15,t|1); t ^= t + Math.imul(t ^ t >>> 7,t|61); run.seed >>>= 0; return ((t ^ t >>> 14) >>> 0)/4294967296; }
@@ -187,22 +187,25 @@ export function parseSave(raw) {
   } catch{return null;}
 }
 
-export const upgradesFor = item => EQUIPMENT.filter(d=>d.recipe?.includes(item?.base));
-export function previewCombine(run,id,hero,slot,anchorUid) {
+export const upgradesFor = item => EQUIPMENT.filter(d=>recipesFor(d).some(r=>r.materials.includes(item?.base)));
+export const upgradeRoutesFor = item => upgradesFor(item).flatMap(definition=>recipesFor(definition).flatMap((recipe,recipeIndex)=>
+  recipe.materials.includes(item?.base)?[{definition,recipe,recipeIndex}]:[]));
+export function previewCombine(run,id,hero,slot,anchorUid,recipeIndex=0) {
   if(run.phase!=='shop')fail('只能在商店合成装备');
   const definition=equipmentById(id),anchor=run.party[hero]?.gear[slot];
-  if(!definition?.recipe||!anchor||anchor.uid!==anchorUid||!definition.recipe.includes(anchor.base))fail('材料已变化，请重新选择');
+  const recipe=Number.isInteger(recipeIndex)&&recipesFor(definition)[recipeIndex];
+  if(!recipe||!anchor||anchor.uid!==anchorUid||!recipe.materials.includes(anchor.base))fail('材料已变化，请重新选择');
   const available=[{hero,slot,item:anchor},...run.party.flatMap((h,hi)=>h.gear.flatMap((item,si)=>item&&(hi!==hero||si!==slot)?[{hero:hi,slot:si,item}]:[]))];
   const used=new Set(),materials=[],missing=[];
-  for(const base of definition.recipe){
+  for(const base of recipe.materials){
     const entry=available.find(e=>e.item.base===base&&!used.has(e.item.uid));
     if(entry){used.add(entry.item.uid);materials.push(entry);}else missing.push(equipmentById(base).name);
   }
-  const reason=missing.length?`缺少：${missing.join('、')}`:run.gold<definition.combineFee?'金币不足':'';
-  return {definition,materials,missing,reason,cost:definition.combineFee,goldAfter:run.gold-definition.combineFee,hero,slot,anchorUid,uids:materials.map(m=>m.item.uid)};
+  const reason=missing.length?`缺少：${missing.join('、')}`:run.gold<recipe.fee?'金币不足':'';
+  return {definition,recipe,recipeIndex,materials,missing,reason,cost:recipe.fee,goldAfter:run.gold-recipe.fee,hero,slot,anchorUid,uids:materials.map(m=>m.item.uid)};
 }
-export function combineEquipment(run,id,hero,slot,anchorUid,expectedUids) {
-  const quote=previewCombine(run,id,hero,slot,anchorUid);
+export function combineEquipment(run,id,hero,slot,anchorUid,expectedUids,recipeIndex=0) {
+  const quote=previewCombine(run,id,hero,slot,anchorUid,recipeIndex);
   if(quote.reason)fail(quote.reason);
   if(!Array.isArray(expectedUids)||expectedUids.length!==quote.uids.length||expectedUids.some((uid,i)=>uid!==quote.uids[i]))fail('合成材料已变化，请重新确认');
   const item=instantiate(run,quote.definition);

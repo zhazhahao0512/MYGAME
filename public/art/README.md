@@ -16,3 +16,5 @@ pyftsubset /usr/share/fonts/opentype/noto/NotoSerifCJK-Bold.ttc --font-number=2 
 ```
 
 采用已验证的 WOFF；环境缺少 Brotli Python 扩展，未将 WOFF2 作为构建前提。字体和素材均由自有游戏服务器提供，游戏运行不请求第三方字体或图片服务。
+
+R064补齐新增紫/红装备名称、被动说明与多路线提示字形；仍从同一Noto字体生成源码子集，未更换字体或引入外部请求。

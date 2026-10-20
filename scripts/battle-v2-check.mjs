@@ -37,11 +37,15 @@ try{
    await click('inspect-enemy');await click('select-enemy','[data-index="1"]');assert.match(await page.locator('#target-preference').textContent(),/优先位置 5/,'inspection never changes stored intent');
   }
   assert.equal(await page.locator('[data-act="accept-challenge"]:enabled').count(),0,'full enemy side disables challenges');
-  for(let i=0;i<150&&!await page.locator('[data-act="accept-challenge"]:enabled').count();i++)await page.clock.runFor(100);
-  assert.ok(await page.locator('[data-act="accept-challenge"]:enabled').count(),'real combat produces a vacancy');
-  // HUD refreshes every 40 ms while simulation steps every 20 ms. Re-selecting
-  // the hero refreshes the visible count at the frozen tick before comparing it.
-  await click('select-unit','[data-hero="2"]');
+  // HUD refreshes every 40 ms while simulation steps every 20 ms. Refresh via
+  // a native selection BEFORE checking availability: a stale enabled button
+  // may describe a vacancy that the next automatic refill has already filled.
+  for(let i=0;i<150;i++){
+   await page.clock.runFor(100);
+   await click('select-unit','[data-hero="2"]');
+   if(await page.locator('[data-act="accept-challenge"]:enabled').count())break;
+  }
+  assert.ok(await page.locator('[data-act="accept-challenge"]:enabled').count(),'real combat produces a current vacancy');
   const tickBefore=await page.locator('#battle-canvas').getAttribute('data-tick');
   const countBefore=Number((await page.locator('#queue-count').textContent()).split('/')[0]);
   await click('accept-challenge');const countAfter=Number((await page.locator('#queue-count').textContent()).split('/')[0]);

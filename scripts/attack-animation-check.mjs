@@ -67,7 +67,43 @@ try {
  assert.notEqual(ending.old,ending.newId);assert.equal(ending.visible,2,'same-slot replacement hides the invalid old projectile');
  assert.equal(ending.beforeImpact,ending.beforeHp);assert.ok(ending.afterImpact<ending.beforeImpact,'skill settles at arrival');
  assert.equal(ending.earlyStrikes,0);assert.deepEqual(ending.impactStrikes,[0xd69682],'melee slash only appears on real impact, in source color');
+ // Presentation fixture: both directions, five source slots, exact 1x/3x/5x sizes.
+ const lanes=[];
+ for(const [width,height] of [[1400,650],[720,160]]){
+  await page.setViewportSize({width:width+40,height:height>200?900:360});
+  const lane=await page.evaluate(async({width,height})=>{
+   const [{Battle},{createRun},{PhaserBattleRenderer},{HEROES}]=await Promise.all([import('/src/battle.js'),import('/src/model.js'),import('/src/renderer/PhaserBattleRenderer.ts'),import('/src/data.js')]);
+   document.body.innerHTML=`<p style="color:white">弹道表现测试：双方五个位置，普攻／技能／大招</p><div id="lane-stage" style="width:${width}px;height:${height}px"></div>`;
+   const run=createRun(56);run.party=HEROES.slice(0,5).map(h=>({hero:h.id,gear:[null,null,null,null]}));
+   const b=new Battle(run);for(const u of b.units()){u.nextAttack=Infinity;u.def={...u.def,range:'ranged'};}
+   for(const source of b.units())for(const key of ['', '1','4'])b.fire(source,(source.side==='hero'?b.enemies:b.party)[2],{duration:1,skill:!!key,skillKey:key});
+   while(b.tick<25)b.step();
+   const before=JSON.stringify({rng:b.rng,shots:b.shots,units:b.units().map(u=>[u.hp,u.mana])});
+   const state={motion:true},host=document.querySelector('#lane-stage');
+   const r=new PhaserBattleRenderer(host,b,{advance(){},selected:()=>0,select(){},motion:()=>state.motion,paused:()=>false,compact:()=>width<1000});
+   await new Promise(resolve=>{const check=()=>host.dataset.engine?resolve():setTimeout(check,20);check();});
+   const scene=r.game.scene.getScene('battle');
+   const frame=()=>{scene.update(0,0);const shots=[...b.shots].sort((a,c)=>Number(c.source===b.party[0].id)-Number(a.source===b.party[0].id)||c.id-a.id);return shots.map((shot,i)=>{const dot=scene.projectiles[i].dot;return {side:shot.side,slot:shot.sourceSlot,key:shot.skillKey,x:dot.x,y:dot.y,size:dot.displayWidth,visible:dot.visible};});};
+   const normal=frame();state.motion=false;const reduced=frame();
+   const after=JSON.stringify({rng:b.rng,shots:b.shots,units:b.units().map(u=>[u.hp,u.mana])});
+   window.__laneRenderer=r;
+   return {width,height,normal,reduced,unchanged:before===after};
+  },{width,height});
+  assert.equal(lane.unchanged,true);assert.deepEqual(lane.normal,lane.reduced,'reduced motion retains essential lane separation');
+  assert.equal(lane.normal.length,30);
+  for(const side of ['hero','enemy']){
+   const shots=lane.normal.filter(s=>s.side===side);let lastY=Infinity;
+   for(let slot=0;slot<5;slot++){
+    const basic=shots.find(s=>s.slot===slot&&s.key===''),skill=shots.find(s=>s.slot===slot&&s.key==='1'),ultimate=shots.find(s=>s.slot===slot&&s.key==='4');
+    assert.ok(basic.y<lastY,'5 to 1 have descending arc heights on both sides');lastY=basic.y;
+    assert.equal(skill.size,basic.size*3);assert.equal(ultimate.size,basic.size*5);assert.equal(skill.y,basic.y);assert.equal(ultimate.y,basic.y);
+   }
+  }
+  assert.ok(lane.normal.every(s=>s.visible&&s.y-s.size/2>=0&&s.y+s.size/2<=height),'even 5x ultimates fit the arena at the arc peak');
+  await page.screenshot({path:`test-results/attack-animation/lanes-${width}.png`});
+  await page.evaluate(()=>window.__laneRenderer.destroy());lanes.push(lane);
+ }
  assert.deepEqual(errors,[]);
- await writeFile('test-results/attack-animation/results.json',JSON.stringify({results,trace,ending},null,2));
- console.log('Attack animation checks passed: real app defaults/system/saved reduced motion; basic and skill travel, pause/resume, unchanged combat, impact tick and replacement isolation.');
+ await writeFile('test-results/attack-animation/results.json',JSON.stringify({results,trace,ending,lanes},null,2));
+ console.log('Attack animation checks passed: real app defaults/system/saved reduced motion; basic and skill travel, pause/resume, unchanged combat, impact tick, replacement isolation, mirrored five-lane arcs and 1x/3x/5x sizes.');
 }finally{await browser?.close();server.kill('SIGTERM');}

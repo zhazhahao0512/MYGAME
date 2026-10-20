@@ -295,6 +295,13 @@ class BattleScene extends Phaser.Scene {
     return color && /^#[0-9a-f]{6}$/i.test(color) ? Number.parseInt(color.slice(1),16) : 0xe6dfca;
   }
 
+  private projectileRise(slot: number, fromY: number, toY: number) {
+    // Reserve room for the largest (5x) projectile for every lane, so spell size
+    // and target changes cannot collapse/reorder the source's trajectory.
+    const headroom=Math.max(0,Math.min(fromY,toY)-(this.compact?14:22)*2.5-8);
+    return Math.min(this.compact?100:280,headroom)*(Phaser.Math.Clamp(slot,0,4)+1)/5;
+  }
+
   private refreshProjectiles(motion: boolean) {
     this.trails.clear();
     const battle = this.owner.battle;
@@ -303,7 +310,8 @@ class BattleScene extends Phaser.Scene {
     const target=battle.enemies.find(u=>u.id===selectedUnit?.targetId&&u.hp>0);
     if(target&&selectedUnit&&selectedUnit.hp>0){
       const from=this.actors[selectedUnit.slot],to=this.actors[5+target.slot];
-      const sx=from.root.x,ex=to.root.x,base=from.root.y-from.height/2-30, rise=this.compact?8:Math.min(80,this.scale.width*.03);
+      const sx=from.root.x,ex=to.root.x,base=Math.max(16,from.root.y-from.height/2-10);
+      const rise=Math.max(0,base-8)*(selectedUnit.slot+1)/5;
       this.trails.lineStyle(this.compact?1:2.5,0xf6cb64,.98);
       const segments=this.compact?32:Math.max(24,Math.ceil(Math.abs(ex-sx)/12));
       for(let i=0;i<segments;i+=2){const a=i/segments,b=Math.min(1,(i+1)/segments);this.trails.lineBetween(sx+(ex-sx)*a,base-Math.sin(a*Math.PI)*rise,sx+(ex-sx)*b,base-Math.sin(b*Math.PI)*rise);}
@@ -321,15 +329,18 @@ class BattleScene extends Phaser.Scene {
       if (!target || target.id !== shot.target || target.hp <= 0) { sprite.dot.setVisible(false); sprite.glow.setVisible(false); continue; }
       const t = Phaser.Math.Clamp((battle.tick - shot.start) / (shot.end - shot.start), 0, 1);
       const melee=!shot.skill&&shot.attackRange==='melee',direction=to.root.x>=from.root.x?1:-1;
+      const rise=this.projectileRise(shot.sourceSlot,from.root.y,to.root.y);
       const x=melee?from.root.x+direction*(from.width*.3):Phaser.Math.Linear(from.root.x,to.root.x,t);
-      const y=melee?from.root.y-from.height*.25:Phaser.Math.Linear(from.root.y,to.root.y,t)-(motion&&shot.skill?Math.sin(t*Math.PI)*(this.compact?28:70):0);
-      const tint=this.attackTint(shot.visualColor),size=melee?(this.compact?13:22):shot.skill?(this.compact?13:19):(this.compact?14:22);
+      const y=melee?from.root.y-from.height*.25:Phaser.Math.Linear(from.root.y,to.root.y,t)-Math.sin(t*Math.PI)*rise;
+      const scale=shot.skill?(shot.skillKey==='4'||shot.skillKey==='R'?5:3):1;
+      const tint=this.attackTint(shot.visualColor),size=(this.compact?14:22)*scale;
+      const angle=Math.atan2(to.root.y-from.root.y-Math.PI*rise*Math.cos(t*Math.PI),to.root.x-from.root.x);
       // Melee winds up at the source; the impact slash is created only by a settled damage event.
       sprite.dot.setTexture(melee?'attack-slash':shot.skill?'attack-spell':'attack-arrow')
         .setVisible(true).setAlpha((shot.source===selected?1:.75)*(melee?.4+.6*t:1)).setPosition(x,y).setTint(tint)
-        .setDisplaySize(size,size).setRotation(melee?(direction<0?Math.PI:0)+(motion?(t-.5)*1.2:0):Math.atan2(to.root.y-from.root.y,to.root.x-from.root.x));
-      sprite.glow.setVisible(motion&&!melee).setPosition(x,y).setTint(tint).setDisplaySize(shot.skill?30:20,shot.skill?30:20);
-      if(motion&&!melee)this.trails.lineStyle(shot.skill?2:1.5,tint,shot.source===selected?.8:.4).lineBetween(x-direction*12,y,x,y);
+        .setDisplaySize(size,size).setRotation(melee?(direction<0?Math.PI:0)+(motion?(t-.5)*1.2:0):angle);
+      sprite.glow.setVisible(motion&&!melee).setPosition(x,y).setTint(tint).setDisplaySize(size*1.25,size*1.25);
+      if(motion&&!melee)this.trails.lineStyle(shot.skill?2:1.5,tint,shot.source===selected?.8:.4).lineBetween(x-Math.cos(angle)*12,y-Math.sin(angle)*12,x,y);
 
     }
   }
